@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 import { GeistSans } from 'geist/font/sans';
 import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { LivePreview } from '@/components/LivePreview';
-import { themeScript } from '@/components/ThemeToggle';
 import { asMedia, getSite, isPreview } from '@/lib/cms';
+import { SITE_COPY, text } from '@/lib/home-copy';
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000';
 
@@ -27,19 +26,15 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#F4F4F3' },
-    { media: '(prefers-color-scheme: dark)', color: '#111213' },
-  ],
+  themeColor: '#000000',
+  colorScheme: 'dark',
 };
 
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const [site, preview] = await Promise.all([getSite(), isPreview()]);
   return (
-    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
+    <html lang="en" className={GeistSans.variable} data-theme="dark">
       <body>
-        {/* Runs before paint so there is no flash of the wrong theme. */}
-        <Script id="theme" strategy="beforeInteractive">{themeScript}</Script>
         <a className="skip" href="#main">Skip to content</a>
         {preview && (
           <>
@@ -47,7 +42,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
             <a className="preview-bar" href="/exit-preview">Previewing drafts · Exit</a>
           </>
         )}
-        <Header name={site.name} />
+        <Header name={site.name} availability={site.availability} ctaLabel={text(site.ctaLabel, SITE_COPY.ctaLabel)} />
         <main id="main">{children}</main>
         <Footer site={site} />
       </body>

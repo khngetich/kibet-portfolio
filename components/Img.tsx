@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import type { Media } from '@/payload-types';
-import { asMedia } from '@/lib/cms';
+import { asMedia } from '@/lib/media';
 
 type Props = {
   media: unknown;

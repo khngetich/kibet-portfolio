@@ -708,6 +708,8 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Every section of the homepage, top to bottom. Use the preview on the right to see changes as you type.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home".
  */
@@ -716,11 +718,70 @@ export interface Home {
   headline: string;
   intro?: string | null;
   /**
-   * Up to 5 pieces of your best work shown in the hero. Leave empty to use the featured projects’ covers.
+   * The short line beside the “Start a project” button.
+   */
+  heroCtaText?: string | null;
+  /**
+   * Shown above the headline. {count} is replaced with the number of clients. Clear it to hide the line.
+   */
+  trustedText?: string | null;
+  /**
+   * Extra images for the tilted work wall. Leave empty to use the project covers only.
    */
   heroImages?: (number | Media)[] | null;
+  clients?:
+    | {
+        name: string;
+        url?: string | null;
+        /**
+         * Optional. A single-colour SVG or PNG looks best.
+         */
+        logo?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
   workHeading?: string | null;
   workIntro?: string | null;
+  workLinkLabel?: string | null;
+  /**
+   * Followed by your first name.
+   */
+  aboutGreeting?: string | null;
+  aboutLinkLabel?: string | null;
+  /**
+   * Three numbers, e.g. years working, projects delivered, typical turnaround.
+   */
+  stats?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  rolesHeading?: string | null;
+  rolesLead?: string | null;
+  /**
+   * Finishes the sentence. The list rolls past as visitors scroll.
+   */
+  audienceRoles?: string[] | null;
+  processEyebrow?: string | null;
+  processHeading?: string | null;
+  /**
+   * The stacking step cards.
+   */
+  process?:
+    | {
+        title: string;
+        description?: string | null;
+        points?: string[] | null;
+        /**
+         * Leave empty to use a project cover.
+         */
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  servicesEyebrow?: string | null;
   servicesHeading?: string | null;
   servicesIntro?: string | null;
   services?:
@@ -737,17 +798,8 @@ export interface Home {
         id?: string | null;
       }[]
     | null;
-  clients?:
-    | {
-        name: string;
-        url?: string | null;
-        /**
-         * Optional. A single-colour SVG or PNG looks best.
-         */
-        logo?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
+  testimonialsEyebrow?: string | null;
+  testimonialsHeading?: string | null;
   testimonials?:
     | {
         quote: string;
@@ -757,6 +809,7 @@ export interface Home {
         id?: string | null;
       }[]
     | null;
+  contactEyebrow?: string | null;
   contactHeading?: string | null;
   contactIntro?: string | null;
   _status?: ('draft' | 'published') | null;
@@ -844,6 +897,14 @@ export interface Site {
         id?: string | null;
       }[]
     | null;
+  /**
+   * The main button in the header and across the homepage. Every one leads to the contact form.
+   */
+  ctaLabel?: string | null;
+  /**
+   * Small print after the copyright line.
+   */
+  footerNote?: string | null;
   metaDescription?: string | null;
   /**
    * Default image when a page is shared (1200×630)
@@ -859,9 +920,44 @@ export interface Site {
 export interface HomeSelect<T extends boolean = true> {
   headline?: T;
   intro?: T;
+  heroCtaText?: T;
+  trustedText?: T;
   heroImages?: T;
+  clients?:
+    | T
+    | {
+        name?: T;
+        url?: T;
+        logo?: T;
+        id?: T;
+      };
   workHeading?: T;
   workIntro?: T;
+  workLinkLabel?: T;
+  aboutGreeting?: T;
+  aboutLinkLabel?: T;
+  stats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  rolesHeading?: T;
+  rolesLead?: T;
+  audienceRoles?: T;
+  processEyebrow?: T;
+  processHeading?: T;
+  process?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        points?: T;
+        image?: T;
+        id?: T;
+      };
+  servicesEyebrow?: T;
   servicesHeading?: T;
   servicesIntro?: T;
   services?:
@@ -875,14 +971,8 @@ export interface HomeSelect<T extends boolean = true> {
         unit?: T;
         id?: T;
       };
-  clients?:
-    | T
-    | {
-        name?: T;
-        url?: T;
-        logo?: T;
-        id?: T;
-      };
+  testimonialsEyebrow?: T;
+  testimonialsHeading?: T;
   testimonials?:
     | T
     | {
@@ -892,6 +982,7 @@ export interface HomeSelect<T extends boolean = true> {
         photo?: T;
         id?: T;
       };
+  contactEyebrow?: T;
   contactHeading?: T;
   contactIntro?: T;
   _status?: T;
@@ -944,6 +1035,8 @@ export interface SiteSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  ctaLabel?: T;
+  footerNote?: T;
   metaDescription?: T;
   ogImage?: T;
   updatedAt?: T;

@@ -2,7 +2,7 @@ import { cache } from 'react';
 import { draftMode } from 'next/headers';
 import { getPayload, type Where } from 'payload';
 import config from '@payload-config';
-import type { Media, Project } from '@/payload-types';
+import type { Project } from '@/payload-types';
 
 /**
  * All reads for the public site. Pages are statically rendered and re-rendered when
@@ -55,5 +55,4 @@ export const getProjectSlugs = async () => {
   return docs.map((d) => d.slug).filter(Boolean) as string[];
 };
 
-/** Narrows an upload field (id or populated doc) to a usable Media document. */
-export const asMedia = (m: unknown): Media | null => (m && typeof m === 'object' && 'url' in m && (m as Media).url ? (m as Media) : null);
+export { asMedia } from './media';

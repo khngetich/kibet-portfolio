@@ -8,6 +8,7 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed.ts",
+    "fill-copy": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/fill-copy.ts",
     "ci": "payload migrate && npm run build"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
     "@payloadcms/ui": "^3.90.1",
     "geist": "^1.7.2",
     "graphql": "^16.14.2",
+    "motion": "^12.43.0",
     "next": "^16.3.6",
     "payload": "^3.90.1",
     "react": "^19.3.0",

@@ -27,12 +27,13 @@ export function Footer({ site }: { site: Site }) {
           <div className="footer-col">
             <p className="kicker">Site</p>
             <Link href="/work">Work</Link>
-            <Link href="/#services">Services</Link>
             <Link href="/about">About</Link>
+            <Link href="/#process">Process</Link>
+            <Link href="/#services">Services</Link>
             <Link href="/#contact">Contact</Link>
           </div>
         </div>
-        <p className="footer-bottom">&copy; {year} {site.studio || site.name}. Some client work is shown under NDA or with permission.</p>
+        <p className="footer-bottom">&copy; {year} {site.studio || site.name}.{site.footerNote ? ` ${site.footerNote}` : ''}</p>
       </div>
     </footer>
   );

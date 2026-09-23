@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload';
 import { anyone, authenticated } from '../access';
 import { revalidateGlobal } from '../hooks/revalidate';
+import { SITE_COPY } from '../lib/home-copy';
 
 export const SOCIAL_PLATFORMS = [
   { label: 'Instagram', value: 'instagram' },
@@ -53,6 +54,13 @@ export const Site: GlobalConfig = {
                 ] },
               ],
             },
+          ],
+        },
+        {
+          label: 'Header & footer',
+          fields: [
+            { name: 'ctaLabel', label: 'Button label', type: 'text', defaultValue: SITE_COPY.ctaLabel, admin: { description: 'The main button in the header and across the homepage. Every one leads to the contact form.' } },
+            { name: 'footerNote', type: 'text', defaultValue: SITE_COPY.footerNote, admin: { description: 'Small print after the copyright line.' } },
           ],
         },
         {

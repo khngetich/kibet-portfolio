@@ -27,6 +27,14 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' — Kaptured CMS' },
+    // Always dark, matching the public site; colours and type are set in app/(payload)/custom.css.
+    theme: 'dark',
+    components: {
+      graphics: {
+        Logo: '/components/admin/Brand#Logo',
+        Icon: '/components/admin/Brand#Icon',
+      },
+    },
     livePreview: {
       // The preview route checks the editor is logged in, turns on Next.js draft mode,
       // then redirects to the page so unpublished changes render in the admin's preview pane.

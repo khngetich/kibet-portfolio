@@ -1,10 +1,19 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { sendEnquiry, type ContactState } from '@/app/(frontend)/actions';
+import { SERVICE_EVENT } from './home/ServiceLink';
 
 export function ContactForm({ services }: { services: string[] }) {
   const [state, action, pending] = useActionState<ContactState, FormData>(sendEnquiry, null);
+  const [service, setService] = useState('');
+
+  // A service card's "Start a project" button pre-selects that service here.
+  useEffect(() => {
+    const onPick = (e: Event) => { const s = (e as CustomEvent<string>).detail; if (services.includes(s)) setService(s); };
+    window.addEventListener(SERVICE_EVENT, onPick);
+    return () => window.removeEventListener(SERVICE_EVENT, onPick);
+  }, [services]);
 
   if (state?.ok) {
     return (
@@ -23,7 +32,7 @@ export function ContactForm({ services }: { services: string[] }) {
       </div>
       <div className="form-row">
         <label>What do you need?
-          <select name="service" defaultValue="">
+          <select name="service" value={service} onChange={(e) => setService(e.target.value)}>
             <option value="" disabled>Choose one</option>
             {services.map((s) => <option key={s}>{s}</option>)}
             <option>Something else</option>
