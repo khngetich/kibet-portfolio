@@ -17,7 +17,7 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "--dir",
-        "/Users/humphreyngetich/Downloads/kaptured-creatives",
+        "/Users/humphreyngetich/Documents/Invoice",
         "dev"
       ],
       "port": 3100
