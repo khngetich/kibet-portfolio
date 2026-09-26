@@ -67,6 +67,7 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    pages: Page;
     projects: Project;
     media: Media;
     inquiries: Inquiry;
@@ -78,6 +79,7 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
+    pages: PagesSelect<false> | PagesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
@@ -92,13 +94,15 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
-    home: Home;
-    about: About;
+    header: Header;
+    footer: Footer;
+    theme: Theme;
     site: Site;
   };
   globalsSelect: {
-    home: HomeSelect<false> | HomeSelect<true>;
-    about: AboutSelect<false> | AboutSelect<true>;
+    header: HeaderSelect<false> | HeaderSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+    theme: ThemeSelect<false> | ThemeSelect<true>;
     site: SiteSelect<false> | SiteSelect<true>;
   };
   locale: null;
@@ -128,6 +132,729 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
+}
+/**
+ * Every page on the site. Open one to add, reorder, hide or edit its sections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  /**
+   * Used in the admin and as the default browser-tab and search title.
+   */
+  title: string;
+  sections?:
+    | (
+        | {
+            /**
+             * Above the headline. {count} becomes the number of clients. Leave empty to hide.
+             */
+            trustedText?: string | null;
+            headline: string;
+            intro?: string | null;
+            /**
+             * The short line beside the button.
+             */
+            ctaText?: string | null;
+            button?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            /**
+             * Shown at the start of the strip of client names.
+             */
+            clientsLabel?: string | null;
+            /**
+             * The names scrolling under the button.
+             */
+            clients?:
+              | {
+                  name: string;
+                  url?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Up to three. Leave empty to use the first three featured projects.
+             */
+            projects?: (number | Project)[] | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            intro?: string | null;
+            layout?: ('feature' | 'carousel') | null;
+            /**
+             * In order: the first is the large case study. Leave empty to use every featured project.
+             */
+            projects?: (number | Project)[] | null;
+            /**
+             * Added to the project covers on the tilted wall.
+             */
+            extraImages?: (number | Media)[] | null;
+            showWall?: boolean | null;
+            link?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'workShowcase';
+          }
+        | {
+            layout?: ('editorial' | 'banner') | null;
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            /**
+             * Under your name (editorial layout).
+             */
+            role?: string | null;
+            /**
+             * Editorial layout: each tab swaps the heading, text and table on the right.
+             */
+            tabs?:
+              | {
+                  label: string;
+                  heading: string;
+                  text?: string | null;
+                  /**
+                   * Numbers at the start of a value (50+, 3.5M+, 100%) count up when the section comes into view.
+                   */
+                  rows?:
+                    | {
+                        value: string;
+                        label: string;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Followed by your first name, e.g. “Hi, I’m” → “Hi, I’m Humphrey,”.
+             */
+            greeting?: string | null;
+            heading: string;
+            /**
+             * A cut-out portrait (transparent PNG or WebP) looks best.
+             */
+            photo?: (number | null) | Media;
+            /**
+             * Continues the greeting, e.g. “a Senior Designer specialising in”. The list below finishes it.
+             */
+            intro?: string | null;
+            /**
+             * Short points, one per line. Type one and press Enter.
+             */
+            expertise?: string[] | null;
+            servicesHeading?: string | null;
+            /**
+             * Each one also appears in the contact form’s “What do you need?” list.
+             */
+            services?:
+              | {
+                  title: string;
+                  description?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            cta?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            stats?:
+              | {
+                  value: string;
+                  label: string;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * The giant word at the bottom. Defaults to your first name.
+             */
+            bigName?: string | null;
+            link?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'aboutBanner';
+          }
+        | {
+            heading?: string | null;
+            lead?: string | null;
+            /**
+             * Finishes the sentence. Type one and press Enter.
+             */
+            roles?: string[] | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'audience';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            /**
+             * A line under the heading, e.g. “Vision → Design → Performance”.
+             */
+            lead?: string | null;
+            layout?: ('circuit' | 'steps' | 'stack') | null;
+            steps?:
+              | {
+                  title: string;
+                  icon?:
+                    | (
+                        | 'compass'
+                        | 'pen'
+                        | 'chat'
+                        | 'rocket'
+                        | 'layers'
+                        | 'spark'
+                        | 'bulb'
+                        | 'chart'
+                        | 'sliders'
+                        | 'checkCircle'
+                      )
+                    | null;
+                  /**
+                   * How long this phase usually takes, e.g. “2–3 days”. Shown when the step is opened (circuit layout).
+                   */
+                  duration?: string | null;
+                  description?: string | null;
+                  points?: string[] | null;
+                  /**
+                   * Stacking-cards layout only. Leave empty to use a project cover.
+                   */
+                  image?: (number | null) | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'process';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            intro?: string | null;
+            layout?: ('deck' | 'cards') | null;
+            /**
+             * The button inside an opened card.
+             */
+            ctaLabel?: string | null;
+            items?:
+              | {
+                  title: string;
+                  /**
+                   * One line, shown on the card.
+                   */
+                  description?: string | null;
+                  /**
+                   * The bullet points shown when the card is opened.
+                   */
+                  deliverables?: string[] | null;
+                  /**
+                   * Leave empty to hide the price
+                   */
+                  priceFrom?: number | null;
+                  currency?: ('KES' | 'USD') | null;
+                  unit?: string | null;
+                  /**
+                   * The blurred strip at the top of the card. Leave empty to use a project cover.
+                   */
+                  image?: (number | null) | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            showWhatsApp?: boolean | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'services';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            items?:
+              | {
+                  /**
+                   * Shown large at the top. Leave empty to show only the quote.
+                   */
+                  highlight?: string | null;
+                  quote: string;
+                  name: string;
+                  title?: string | null;
+                  company?: string | null;
+                  logo?: (number | null) | Media;
+                  photo?: (number | null) | Media;
+                  /**
+                   * Star rating from the client, 1–5. Leave empty to show no stars.
+                   */
+                  rating?: number | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            intro?: string | null;
+            rolesLead?: string | null;
+            /**
+             * Shown as tags, e.g. “startup founder”. Type one and press Enter.
+             */
+            roles?: string[] | null;
+            showAvailability?: boolean | null;
+            showSocials?: boolean | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'contact';
+          }
+        | {
+            heading?: string | null;
+            intro?: string | null;
+            showFilters?: boolean | null;
+            onlyFeatured?: boolean | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'projectGrid';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading: string;
+            body?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            photo?: (number | null) | Media;
+            experience?:
+              | {
+                  role: string;
+                  company?: string | null;
+                  years?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            skills?: string[] | null;
+            tools?: string[] | null;
+            cv?: (number | null) | Media;
+            button?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'profile';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            body?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            align?: ('left' | 'center') | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            media: number | Media;
+            caption?: string | null;
+            width?: ('wide' | 'full') | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'mediaSection';
+          }
+        | {
+            heading: string;
+            text?: string | null;
+            button?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'ctaBanner';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            items?:
+              | {
+                  question: string;
+                  answer: string;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+      )[]
+    | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * Drag rows to set the order projects appear on the site.
@@ -321,6 +1048,16 @@ export interface Project {
    * Small print shown at the end (NDA, placeholder images, etc.)
    */
   note?: string | null;
+  /**
+   * Up to two real, checkable results for the foot of the project card, e.g. “05” Deliverables and “+120%” Engagement. Leave empty to show the year instead.
+   */
+  stats?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -418,6 +1155,10 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
         relationTo: 'projects';
         value: number | Project;
       } | null)
@@ -474,6 +1215,519 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  sections?:
+    | T
+    | {
+        hero?:
+          | T
+          | {
+              trustedText?: T;
+              headline?: T;
+              intro?: T;
+              ctaText?: T;
+              button?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              clientsLabel?: T;
+              clients?:
+                | T
+                | {
+                    name?: T;
+                    url?: T;
+                    id?: T;
+                  };
+              projects?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        workShowcase?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              intro?: T;
+              layout?: T;
+              projects?: T;
+              extraImages?: T;
+              showWall?: T;
+              link?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        aboutBanner?:
+          | T
+          | {
+              layout?: T;
+              eyebrow?: T;
+              role?: T;
+              tabs?:
+                | T
+                | {
+                    label?: T;
+                    heading?: T;
+                    text?: T;
+                    rows?:
+                      | T
+                      | {
+                          value?: T;
+                          label?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              greeting?: T;
+              heading?: T;
+              photo?: T;
+              intro?: T;
+              expertise?: T;
+              servicesHeading?: T;
+              services?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              cta?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              stats?:
+                | T
+                | {
+                    value?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              bigName?: T;
+              link?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        audience?:
+          | T
+          | {
+              heading?: T;
+              lead?: T;
+              roles?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        process?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              lead?: T;
+              layout?: T;
+              steps?:
+                | T
+                | {
+                    title?: T;
+                    icon?: T;
+                    duration?: T;
+                    description?: T;
+                    points?: T;
+                    image?: T;
+                    id?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        services?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              intro?: T;
+              layout?: T;
+              ctaLabel?: T;
+              items?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    deliverables?: T;
+                    priceFrom?: T;
+                    currency?: T;
+                    unit?: T;
+                    image?: T;
+                    id?: T;
+                  };
+              showWhatsApp?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              items?:
+                | T
+                | {
+                    highlight?: T;
+                    quote?: T;
+                    name?: T;
+                    title?: T;
+                    company?: T;
+                    logo?: T;
+                    photo?: T;
+                    rating?: T;
+                    id?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        contact?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              intro?: T;
+              rolesLead?: T;
+              roles?: T;
+              showAvailability?: T;
+              showSocials?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        projectGrid?:
+          | T
+          | {
+              heading?: T;
+              intro?: T;
+              showFilters?: T;
+              onlyFeatured?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        profile?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              body?: T;
+              photo?: T;
+              experience?:
+                | T
+                | {
+                    role?: T;
+                    company?: T;
+                    years?: T;
+                    id?: T;
+                  };
+              skills?: T;
+              tools?: T;
+              cv?: T;
+              button?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              body?: T;
+              align?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        mediaSection?:
+          | T
+          | {
+              media?: T;
+              caption?: T;
+              width?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        ctaBanner?:
+          | T
+          | {
+              heading?: T;
+              text?: T;
+              button?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              items?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -605,6 +1859,13 @@ export interface ProjectsSelect<T extends boolean = true> {
   liveUrl?: T;
   accent?: T;
   note?: T;
+  stats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -708,156 +1969,172 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * Every section of the homepage, top to bottom. Use the preview on the right to see changes as you type.
+ * The floating bar at the top of every page.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "home".
+ * via the `definition` "header".
  */
-export interface Home {
+export interface Header {
   id: number;
-  headline: string;
-  intro?: string | null;
   /**
-   * The short line beside the “Start a project” button.
+   * Links to sections (/#work) highlight while that section is on screen.
    */
-  heroCtaText?: string | null;
-  /**
-   * Shown above the headline. {count} is replaced with the number of clients. Clear it to hide the line.
-   */
-  trustedText?: string | null;
-  /**
-   * Extra images for the tilted work wall. Leave empty to use the project covers only.
-   */
-  heroImages?: (number | Media)[] | null;
-  clients?:
+  menu?:
     | {
-        name: string;
-        url?: string | null;
-        /**
-         * Optional. A single-colour SVG or PNG looks best.
-         */
-        logo?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  workHeading?: string | null;
-  workIntro?: string | null;
-  workLinkLabel?: string | null;
-  /**
-   * Followed by your first name.
-   */
-  aboutGreeting?: string | null;
-  aboutLinkLabel?: string | null;
-  /**
-   * Three numbers, e.g. years working, projects delivered, typical turnaround.
-   */
-  stats?:
-    | {
-        value: string;
         label: string;
-        id?: string | null;
-      }[]
-    | null;
-  rolesHeading?: string | null;
-  rolesLead?: string | null;
-  /**
-   * Finishes the sentence. The list rolls past as visitors scroll.
-   */
-  audienceRoles?: string[] | null;
-  processEyebrow?: string | null;
-  processHeading?: string | null;
-  /**
-   * The stacking step cards.
-   */
-  process?:
-    | {
-        title: string;
-        description?: string | null;
-        points?: string[] | null;
         /**
-         * Leave empty to use a project cover.
+         * A page (/about), a section (/#work) or a full URL.
          */
-        image?: (number | null) | Media;
+        url: string;
         id?: string | null;
       }[]
     | null;
-  servicesEyebrow?: string | null;
-  servicesHeading?: string | null;
-  servicesIntro?: string | null;
-  services?:
-    | {
-        title: string;
-        description?: string | null;
-        deliverables?: string[] | null;
-        /**
-         * Leave empty to hide the price
-         */
-        priceFrom?: number | null;
-        currency?: ('KES' | 'USD') | null;
-        unit?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  testimonialsEyebrow?: string | null;
-  testimonialsHeading?: string | null;
-  testimonials?:
-    | {
-        quote: string;
-        name: string;
-        title?: string | null;
-        photo?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  contactEyebrow?: string | null;
-  contactHeading?: string | null;
-  contactIntro?: string | null;
-  _status?: ('draft' | 'published') | null;
+  quoteButton: {
+    label: string;
+    url: string;
+  };
+  /**
+   * The text comes from Site settings → Availability.
+   */
+  showAvailability?: boolean | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
+ * The footer at the bottom of every page.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "about".
+ * via the `definition` "footer".
  */
-export interface About {
+export interface Footer {
   id: number;
-  headline: string;
-  photo?: (number | null) | Media;
   /**
-   * A short paragraph shown on the homepage
+   * Defaults to the studio name.
    */
-  short?: string | null;
-  body?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  experience?:
+  title?: string | null;
+  /**
+   * Defaults to your role and location.
+   */
+  tagline?: string | null;
+  showAvailability?: boolean | null;
+  showSocials?: boolean | null;
+  columns?:
     | {
-        role: string;
-        company?: string | null;
-        years?: string | null;
+        heading: string;
+        links?:
+          | {
+              label: string;
+              /**
+               * A page (/about), a section (/#work) or a full URL.
+               */
+              url: string;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
-  skills?: string[] | null;
-  tools?: string[] | null;
   /**
-   * Optional downloadable CV or PDF portfolio
+   * Email, phone and WhatsApp come from Site settings → Contact.
    */
-  cv?: (number | null) | Media;
-  _status?: ('draft' | 'published') | null;
+  contact?: {
+    show?: boolean | null;
+    heading?: string | null;
+    showEmail?: boolean | null;
+    showPhone?: boolean | null;
+    showWhatsApp?: boolean | null;
+  };
+  /**
+   * {year} and {name} are filled in automatically.
+   */
+  copyright?: string | null;
+  /**
+   * Small print after the copyright line.
+   */
+  note?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Colours, fonts, buttons, corners and spacing for the whole site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "theme".
+ */
+export interface Theme {
+  id: number;
+  /**
+   * Page background (dark sections).
+   */
+  background?: string | null;
+  /**
+   * Cards and panels on dark.
+   */
+  surface?: string | null;
+  text?: string | null;
+  /**
+   * Paragraphs and secondary text. A soft off-white reads more comfortably than pure white.
+   */
+  mutedText?: string | null;
+  /**
+   * Highlights, tags, the glow and the about banner.
+   */
+  accent?: string | null;
+  /**
+   * Gradients and light streaks.
+   */
+  accent2?: string | null;
+  lightBackground?: string | null;
+  lightSurface?: string | null;
+  lightText?: string | null;
+  glow?: boolean | null;
+  headingFont?:
+    | (
+        | 'Geist'
+        | 'Inter'
+        | 'Manrope'
+        | 'DM Sans'
+        | 'Space Grotesk'
+        | 'Plus Jakarta Sans'
+        | 'Sora'
+        | 'Outfit'
+        | 'Instrument Serif'
+        | 'Playfair Display'
+        | 'Fraunces'
+        | 'DM Serif Display'
+      )
+    | null;
+  bodyFont?:
+    | (
+        | 'Geist'
+        | 'Inter'
+        | 'Manrope'
+        | 'DM Sans'
+        | 'Space Grotesk'
+        | 'Plus Jakarta Sans'
+        | 'Sora'
+        | 'Outfit'
+        | 'Instrument Serif'
+        | 'Playfair Display'
+        | 'Fraunces'
+        | 'DM Serif Display'
+      )
+    | null;
+  headingWeight?: ('300' | '400' | '500' | '600' | '700') | null;
+  headingTracking?: number | null;
+  baseSize?: number | null;
+  buttonBackground?: string | null;
+  buttonText?: string | null;
+  buttonDarkBackground?: string | null;
+  buttonShape?: ('pill' | 'rounded' | 'square') | null;
+  buttonHeight?: number | null;
+  /**
+   * 100% is the current look; 0 is square corners.
+   */
+  radius?: number | null;
+  spacing?: number | null;
+  container?: number | null;
+  motion?: ('full' | 'subtle' | 'off') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -897,14 +2174,6 @@ export interface Site {
         id?: string | null;
       }[]
     | null;
-  /**
-   * The main button in the header and across the homepage. Every one leads to the contact form.
-   */
-  ctaLabel?: string | null;
-  /**
-   * Small print after the copyright line.
-   */
-  footerNote?: string | null;
   metaDescription?: string | null;
   /**
    * Default image when a page is shared (1200×630)
@@ -915,102 +2184,93 @@ export interface Site {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "home_select".
+ * via the `definition` "header_select".
  */
-export interface HomeSelect<T extends boolean = true> {
-  headline?: T;
-  intro?: T;
-  heroCtaText?: T;
-  trustedText?: T;
-  heroImages?: T;
-  clients?:
+export interface HeaderSelect<T extends boolean = true> {
+  menu?:
     | T
     | {
-        name?: T;
-        url?: T;
-        logo?: T;
-        id?: T;
-      };
-  workHeading?: T;
-  workIntro?: T;
-  workLinkLabel?: T;
-  aboutGreeting?: T;
-  aboutLinkLabel?: T;
-  stats?:
-    | T
-    | {
-        value?: T;
         label?: T;
+        url?: T;
         id?: T;
       };
-  rolesHeading?: T;
-  rolesLead?: T;
-  audienceRoles?: T;
-  processEyebrow?: T;
-  processHeading?: T;
-  process?:
+  quoteButton?:
     | T
     | {
-        title?: T;
-        description?: T;
-        points?: T;
-        image?: T;
-        id?: T;
+        label?: T;
+        url?: T;
       };
-  servicesEyebrow?: T;
-  servicesHeading?: T;
-  servicesIntro?: T;
-  services?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        deliverables?: T;
-        priceFrom?: T;
-        currency?: T;
-        unit?: T;
-        id?: T;
-      };
-  testimonialsEyebrow?: T;
-  testimonialsHeading?: T;
-  testimonials?:
-    | T
-    | {
-        quote?: T;
-        name?: T;
-        title?: T;
-        photo?: T;
-        id?: T;
-      };
-  contactEyebrow?: T;
-  contactHeading?: T;
-  contactIntro?: T;
-  _status?: T;
+  showAvailability?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "about_select".
+ * via the `definition` "footer_select".
  */
-export interface AboutSelect<T extends boolean = true> {
-  headline?: T;
-  photo?: T;
-  short?: T;
-  body?: T;
-  experience?:
+export interface FooterSelect<T extends boolean = true> {
+  title?: T;
+  tagline?: T;
+  showAvailability?: T;
+  showSocials?: T;
+  columns?:
     | T
     | {
-        role?: T;
-        company?: T;
-        years?: T;
+        heading?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              id?: T;
+            };
         id?: T;
       };
-  skills?: T;
-  tools?: T;
-  cv?: T;
-  _status?: T;
+  contact?:
+    | T
+    | {
+        show?: T;
+        heading?: T;
+        showEmail?: T;
+        showPhone?: T;
+        showWhatsApp?: T;
+      };
+  copyright?: T;
+  note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "theme_select".
+ */
+export interface ThemeSelect<T extends boolean = true> {
+  background?: T;
+  surface?: T;
+  text?: T;
+  mutedText?: T;
+  accent?: T;
+  accent2?: T;
+  lightBackground?: T;
+  lightSurface?: T;
+  lightText?: T;
+  glow?: T;
+  headingFont?: T;
+  bodyFont?: T;
+  headingWeight?: T;
+  headingTracking?: T;
+  baseSize?: T;
+  buttonBackground?: T;
+  buttonText?: T;
+  buttonDarkBackground?: T;
+  buttonShape?: T;
+  buttonHeight?: T;
+  radius?: T;
+  spacing?: T;
+  container?: T;
+  motion?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1035,8 +2295,6 @@ export interface SiteSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
-  ctaLabel?: T;
-  footerNote?: T;
   metaDescription?: T;
   ogImage?: T;
   updatedAt?: T;

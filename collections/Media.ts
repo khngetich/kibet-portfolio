@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload';
 import { anyone, authenticated } from '../access';
 import { revalidateCollection, revalidateOnDelete } from '../hooks/revalidate';
+import { thumbURL } from '../lib/media'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,6 +26,7 @@ export const Media: CollectionConfig = {
   admin: {
     group: 'Content',
     description: 'Every image and video used on the site. Upload big (up to 2560px wide); the site resizes for each screen.',
+    components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'media', label: '+ Upload', hint: 'Drop an image, video or PDF into the pop-up and give it a description.' } }] },
   },
   access: { read: anyone, create: authenticated, update: authenticated, delete: authenticated },
   hooks: {
@@ -39,7 +41,8 @@ export const Media: CollectionConfig = {
     crop: true,
     // Keep originals at a sensible size; next/image generates the per-screen versions.
     resizeOptions: { width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true },
-    adminThumbnail: ({ doc }) => (doc.url as string) || null,
+    // List and picker thumbnails: a 384px optimised copy instead of the original.
+    adminThumbnail: ({ doc }) => thumbURL(doc as { url?: string; mimeType?: string }, 384),
   },
   fields: [
     {

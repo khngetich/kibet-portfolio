@@ -12,6 +12,8 @@ const self = new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:300
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // The Studio uploads images and videos through server actions (default cap is 1MB).
+  experimental: { serverActions: { bodySizeLimit: '50mb' } },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [

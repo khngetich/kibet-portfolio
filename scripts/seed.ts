@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 import { getPayload, type Payload } from 'payload';
 import config from '@payload-config';
-import { designer, profile, projects, services, clients, toolkit, pricing } from './seed-data';
+import { designer, profile, projects } from './seed-data';
 import { art } from './placeholder-art';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,16 +36,6 @@ async function placeholder(payload: Payload, key: string, alt: string) {
 }
 
 /** Minimal Lexical rich-text document from plain paragraphs. */
-const richText = (paras: string[]) => ({
-  root: {
-    type: 'root', format: '' as const, indent: 0, version: 1, direction: 'ltr' as const,
-    children: paras.map((text) => ({
-      type: 'paragraph', format: '' as const, indent: 0, version: 1, direction: 'ltr' as const, textFormat: 0,
-      children: [{ type: 'text', text, format: 0, detail: 0, mode: 'normal', style: '', version: 1 }],
-    })),
-  },
-});
-
 const DISCIPLINE: Record<string, 'social' | 'web'> = { 'Social media design': 'social', 'Web design': 'web' };
 // Real images first, so the site leads with finished, publishable work.
 const ORDER = ['rovex-car-rentals', 'techpressive-prints-and-design', 'kwikbet-matchday-posters', 'kwikbet-crash-game-posters', 'kwikbet-winners-announcements'];
@@ -119,51 +109,11 @@ async function seed() {
     },
   });
 
-  await payload.updateGlobal({
-    slug: 'home',
-    context: ctx,
-    data: {
-      _status: 'published',
-      headline: 'Social media and brand design that ships on time.',
-      intro: `I’m ${designer.name}, a graphic designer in ${designer.city}. I make matchday posters, campaign creative, brand identities and websites for sports platforms and growing businesses.`,
-      workHeading: 'Selected work',
-      workIntro: 'A few recent projects, each with a short case study.',
-      servicesHeading: 'What I do',
-      servicesIntro: 'Fixed-scope packages. Every project starts with a short call about the brief.',
-      services: services.map((s) => {
-        const plan = pricing.find((pl) => pl.name.toLowerCase().split(' ')[0] === s.title.toLowerCase().split(' ')[0]);
-        return {
-          title: s.title,
-          description: s.text,
-          deliverables: s.title.startsWith('Social') ? ['Poster templates', 'Promo creative', 'Social calendar'] : s.title.startsWith('Web') ? ['Responsive website', 'Booking or shop flow', 'Launch assets'] : ['Logo', 'Colour & type', 'Brand guidelines'],
-          priceFrom: plan ? Number(plan.amount) : undefined,
-          currency: 'USD' as const,
-          unit: plan?.unit === '/mo' ? '/month' : undefined,
-        };
-      }),
-      clients: clients.map((name) => ({ name })),
-      testimonials: [],
-      contactHeading: 'Have a brief? Let’s talk.',
-      contactIntro: 'Tell me what you need and when you need it. I usually reply within one working day.',
-    },
-  });
+  // Pages (Home, About, Work), Header and Footer are created by `npm run seed-pages`,
+  // which uses the profile photo uploaded above.
+  void photo;
 
-  await payload.updateGlobal({
-    slug: 'about',
-    context: ctx,
-    data: {
-      _status: 'published',
-      headline: profile.tagline.replace('\n', ' '),
-      photo,
-      short: profile.paragraphs[0],
-      body: richText(profile.paragraphs),
-      experience: [{ role: 'Graphic designer & social media manager', company: designer.studio, years: '3+ years' }],
-      skills: ['Social media design', 'Campaign design', 'Brand identity', 'Web design', 'Layout systems'],
-      tools: toolkit.map(([, name]) => name).filter((n) => n !== 'XD'),
-    },
-  });
-
-  payload.logger.info('Done. Open /admin to create your editor account.');
+  payload.logger.info('Done. Next run `npm run seed-pages`, then open /admin to create your editor account.');
   process.exit(0);
 }
 

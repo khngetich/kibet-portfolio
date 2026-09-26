@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import type { Media } from '@/payload-types';
 import { asMedia } from '@/lib/media';
+import { InViewVideo } from './InViewVideo';
 
 type Props = {
   media: unknown;
@@ -11,13 +12,13 @@ type Props = {
   className?: string;
 };
 
-/** Renders a Payload media document: responsive image with blur-up, or a looping muted video. */
+/** Renders a Payload media document: responsive image with blur-up, or a muted clip that plays while on screen. */
 export function Img({ media, sizes, fill = true, preload, className }: Props) {
   const m = asMedia(media) as Media | null;
   if (!m?.url) return null;
 
   if (m.mimeType?.startsWith('video/')) {
-    return <video className={className} src={m.url} autoPlay muted loop playsInline preload="metadata" aria-label={m.alt} style={fill ? { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' } : undefined} />;
+    return <InViewVideo className={className} src={m.url} label={m.alt} style={fill ? { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' } : undefined} />;
   }
 
   const position = m.focalX != null && m.focalY != null ? `${m.focalX}% ${m.focalY}%` : 'center';
@@ -32,8 +33,8 @@ export function Img({ media, sizes, fill = true, preload, className }: Props) {
   };
 
   return fill ? (
-    <Image {...common} fill style={{ objectFit: 'cover', objectPosition: position }} />
+    <Image {...common} alt={m.alt} fill style={{ objectFit: 'cover', objectPosition: position }} />
   ) : (
-    <Image {...common} width={m.width || 1600} height={m.height || 1000} style={{ width: '100%', height: 'auto' }} />
+    <Image {...common} alt={m.alt} width={m.width || 1600} height={m.height || 1000} style={{ width: '100%', height: 'auto' }} />
   );
 }

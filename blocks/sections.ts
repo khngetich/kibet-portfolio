@@ -1,0 +1,436 @@
+import type { Block, Field } from 'payload';
+import { COPY, DEFAULT_PROCESS, DEFAULT_ROLES, DEFAULT_STATS } from '../lib/home-copy';
+
+/**
+ * Page sections. Every page (Pages collection) is an ordered list of these; the editor
+ * opens each one in its own panel (components/admin/SectionsField.tsx). The front end
+ * renders them in components/sections/RenderSections.tsx, keyed by `slug`.
+ *
+ * Every section also gets shared fields, added by `section()` below:
+ *  - style: background, text and accent colours, spacing, height, width, alignment, visibility
+ *  - hidden: switched from the section list or panel header; hidden sections are skipped
+ *  - anchor: the #id menu links jump to
+ */
+
+const link = (name: string, label: string, defaults: { label?: string; url?: string } = {}): Field => ({
+  name,
+  label,
+  type: 'group',
+  admin: { custom: { control: 'link' } },
+  fields: [
+    { type: 'row', fields: [
+      { name: 'label', type: 'text', defaultValue: defaults.label, admin: { width: '40%' } },
+      { name: 'url', type: 'text', defaultValue: defaults.url, admin: { width: '60%', description: 'A page (/about), a section (/#contact) or a full URL.' } },
+    ] },
+    // Two button styles site-wide: Primary (a solid fill, colour picked for the background) and
+    // Secondary (outline). The stored values predate that and are kept for existing content.
+    { name: 'variant', label: 'Style', type: 'select', defaultValue: 'default', options: [
+      { label: 'Primary', value: 'default' }, { label: 'Primary · white', value: 'light' }, { label: 'Primary · dark', value: 'dark' },
+      { label: 'Primary · red', value: 'accent' }, { label: 'Secondary · outline', value: 'outline' }, { label: 'Text link', value: 'ghost' },
+    ] },
+  ],
+});
+
+const hexOrEmpty = (v: unknown) => !v || (typeof v === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) || 'Use a hex colour like #E8352B';
+
+/** Per-section style overrides. Empty values keep the section's designed look. */
+const styleGroup: Field = {
+  name: 'style',
+  type: 'group',
+  admin: { custom: { styleTab: true }, description: 'Leave anything empty to keep the design’s default.' },
+  fields: [
+    { type: 'row', fields: [
+      { name: 'background', type: 'text', validate: hexOrEmpty, admin: { width: '33%', custom: { control: 'colour' } } },
+      { name: 'text', label: 'Text colour', type: 'text', validate: hexOrEmpty, admin: { width: '33%', custom: { control: 'colour' } } },
+      { name: 'accent', label: 'Accent', type: 'text', validate: hexOrEmpty, admin: { width: '33%', custom: { control: 'colour' } } },
+    ] },
+    { type: 'row', fields: [
+      { name: 'paddingTop', label: 'Space above', type: 'number', min: 0, max: 320, admin: { width: '33%', step: 4, custom: { control: 'range', unit: 'px' } } },
+      { name: 'paddingBottom', label: 'Space below', type: 'number', min: 0, max: 320, admin: { width: '33%', step: 4, custom: { control: 'range', unit: 'px' } } },
+      { name: 'minHeight', label: 'Minimum height', type: 'number', min: 0, max: 100, admin: { width: '33%', step: 5, custom: { control: 'range', unit: 'vh' } } },
+    ] },
+    { type: 'row', fields: [
+      { name: 'width', label: 'Content width', type: 'select', defaultValue: 'default', admin: { width: '33%' }, options: [
+        { label: 'Default', value: 'default' }, { label: 'Narrow', value: 'narrow' }, { label: 'Wide', value: 'wide' }, { label: 'Full width', value: 'full' },
+      ] },
+      { name: 'align', label: 'Alignment', type: 'select', defaultValue: 'default', admin: { width: '33%' }, options: [
+        { label: 'Default', value: 'default' }, { label: 'Left', value: 'left' }, { label: 'Centre', value: 'center' },
+      ] },
+      { name: 'visibility', label: 'Show on', type: 'select', defaultValue: 'all', admin: { width: '33%' }, options: [
+        { label: 'All screens', value: 'all' }, { label: 'Desktop only', value: 'desktop' }, { label: 'Mobile only', value: 'mobile' },
+      ] },
+    ] },
+  ],
+};
+
+const eyebrow = (defaultValue?: string): Field => ({ name: 'eyebrow', type: 'text', defaultValue, admin: { description: 'The small line above the heading.' } });
+const heading = (defaultValue?: string, required = false): Field => ({ name: 'heading', type: 'text', defaultValue, required });
+const intro: Field = { name: 'intro', type: 'textarea' };
+
+type SectionDef = Omit<Block, 'fields'> & { fields: Field[]; anchor?: string; summary?: string; description?: string };
+
+/** Adds the shared fields and admin metadata to a section definition. */
+const section = ({ anchor, summary, description, fields, admin, ...block }: SectionDef): Block => ({
+  // Wireframe thumbnail shown in the “Add section” picker (public/cms/sections/*.svg).
+  imageURL: `/cms/sections/${block.slug}.svg`,
+  imageAltText: `${typeof block.labels?.singular === 'string' ? block.labels.singular : block.slug} section layout`,
+  ...block,
+  admin: {
+    ...admin,
+    disableBlockName: true,
+    // Read by the section list: which field to show as the row's summary, and a one-line explanation.
+    custom: { summary: summary ?? 'heading', description },
+  },
+  fields: [
+    ...fields,
+    styleGroup,
+    { name: 'hidden', type: 'checkbox', defaultValue: false, admin: { hidden: true } },
+    { name: 'anchor', type: 'text', defaultValue: anchor, admin: { description: 'Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.' }, validate: (v: unknown) => !v || (typeof v === 'string' && /^[a-z0-9-]+$/i.test(v)) || 'Use letters, numbers and dashes only' },
+  ],
+});
+
+export const HeroSection = section({
+  slug: 'hero',
+  labels: { singular: 'Hero', plural: 'Heroes' },
+  summary: 'headline',
+  description: 'Big headline with a word-by-word reveal, a button, the scrolling client names and three project cards.',
+  fields: [
+    { name: 'trustedText', label: 'Clients line', type: 'text', defaultValue: COPY.trustedText, admin: { description: 'Above the headline. {count} becomes the number of clients. Leave empty to hide.' } },
+    { name: 'headline', type: 'text', required: true },
+    { name: 'intro', type: 'textarea' },
+    { name: 'ctaText', label: 'Button prompt', type: 'text', defaultValue: COPY.heroCtaText, admin: { description: 'The short line beside the button.' } },
+    link('button', 'Button', { url: '#contact' }),
+    { name: 'clientsLabel', label: 'Clients strip label', type: 'text', defaultValue: COPY.clientsLabel, admin: { description: 'Shown at the start of the strip of client names.' } },
+    {
+      name: 'clients',
+      type: 'array',
+      admin: { description: 'The names scrolling under the button.', initCollapsed: true },
+      fields: [{ type: 'row', fields: [
+        { name: 'name', type: 'text', required: true, admin: { width: '50%' } },
+        { name: 'url', type: 'text', admin: { width: '50%' } },
+      ] }],
+    },
+    { name: 'projects', label: 'Project cards', type: 'relationship', relationTo: 'projects', hasMany: true, maxRows: 3, admin: { description: 'Up to three. Leave empty to use the first three featured projects.' } },
+  ],
+});
+
+export const WorkShowcaseSection = section({
+  slug: 'workShowcase',
+  labels: { singular: 'Work showcase', plural: 'Work showcases' },
+  anchor: 'work',
+  description: 'Selected projects: one large case study with client, role and outcome, then smaller cards side by side (or the older carousel).',
+  fields: [
+    eyebrow(COPY.workEyebrow),
+    heading(COPY.workHeading),
+    intro,
+    { name: 'layout', type: 'select', defaultValue: 'feature', options: [
+      { label: 'Case studies: one large, then cards', value: 'feature' },
+      { label: 'Carousel', value: 'carousel' },
+    ] },
+    { name: 'projects', type: 'relationship', relationTo: 'projects', hasMany: true, admin: { description: 'In order: the first is the large case study. Leave empty to use every featured project.' } },
+    { name: 'extraImages', label: 'Extra wall images', type: 'upload', relationTo: 'media', hasMany: true, admin: { description: 'Added to the project covers on the tilted wall.' } },
+    { name: 'showWall', label: 'Show the tilted wall above', type: 'checkbox', defaultValue: false },
+    link('link', 'Link under the carousel', { label: COPY.workLinkLabel, url: '/work' }),
+  ],
+});
+
+export const AboutBannerSection = section({
+  slug: 'aboutBanner',
+  labels: { singular: 'About banner', plural: 'About banners' },
+  anchor: 'about',
+  description: 'About you. “Editorial”: portrait and name on the left, and on the right tabs (Overview, Expertise, Impact) that switch a heading, a short text and a table of figures that count up. “Red banner”: portrait on red with intro, expertise, services and stats.',
+  fields: [
+    { name: 'layout', type: 'select', defaultValue: 'editorial', options: [
+      { label: 'Editorial with tabs', value: 'editorial' },
+      { label: 'Red banner', value: 'banner' },
+    ] },
+    eyebrow(COPY.aboutEyebrow),
+    { name: 'role', type: 'text', defaultValue: 'Senior Graphic & Brand Designer', admin: { description: 'Under your name (editorial layout).' } },
+    {
+      name: 'tabs',
+      type: 'array',
+      maxRows: 3,
+      admin: { initCollapsed: true, description: 'Editorial layout: each tab swaps the heading, text and table on the right.' },
+      fields: [
+        { type: 'row', fields: [
+          { name: 'label', type: 'text', required: true, admin: { width: '40%', placeholder: 'Overview' } },
+          { name: 'heading', type: 'text', required: true, admin: { width: '60%', placeholder: '5+ years of experience' } },
+        ] },
+        { name: 'text', type: 'textarea' },
+        {
+          name: 'rows',
+          label: 'Table',
+          type: 'array',
+          maxRows: 6,
+          admin: { description: 'Numbers at the start of a value (50+, 3.5M+, 100%) count up when the section comes into view.' },
+          fields: [{ type: 'row', fields: [
+            { name: 'value', type: 'text', required: true, admin: { width: '35%', placeholder: '50+' } },
+            { name: 'label', type: 'text', required: true, admin: { width: '65%', placeholder: 'Brands launched' } },
+          ] }],
+        },
+      ],
+    },
+    { name: 'greeting', type: 'text', defaultValue: COPY.aboutGreeting, admin: { description: 'Followed by your first name, e.g. “Hi, I’m” → “Hi, I’m Humphrey,”.' } },
+    heading(undefined, true),
+    { name: 'photo', type: 'upload', relationTo: 'media', admin: { description: 'A cut-out portrait (transparent PNG or WebP) looks best.' } },
+    { name: 'intro', type: 'textarea', defaultValue: COPY.aboutIntro, admin: { description: 'Continues the greeting, e.g. “a Senior Designer specialising in”. The list below finishes it.' } },
+    { name: 'expertise', type: 'text', hasMany: true, admin: { description: 'Short points, one per line. Type one and press Enter.' } },
+    { name: 'servicesHeading', type: 'text', defaultValue: COPY.aboutServicesHeading },
+    {
+      name: 'services',
+      type: 'array',
+      maxRows: 6,
+      admin: { initCollapsed: true, description: 'Each one also appears in the contact form’s “What do you need?” list.' },
+      fields: [
+        { name: 'title', type: 'text', required: true },
+        { name: 'description', type: 'textarea' },
+      ],
+    },
+    link('cta', 'Main button', { label: COPY.aboutCta, url: '/#contact' }),
+    {
+      name: 'stats',
+      type: 'array',
+      maxRows: 3,
+      defaultValue: DEFAULT_STATS,
+      fields: [{ type: 'row', fields: [
+        { name: 'value', type: 'text', required: true, admin: { width: '30%', placeholder: '3+' } },
+        { name: 'label', type: 'text', required: true, admin: { width: '70%' } },
+      ] }],
+    },
+    { name: 'bigName', type: 'text', admin: { description: 'The giant word at the bottom. Defaults to your first name.' } },
+    link('link', 'Link', { label: COPY.aboutLinkLabel, url: '/about' }),
+  ],
+});
+
+export const AudienceSection = section({
+  slug: 'audience',
+  labels: { singular: 'Who it’s for', plural: 'Who it’s for' },
+  anchor: 'for-who',
+  description: '“This work is for you if you’re a …” with a list that rolls past as you scroll.',
+  fields: [
+    { type: 'row', fields: [
+      { ...heading(COPY.rolesHeading), admin: { width: '60%' } } as Field,
+      { name: 'lead', type: 'text', defaultValue: COPY.rolesLead, admin: { width: '40%' } },
+    ] },
+    { name: 'roles', type: 'text', hasMany: true, defaultValue: DEFAULT_ROLES, admin: { description: 'Finishes the sentence. Type one and press Enter.' } },
+  ],
+});
+
+export const ProcessSection = section({
+  slug: 'process',
+  labels: { singular: 'Process', plural: 'Process' },
+  anchor: 'process',
+  description: 'Your way of working as a circuit: a badge that branches into step cards (click one for its deliverables and timing), or as steps in a row, or stacking cards.',
+  fields: [
+    eyebrow(COPY.processEyebrow),
+    heading(COPY.processHeading),
+    { name: 'lead', type: 'text', admin: { description: 'A line under the heading, e.g. “Vision → Design → Performance”.' } },
+    { name: 'layout', type: 'select', defaultValue: 'circuit', options: [
+      { label: 'Circuit flow', value: 'circuit' },
+      { label: 'Steps in a row', value: 'steps' },
+      { label: 'Stacking cards', value: 'stack' },
+    ] },
+    {
+      name: 'steps',
+      type: 'array',
+      maxRows: 6,
+      defaultValue: DEFAULT_PROCESS,
+      admin: { initCollapsed: true },
+      fields: [
+        { name: 'title', type: 'text', required: true },
+        { name: 'icon', type: 'select', defaultValue: 'compass', options: [
+          { label: 'Compass (strategy)', value: 'compass' }, { label: 'Pen (design)', value: 'pen' },
+          { label: 'Chat (feedback)', value: 'chat' }, { label: 'Rocket (launch)', value: 'rocket' },
+          { label: 'Layers', value: 'layers' }, { label: 'Spark', value: 'spark' },
+          { label: 'Light bulb (discovery)', value: 'bulb' }, { label: 'Chart (strategy)', value: 'chart' },
+          { label: 'Sliders (execution)', value: 'sliders' }, { label: 'Check (delivery)', value: 'checkCircle' },
+        ] },
+        { name: 'duration', label: 'Timeline', type: 'text', admin: { description: 'How long this phase usually takes, e.g. “2–3 days”. Shown when the step is opened (circuit layout).' } },
+        { name: 'description', type: 'textarea' },
+        { name: 'points', type: 'text', hasMany: true },
+        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Stacking-cards layout only. Leave empty to use a project cover.' } },
+      ],
+    },
+  ],
+});
+
+export const ServicesSection = section({
+  slug: 'services',
+  labels: { singular: 'Services', plural: 'Services' },
+  anchor: 'services',
+  description: 'Your services as an interactive 3D deck of glass cards (click one to open its deliverables), or as priced cards. Each “Inquire” button opens the contact form with that service chosen.',
+  fields: [
+    eyebrow(COPY.servicesEyebrow),
+    heading(COPY.servicesHeading),
+    intro,
+    { name: 'layout', type: 'select', defaultValue: 'deck', options: [
+      { label: '3D card deck', value: 'deck' },
+      { label: 'Priced cards', value: 'cards' },
+    ] },
+    { name: 'ctaLabel', label: 'Card button', type: 'text', defaultValue: 'Inquire for this service', admin: { description: 'The button inside an opened card.' } },
+    {
+      name: 'items',
+      label: 'Services',
+      type: 'array',
+      admin: { initCollapsed: true },
+      fields: [
+        { name: 'title', type: 'text', required: true },
+        { name: 'description', type: 'textarea', admin: { description: 'One line, shown on the card.' } },
+        { name: 'deliverables', type: 'text', hasMany: true, admin: { description: 'The bullet points shown when the card is opened.' } },
+        { type: 'row', fields: [
+          { name: 'priceFrom', type: 'number', admin: { width: '33%', description: 'Leave empty to hide the price' } },
+          { name: 'currency', type: 'select', defaultValue: 'KES', options: ['KES', 'USD'], admin: { width: '33%' } },
+          { name: 'unit', type: 'text', admin: { width: '33%', placeholder: '/month' } },
+        ] },
+        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'The blurred strip at the top of the card. Leave empty to use a project cover.' } },
+      ],
+    },
+    { name: 'showWhatsApp', label: 'Show “Or chat on WhatsApp” under each card', type: 'checkbox', defaultValue: true },
+  ],
+});
+
+export const TestimonialsSection = section({
+  slug: 'testimonials',
+  labels: { singular: 'Testimonials', plural: 'Testimonials' },
+  description: 'Client quotes as cards in a light horizontal scroll: the key sentence large, the rest of the quote, photo, name and company logo. Hidden until you add a quote.',
+  fields: [
+    eyebrow(COPY.testimonialsEyebrow),
+    heading(COPY.testimonialsHeading),
+    {
+      name: 'items',
+      label: 'Testimonials',
+      type: 'array',
+      admin: { initCollapsed: true },
+      fields: [
+        { name: 'highlight', label: 'Key sentence', type: 'text', admin: { description: 'Shown large at the top. Leave empty to show only the quote.' } },
+        { name: 'quote', type: 'textarea', required: true },
+        { type: 'row', fields: [
+          { name: 'name', type: 'text', required: true, admin: { width: '50%' } },
+          { name: 'title', type: 'text', admin: { width: '50%', placeholder: 'Marketing lead' } },
+        ] },
+        { type: 'row', fields: [
+          { name: 'company', type: 'text', admin: { width: '50%', placeholder: 'KwikBet' } },
+          { name: 'logo', label: 'Company logo', type: 'upload', relationTo: 'media', admin: { width: '50%' } },
+        ] },
+        { name: 'photo', type: 'upload', relationTo: 'media' },
+        { name: 'rating', type: 'number', min: 1, max: 5, admin: { step: 1, description: 'Star rating from the client, 1–5. Leave empty to show no stars.' } },
+      ],
+    },
+  ],
+});
+
+export const ContactSection = section({
+  slug: 'contact',
+  labels: { singular: 'Contact form', plural: 'Contact forms' },
+  anchor: 'contact',
+  description: 'Full-width closing section: heading, who it’s for, direct email / WhatsApp / social links and the enquiry form (messages arrive under Enquiries).',
+  fields: [
+    eyebrow(COPY.contactEyebrow),
+    heading(COPY.contactHeading),
+    intro,
+    { name: 'rolesLead', label: 'Who it’s for: lead', type: 'text', defaultValue: COPY.contactRolesLead },
+    { name: 'roles', label: 'Who it’s for', type: 'text', hasMany: true, admin: { description: 'Shown as tags, e.g. “startup founder”. Type one and press Enter.' } },
+    { name: 'showAvailability', label: 'Show availability (from Site settings)', type: 'checkbox', defaultValue: true },
+    { name: 'showSocials', label: 'Show social links (from Site settings)', type: 'checkbox', defaultValue: true },
+  ],
+});
+
+export const ProjectGridSection = section({
+  slug: 'projectGrid',
+  labels: { singular: 'Project grid', plural: 'Project grids' },
+  description: 'Every published project as cards, with discipline filters.',
+  fields: [
+    { name: 'heading', type: 'text', defaultValue: 'Work' },
+    intro,
+    { name: 'showFilters', type: 'checkbox', defaultValue: true },
+    { name: 'onlyFeatured', label: 'Featured projects only', type: 'checkbox', defaultValue: false },
+  ],
+});
+
+export const ProfileSection = section({
+  slug: 'profile',
+  labels: { singular: 'Profile', plural: 'Profiles' },
+  description: 'Long-form about: bio, portrait, experience, skills, tools and a CV download.',
+  fields: [
+    eyebrow('About'),
+    heading(undefined, true),
+    { name: 'body', type: 'richText' },
+    { name: 'photo', type: 'upload', relationTo: 'media' },
+    {
+      name: 'experience',
+      type: 'array',
+      admin: { initCollapsed: true },
+      fields: [{ type: 'row', fields: [
+        { name: 'role', type: 'text', required: true, admin: { width: '40%' } },
+        { name: 'company', type: 'text', admin: { width: '35%' } },
+        { name: 'years', type: 'text', admin: { width: '25%', placeholder: '2023 – now' } },
+      ] }],
+    },
+    { type: 'row', fields: [
+      { name: 'skills', type: 'text', hasMany: true, admin: { width: '50%' } },
+      { name: 'tools', type: 'text', hasMany: true, admin: { width: '50%' } },
+    ] },
+    { name: 'cv', label: 'CV / PDF', type: 'upload', relationTo: 'media' },
+    link('button', 'Button', { label: 'Work with me', url: '/#contact' }),
+  ],
+});
+
+export const RichTextSection = section({
+  slug: 'richText',
+  labels: { singular: 'Text', plural: 'Text' },
+  description: 'A heading and formatted text.',
+  fields: [eyebrow(), heading(), { name: 'body', type: 'richText' }, { name: 'align', type: 'select', defaultValue: 'left', options: ['left', 'center'] }],
+});
+
+export const MediaSection = section({
+  slug: 'mediaSection',
+  labels: { singular: 'Image or video', plural: 'Images or videos' },
+  summary: 'caption',
+  description: 'One large image or looping video that grows as it scrolls into view.',
+  fields: [
+    { name: 'media', type: 'upload', relationTo: 'media', required: true },
+    { name: 'caption', type: 'text' },
+    { name: 'width', type: 'select', defaultValue: 'wide', options: [{ label: 'Wide', value: 'wide' }, { label: 'Full bleed', value: 'full' }] },
+  ],
+});
+
+export const CtaSection = section({
+  slug: 'ctaBanner',
+  labels: { singular: 'Call to action', plural: 'Calls to action' },
+  description: 'A bold banner with a heading, a line of text and a button.',
+  fields: [heading(undefined, true), { name: 'text', type: 'textarea' }, link('button', 'Button', { label: 'Start a project', url: '/#contact' })],
+});
+
+export const FaqSection = section({
+  slug: 'faq',
+  labels: { singular: 'FAQ', plural: 'FAQs' },
+  description: 'Questions and answers that open one at a time.',
+  fields: [
+    eyebrow('Questions'),
+    heading('Good to know'),
+    {
+      name: 'items',
+      label: 'Questions',
+      type: 'array',
+      admin: { initCollapsed: true },
+      fields: [{ name: 'question', type: 'text', required: true }, { name: 'answer', type: 'textarea', required: true }],
+    },
+  ],
+});
+
+export const pageSections = [
+  HeroSection,
+  WorkShowcaseSection,
+  AboutBannerSection,
+  AudienceSection,
+  ProcessSection,
+  ServicesSection,
+  TestimonialsSection,
+  ContactSection,
+  ProjectGridSection,
+  ProfileSection,
+  RichTextSection,
+  MediaSection,
+  CtaSection,
+  FaqSection,
+];

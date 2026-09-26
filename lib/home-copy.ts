@@ -1,16 +1,22 @@
 /**
- * Default homepage copy. It is used as each Payload field's default value and, for safety,
- * as the fallback when a field is left empty. Edit the text in Payload (Pages → Homepage);
+ * Default section copy. It is used as each section field's default value and, for safety,
+ * as the fallback when a field is left empty. Edit the text in Payload (Website → Pages);
  * change it here only to alter what a fresh install starts with.
  */
 
 export const COPY = {
   heroCtaText: 'Have a brief? Tell me about it.',
   trustedText: 'Trusted by {count}+ brands',
+  clientsLabel: 'A few trusted partners',
+  workEyebrow: 'Selected projects',
   workHeading: 'Selected work',
   workLinkLabel: 'All projects',
   aboutGreeting: 'Hi, I’m',
   aboutLinkLabel: 'More about me',
+  aboutEyebrow: 'About & services',
+  aboutIntro: 'a designer specialising in',
+  aboutServicesHeading: 'What I do',
+  aboutCta: 'Let’s talk about your brand',
   rolesHeading: 'This work is for you',
   rolesLead: 'if you’re a',
   processEyebrow: 'How it works',
@@ -21,6 +27,7 @@ export const COPY = {
   testimonialsHeading: 'What clients say',
   contactEyebrow: 'Let’s talk',
   contactHeading: 'Have a brief? Let’s talk.',
+  contactRolesLead: 'Made for you if you’re a',
 } as const;
 
 export const DEFAULT_ROLES = [
@@ -46,13 +53,14 @@ export const DEFAULT_STATS = [
   { value: '24h', label: 'Typical turnaround for daily social content once a system is in place.' },
 ];
 
-export const SITE_COPY = {
-  ctaLabel: 'Start a project',
-  footerNote: 'Some client work is shown under NDA or with permission.',
-} as const;
-
 /** Returns the CMS list when it has entries, otherwise the default. */
 export const orDefault = <T,>(value: T[] | null | undefined, fallback: T[]): T[] => (value?.length ? value : fallback);
 
-/** Returns the CMS text when it is filled in, otherwise the default. */
+/**
+ * Section copy: the default only when the field has never been set (null/undefined).
+ * An editor who empties a field gets an empty string back, so the element can be left out.
+ */
+export const copy = (value: string | null | undefined, fallback: string) => (value == null ? fallback : value.trim());
+
+/** Returns the CMS text when it is filled in, otherwise the default (for labels that must not be blank). */
 export const text = (value: string | null | undefined, fallback: string) => (value?.trim() ? value : fallback);

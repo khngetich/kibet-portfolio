@@ -1,0 +1,23 @@
+/* ─────────────────────────────────────────────────────────────
+   Shared palette for the two editing surfaces: the Studio (app/(studio)/studio.css)
+   and the Payload admin (app/(payload)/custom.css). One definition, so a colour means
+   the same thing in both.
+
+   Every "-ink" and text colour is at least 4.5:1 on white, --sub and --page (WCAG AA).
+   The --chart-* series are for marks (lines, arcs, bars), not text; they were checked
+   for colour-blind separation and stay as they are.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --blue: #2B62EB; --blue-ink: #1F4FC7; --blue-soft: #EDF2FF;
+  --purple: #6344D1; --purple-soft: #F2EEFE;
+  --coral: #CE2C31; --coral-ink: #B3262B; --coral-soft: #FDEEEE;
+  --amber: #B24A0A; --amber-soft: #FFF1E7;
+  --green: #177245; --green-soft: #E8F7EF;
+  --orange: #C2410C;
+  --note-ink: #33466F;
+  --ink: #1D2130; --ink-2: #5B6170; --ink-3: #666C7A;
+  --page: #F4F5F8; --card: #FFFFFF; --sub: #F8F9FB; --line: #E8EBF0; --line-2: #DDE1E8;
+  --shadow-sm: 0 1px 2px rgba(29, 33, 48, .06);
+  --shadow: 0 1px 2px rgba(29, 33, 48, .04), 0 12px 32px -16px rgba(29, 33, 48, .2);
+  --chart-purple: #7C5CE8; --chart-coral: #E5484D; --chart-amber: #D98B0B; --chart-blue: #2F6BFF; --chart-rest: #8A90A0;
+}

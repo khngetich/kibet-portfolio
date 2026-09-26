@@ -15,8 +15,16 @@ function purge(context: Record<string, unknown>) {
   }
 }
 
+/**
+ * Autosaved drafts never change what visitors see, so they don't purge the cache (the
+ * Studio and the admin autosave every pause in typing). Publishing, unpublishing and
+ * manual saves still purge.
+ */
+const isAutosave = (doc: { _status?: string | null }, req: { context: Record<string, unknown>; query?: Record<string, unknown> }) =>
+  doc._status === 'draft' && (req.context.autosave === true || req.query?.autosave === 'true');
+
 export const revalidateCollection: CollectionAfterChangeHook = ({ doc, req }) => {
-  purge(req.context);
+  if (!isAutosave(doc, req)) purge(req.context);
   return doc;
 };
 

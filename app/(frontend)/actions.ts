@@ -3,7 +3,9 @@
 import { getPayload } from 'payload';
 import config from '@payload-config';
 
-export type ContactState = { ok: boolean; error?: string } | null;
+type Values = { name: string; email: string; service: string; budget: string; message: string };
+/** `field` names the input to fix; `values` refill the form, which React resets after every submit. */
+export type ContactState = { ok: boolean; error?: string; field?: 'name' | 'email' | 'message'; values?: Values } | null;
 
 const field = (fd: FormData, k: string, max: number) => String(fd.get(k) ?? '').trim().slice(0, max);
 
@@ -19,8 +21,9 @@ export async function sendEnquiry(_prev: ContactState, fd: FormData): Promise<Co
     budget: field(fd, 'budget', 60),
     message: field(fd, 'message', 5000),
   };
-  if (!data.name || !data.message) return { ok: false, error: 'Please add your name and a short message.' };
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return { ok: false, error: 'That email address doesn’t look right.' };
+  if (!data.name) return { ok: false, field: 'name', error: 'Please add your name.', values: data };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return { ok: false, field: 'email', error: 'That email address doesn’t look right.', values: data };
+  if (!data.message) return { ok: false, field: 'message', error: 'Please add a short message about the project.', values: data };
 
   try {
     const payload = await getPayload({ config });
@@ -30,6 +33,6 @@ export async function sendEnquiry(_prev: ContactState, fd: FormData): Promise<Co
     return { ok: true };
   } catch (err) {
     console.error('Enquiry failed', err);
-    return { ok: false, error: 'Something went wrong. Please email me directly instead.' };
+    return { ok: false, error: 'Something went wrong. Please email me directly instead.', values: data };
   }
 }

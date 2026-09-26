@@ -13,7 +13,7 @@ export const Inquiries: CollectionConfig = {
   access: { read: authenticated, create: () => false, update: authenticated, delete: authenticated },
   fields: [
     { type: 'row', fields: [
-      { name: 'name', type: 'text', required: true, admin: { width: '50%' } },
+      { name: 'name', type: 'text', required: true, admin: { width: '50%', components: { Cell: '/components/admin/Crud#ModalCell' } } },
       { name: 'email', type: 'email', required: true, admin: { width: '50%' } },
     ] },
     { type: 'row', fields: [

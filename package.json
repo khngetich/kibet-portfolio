@@ -8,13 +8,16 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed.ts",
-    "fill-copy": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/fill-copy.ts",
-    "ci": "payload migrate && npm run build"
+    "seed-pages": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed-pages.ts",
+    "ci": "payload migrate && npm run build",
+    "lint": "eslint .",
+    "restructure-home": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/restructure-home.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.1",
     "@payloadcms/live-preview-react": "^3.90.1",
     "@payloadcms/next": "^3.90.1",
+    "@payloadcms/plugin-seo": "^3.90.1",
     "@payloadcms/richtext-lexical": "^3.90.1",
     "@payloadcms/storage-s3": "^3.90.1",
     "@payloadcms/ui": "^3.90.1",
@@ -32,6 +35,8 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "cross-env": "^10.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.6",
     "supabase": "^2.117.0",
     "typescript": "^5.6.0"
   },

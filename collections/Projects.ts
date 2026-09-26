@@ -23,6 +23,7 @@ export const Projects: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'client', 'disciplines', 'year', 'featured', '_status'],
     description: 'Drag rows to set the order projects appear on the site.',
+    components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'projects', label: '+ New project', hint: 'Add the basics in a pop-up; the case study opens next.', then: 'open' } }] },
   },
   access: { read: publishedOrAuthenticated, create: authenticated, update: authenticated, delete: authenticated },
   versions: { drafts: { autosave: { interval: 800 } }, maxPerDoc: 30 },
@@ -66,5 +67,16 @@ export const Projects: CollectionConfig = {
     { name: 'liveUrl', type: 'text', admin: { position: 'sidebar', description: 'Link to the live site or post, if public' } },
     { name: 'accent', type: 'text', admin: { position: 'sidebar', description: 'Hex colour used for this project’s accents, e.g. #F5C400' } },
     { name: 'note', type: 'textarea', admin: { position: 'sidebar', description: 'Small print shown at the end (NDA, placeholder images, etc.)' } },
+    {
+      name: 'stats',
+      label: 'Card stats',
+      type: 'array',
+      maxRows: 2,
+      admin: { position: 'sidebar', description: 'Up to two real, checkable results for the foot of the project card, e.g. “05” Deliverables and “+120%” Engagement. Leave empty to show the year instead.' },
+      fields: [{ type: 'row', fields: [
+        { name: 'value', type: 'text', required: true, admin: { width: '40%', placeholder: '05' } },
+        { name: 'label', type: 'text', required: true, admin: { width: '60%', placeholder: 'Deliverables' } },
+      ] }],
+    },
   ],
 };

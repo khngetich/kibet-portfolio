@@ -1,18 +1,7 @@
-import Link from 'next/link';
 import type { ProjectCard as Card } from '@/lib/cms';
-import { disciplineList } from '@/lib/format';
-import { Img } from './Img';
+import { ProjectFolder } from './ProjectFolder';
 
-export function ProjectCard({ project, sizes, large, preload }: { project: Card; sizes: string; large?: boolean; preload?: boolean }) {
-  return (
-    <Link href={`/work/${project.slug}`} className={`card reveal${large ? ' card-lg' : ''}`}>
-      <div className="card-media">
-        <Img media={project.cover} sizes={sizes} preload={preload} />
-      </div>
-      <div className="card-meta">
-        <h3>{project.title}</h3>
-        <p>{project.client} · {disciplineList(project.disciplines)}</p>
-      </div>
-    </Link>
-  );
+/** A project in the Work grid: the same project "file" card as the homepage, full size when `large`. */
+export function ProjectCard({ project, sizes, large, preload }: { project: Card; sizes: string; large?: boolean; preload?: boolean; level?: 2 | 3 }) {
+  return <ProjectFolder project={project} size={large ? 'lg' : 'md'} sizes={sizes} preload={preload} />;
 }

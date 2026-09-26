@@ -15,24 +15,19 @@ const siteName = async () => {
   }
 };
 
-const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
-
-/** Login page: the name as a wordmark with a small red “CMS” tag. */
+/** Login page: the name as a wordmark, with the studio underneath. No logo mark. */
 export async function Logo() {
   const { name, studio } = await siteName();
   return (
     <div className="cms-logo">
-      <span className="cms-mark" aria-hidden="true">{initials(name)}</span>
-      <span className="cms-logo-text">
-        <b>{name}</b>
-        <small>{studio ? `${studio} · ` : ''}Content studio</small>
-      </span>
+      <b>{name}</b>
+      <small>{studio ? `${studio} · ` : ''}Content studio</small>
     </div>
   );
 }
 
-/** Top-left of the dashboard: the monogram on its own. */
+/** Top-left of the dashboard: the first name as a small wordmark. */
 export async function Icon() {
   const { name } = await siteName();
-  return <span className="cms-mark cms-mark-sm" aria-label={name}>{initials(name)}</span>;
+  return <span className="cms-wordmark"><span aria-hidden="true">{name.split(/\s+/)[0]}<i>.</i></span><span className="cms-sr">{name}</span></span>;
 }

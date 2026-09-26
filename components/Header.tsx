@@ -2,49 +2,46 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useEffect, useState } from 'react';
-import { Logo } from './Logo';
+import { AnimatePresence, motion, useReducedMotionConfig } from 'motion/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from './Icon';
 
-// In page order.
-const LINKS = [
-  { label: 'Work', id: 'work' },
-  { label: 'About', id: 'about' },
-  { label: 'For who', id: 'for-who' },
-  { label: 'Process', id: 'process' },
-  { label: 'Services', id: 'services' },
-];
+type NavLink = { label: string; url: string };
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
+/** "/#work" or "#work" → "work"; anything else → null. */
+const anchorOf = (url: string) => (url.startsWith('#') ? url.slice(1) : url.startsWith('/#') ? url.slice(2) : null);
+
 /**
- * Fixed site header on every page: brand on the left, a pill of section links in the
- * centre (beside the brand on phones). It gains a frosted backdrop once the page scrolls.
- * On the homepage the link for the section in view is highlighted; on other pages the
- * links jump back to those sections.
+ * The floating header: a capsule held off the screen edges on every page, with the name
+ * on the left, the menu in the middle and the quote button on the right. Links to page
+ * sections highlight while that section is on screen; the links and button come from the
+ * Header settings in the CMS.
  */
-export function Header({ name, availability, ctaLabel }: { name: string; availability?: string | null; ctaLabel: string }) {
+export function Header({ name, menu, quote, availability }: { name: string; menu: NavLink[]; quote: NavLink; availability?: string | null }) {
   const pathname = usePathname();
-  const home = pathname === '/';
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionConfig();
   const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const menuBtn = useRef<HTMLButtonElement>(null);
 
+  // On the page itself, "/#work" becomes "#work" so it scrolls instead of reloading.
+  const href = (url: string) => (pathname === '/' && url.startsWith('/#') ? url.slice(1) : url);
+  const anchors = useMemo(() => menu.map((l) => anchorOf(l.url)).filter((a): a is string => !!a), [menu]);
+
+  // A new page (or menu) closes the sheet and clears the highlight; adjusted during render.
+  const [seenFor, setSeenFor] = useState({ pathname, anchors });
+  if (seenFor.pathname !== pathname || seenFor.anchors !== anchors) {
+    setSeenFor({ pathname, anchors });
+    if (seenFor.pathname !== pathname) setOpen(false);
+    setActive(null);
+  }
+
+  // Highlight whichever linked section crosses the middle of the viewport.
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 12);
-    on();
-    window.addEventListener('scroll', on, { passive: true });
-    return () => window.removeEventListener('scroll', on);
-  }, []);
-
-  useEffect(() => setOpen(false), [pathname]);
-
-  // Highlight whichever section crosses the middle of the viewport.
-  useEffect(() => {
-    if (!home) { setActive(null); return; }
-    const sections = LINKS.map((l) => document.getElementById(l.id)).filter((el): el is HTMLElement => !!el);
+    const sections = anchors.map((a) => document.getElementById(a)).filter((el): el is HTMLElement => !!el);
+    if (!sections.length) return;
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); }),
       { rootMargin: '-50% 0px -50% 0px' },
@@ -53,72 +50,74 @@ export function Header({ name, availability, ctaLabel }: { name: string; availab
     const onTop = () => { if (window.scrollY < window.innerHeight * 0.5) setActive(null); };
     window.addEventListener('scroll', onTop, { passive: true });
     return () => { io.disconnect(); window.removeEventListener('scroll', onTop); };
-  }, [home]);
+  }, [anchors, pathname]);
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    // Escape closes the menu and puts focus back on the button that opened it.
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); menuBtn.current?.focus(); } };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const href = (id: string) => (home ? `#${id}` : `/#${id}`);
+  const isCurrent = (l: NavLink) => {
+    const a = anchorOf(l.url);
+    if (a) return pathname === '/' && active === a;
+    return l.url.startsWith('/') && l.url !== '/' && (pathname === l.url || pathname.startsWith(`${l.url}/`));
+  };
 
   return (
     <>
-      <header className={`site-header${scrolled || open ? ' is-scrolled' : ''}`}>
-        <Link className="brand" href="/" aria-label={`${name}, home`}>
-          <Logo />
-          <span>{name}</span>
-        </Link>
-
-      <motion.nav
-        className="pill-nav"
-        aria-label="Primary"
+      <motion.header
+        className="site-header"
         initial={reduce ? false : { y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 0.9, ease: EASE }}
+        transition={{ duration: 1, delay: 0.3, ease: EASE }}
       >
-        <Link className="pill-home" href="/" aria-label="Home" aria-current={home && !active ? 'page' : undefined}>
-          <Icon name="home" size={16} />
-        </Link>
-        <ul className="pill-links">
-          {LINKS.map((l) => (
-            <li key={l.id}>
-              <a href={href(l.id)} className={active === l.id ? 'is-active' : undefined} aria-current={active === l.id ? 'location' : undefined}>
-                {active === l.id && <motion.span layoutId="pill-active" className="pill-active" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
-                <span className="pill-label">{l.label}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-        <button className="pill-menu" type="button" aria-expanded={open} aria-controls="pill-sheet" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen((v) => !v)}>
-          <Icon name={open ? 'close' : 'menu'} size={16} />
-        </button>
-        <a className="pill-cta" href={href('contact')}>{ctaLabel}</a>
+        <Link className="brand" href="/" aria-label={`${name}, home`}>{name}</Link>
+
+        <nav className="header-nav" aria-label="Primary">
+          <ul>
+            {menu.map((l) => {
+              const current = isCurrent(l);
+              return (
+                <li key={l.url + l.label}>
+                  <Link href={href(l.url)} className={current ? 'is-active' : undefined} aria-current={current ? (anchorOf(l.url) ? 'location' : 'page') : undefined}>
+                    {current && <motion.span layoutId="nav-active" className="nav-active" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
+                    <span className="nav-label">{l.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="header-end">
+          {!!menu.length && (
+            <button ref={menuBtn} className="menu-btn" type="button" aria-expanded={open} aria-controls="menu-sheet" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen((v) => !v)}>
+              <Icon name={open ? 'close' : 'menu'} size={16} />
+            </button>
+          )}
+          <Link className="header-cta" href={href(quote.url)}>{quote.label}</Link>
+        </div>
 
         <AnimatePresence>
           {open && (
             <motion.ul
-              id="pill-sheet"
-              className="pill-sheet"
-              initial={{ opacity: 0, y: -12, scale: 0.96 }}
+              id="menu-sheet"
+              className="menu-sheet"
+              initial={{ opacity: 0, y: -12, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.96 }}
+              exit={{ opacity: 0, y: -12, scale: 0.97 }}
               transition={{ duration: 0.25, ease: EASE }}
             >
-              {LINKS.map((l) => (
-                <li key={l.id}><a href={href(l.id)} onClick={() => setOpen(false)}>{l.label}</a></li>
+              {menu.map((l) => (
+                <li key={l.url + l.label}><Link href={href(l.url)} onClick={() => setOpen(false)} aria-current={isCurrent(l) ? 'page' : undefined}>{l.label}</Link></li>
               ))}
-              <li><Link href="/work" onClick={() => setOpen(false)}>All work</Link></li>
             </motion.ul>
           )}
         </AnimatePresence>
-      </motion.nav>
-        <div className="site-header-end">
-          {!home && <Link className="topbar-link" href="/work" aria-current={pathname.startsWith('/work') ? 'page' : undefined}>All work</Link>}
-        </div>
-      </header>
+      </motion.header>
 
       {availability && (
         <motion.p
