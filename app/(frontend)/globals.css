@@ -266,19 +266,50 @@ main { padding-top: var(--header-h); }
 .ba-tag { position: absolute; top: 14px; z-index: 2; padding: 4px 10px; border-radius: calc(999px * var(--radius-scale, 1)); background: rgba(0, 0, 0, .55); color: #fff; font-size: .75rem; font-weight: 600; pointer-events: none; }
 .ba-tag-l { left: 14px; } .ba-tag-r { right: 14px; }
 
-/* ───────────────────────── footer ───────────────────────── */
-.footer { padding-block: 0 calc(24px + env(safe-area-inset-bottom, 0px)); }
-.footer-card { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; padding: clamp(32px, 4vw, 48px) 0 clamp(20px, 3vw, 28px); border-top: 1px solid var(--line); }
-.footer-title { font-size: 1.4rem; font-weight: 500; letter-spacing: -.03em; margin-bottom: 4px; }
-.footer-col { display: flex; flex-direction: column; gap: 10px; font-size: .92rem; }
-.footer-col .kicker { margin-bottom: 4px; }
-.footer-col a { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); transition: color .2s; overflow-wrap: anywhere; }
-.footer-col a:hover { color: var(--ink); }
+/* ───────────────────────── footer (components/Footer.tsx) ─────────────────────────
+   Inverted: a dark CTA card with rounded bottom corners over a light canvas; the white card
+   rises from behind it (FooterRise) over a giant watermark. */
 .socials { display: flex; gap: 8px; margin-top: 20px; }
 .socials a { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition: transform .2s; }
 .socials a:hover { transform: translateY(-2px); }
-.footer-bottom { padding-top: 16px; border-top: 1px solid var(--line); font-size: .8rem; color: var(--ink-3); }
-@media (max-width: 760px) { .footer-card { grid-template-columns: 1fr 1fr; } .footer-intro { grid-column: 1 / -1; } }
+.fx { position: relative; margin-top: clamp(48px, 6vw, 88px); background: #F5F5F7; color: #0A0A0A; color-scheme: light; overflow: hidden; }
+/* the dark card is the page itself: the same black, with a copy of the fixed red glow painted at the
+   same place on screen (background-attachment: fixed), so nothing changes as the page flows into it */
+.fx-cta { position: relative; z-index: 2; overflow: hidden; border-radius: 0 0 calc(32px * var(--radius-scale, 1)) calc(32px * var(--radius-scale, 1));
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--red) calc(22% * var(--glow)), transparent), transparent) 10vw 70vh / 80vw 60vh no-repeat fixed, var(--bg);
+  color: #fff; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .55); }
+/* full width, and the ellipse ends inside the box on every side, so the glow has no edges */
+.fx-cta-glow { position: absolute; inset: 0; background: radial-gradient(40% 42% at 50% 46%, color-mix(in srgb, var(--red) 24%, transparent), transparent); opacity: var(--glow); pointer-events: none; }
+.fx-cta-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 18px; padding-block: clamp(64px, 9vw, 120px); text-align: center; }
+.fx-cta-title { max-width: 20ch; font-family: var(--font-heading); font-size: clamp(2rem, 4.6vw, 3.6rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.04; text-wrap: balance; }
+.fx-cta-text { max-width: 52ch; font-size: 1.05rem; color: var(--ink-2); text-wrap: pretty; }
+.fx-cta-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; margin-top: 8px; padding: 0 28px; border-radius: 999px; background: #fff; color: #0A0A0A; font-weight: 600; transition-property: box-shadow, transform, scale; transition-duration: .2s; transition-timing-function: ease-out; }
+.fx-cta-btn:hover { transform: translateY(-3px); box-shadow: 0 0 0 6px rgba(255, 255, 255, .08), 0 0 44px -4px color-mix(in srgb, var(--red) 70%, transparent), 0 14px 30px -12px rgba(255, 255, 255, .35); }
+.fx-cta-btn:active { scale: .96; }
+.fx-cta-btn svg { transition: transform .2s ease; }
+.fx-cta-btn:hover svg { transform: translateX(3px); }
+.fx-canvas { position: relative; z-index: 1; padding-block: clamp(40px, 5vw, 64px) 0; }
+.fx-card { position: relative; z-index: 1; padding: clamp(28px, 4vw, 48px); border-radius: calc(24px * var(--radius-scale, 1)); background: #fff; box-shadow: 0 1px 2px rgba(10, 10, 10, .04), 0 24px 60px -30px rgba(10, 10, 10, .22); }
+.fx-grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(auto-fit, minmax(150px, 1fr)); gap: 32px clamp(24px, 4vw, 56px); }
+.fx-name { font-family: var(--font-heading); font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 800; letter-spacing: -.03em; }
+.fx-statement { max-width: 36ch; margin-top: 10px; font-size: .95rem; line-height: 1.6; color: #55555A; }
+.fx-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; font-size: .88rem; color: #3D3D42; }
+.fx-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #16A34A; }
+.fx-socials { display: flex; gap: 8px; margin-top: 20px; }
+.fx-socials a { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #0A0A0A; box-shadow: inset 0 0 0 1px rgba(10, 10, 10, .12); transition: transform .2s ease-out, background-color .2s ease-out, color .2s ease-out; }
+.fx-socials a:hover { transform: translateY(-3px); background: #0A0A0A; color: #fff; }
+.fx-col-title { margin-bottom: 14px; font-size: .74rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #6B6B70; }
+.fx-col ul { display: flex; flex-direction: column; gap: 10px; }
+.fx-link { display: inline-block; font-size: .95rem; color: #1C1C1F; overflow-wrap: anywhere; transition: transform .2s ease-out, color .2s ease-out; }
+.fx-link:hover { transform: translateY(-3px); color: var(--accent-strong); }
+.fx-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; margin-top: clamp(28px, 4vw, 40px); padding-top: 20px; border-top: 1px solid rgba(10, 10, 10, .1); font-size: .84rem; color: #55555A; }
+.fx-note { color: #6B6B70; }
+.fx-legal { display: flex; flex-wrap: wrap; gap: 20px; }
+.fx-legal .fx-link { font-size: .84rem; color: #55555A; }
+.fx :focus-visible { outline-color: var(--accent-strong); }
+.fx-watermark { position: relative; z-index: 0; margin-top: -0.12em; padding-bottom: env(safe-area-inset-bottom, 0px); font-family: var(--font-heading); font-size: clamp(5rem, 22vw, 22rem); font-weight: 800; letter-spacing: -.05em; line-height: .78; text-align: center; white-space: nowrap; color: rgba(10, 10, 10, .045); pointer-events: none; user-select: none; }
+@media (max-width: 760px) { .fx-grid { grid-template-columns: 1fr 1fr; } .fx-brand { grid-column: 1 / -1; } }
+@media (prefers-reduced-motion: reduce) { .fx-link:hover, .fx-socials a:hover, .fx-cta-btn:hover { transform: none; } }
 
 /* ───────────────────────── scroll reveal (CSS only) ───────────────────────── */
 @supports (animation-timeline: view()) {

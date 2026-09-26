@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const [site, header, footer, theme, preview, studio] = await Promise.all([getSite(), getHeader(), getFooter(), getTheme(), isPreview(), isStudioCanvas()]);
   return (
-    <html lang="en" className={GeistSans.variable} data-theme="dark" data-motion={theme.motion ?? 'full'}>
+    <html lang="en" className={GeistSans.variable} data-theme="dark" data-motion={theme.motion ?? 'full'} data-scroll-behavior="smooth">
       <body>
         <ThemeStyle theme={theme} />
         <MotionPrefs motion={theme.motion}>

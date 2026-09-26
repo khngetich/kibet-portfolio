@@ -2045,9 +2045,35 @@ export interface Footer {
     showWhatsApp?: boolean | null;
   };
   /**
+   * The dark card at the top of the footer.
+   */
+  cta?: {
+    show?: boolean | null;
+    heading?: string | null;
+    text?: string | null;
+    buttonLabel?: string | null;
+    /**
+     * A page, a section (/#contact), a booking link or mailto:
+     */
+    buttonUrl?: string | null;
+  };
+  /**
    * {year} and {name} are filled in automatically.
    */
   copyright?: string | null;
+  /**
+   * Shown beside the copyright, e.g. Privacy policy → /privacy. Link only to pages that exist.
+   */
+  legal?:
+    | {
+        label: string;
+        /**
+         * A page (/about), a section (/#work) or a full URL.
+         */
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Small print after the copyright line.
    */
@@ -2236,7 +2262,23 @@ export interface FooterSelect<T extends boolean = true> {
         showPhone?: T;
         showWhatsApp?: T;
       };
+  cta?:
+    | T
+    | {
+        show?: T;
+        heading?: T;
+        text?: T;
+        buttonLabel?: T;
+        buttonUrl?: T;
+      };
   copyright?: T;
+  legal?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
   note?: T;
   updatedAt?: T;
   createdAt?: T;
