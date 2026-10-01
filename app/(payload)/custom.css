@@ -145,10 +145,31 @@ a { transition: color .15s; text-decoration: none; }
 .cms-nav-resizer:focus-visible { outline: none; }
 /* Only while the sidebar is showing (on small screens it is Payload's slide-in drawer). */
 html:not(:has(.template-default--nav-open)) .cms-nav-resizer { display: none; }
-/* Desktop: the sidebar is static (NavMenuClient keeps it open), so Payload's show/hide
-   hamburgers go; the collapse button and drag handle narrow it to the rail instead. */
-@media (min-width: 1025px) {
+/* Tablet and desktop: the sidebar is static (NavMenuClient keeps it open), so Payload's
+   show/hide hamburgers go; the collapse button and drag handle narrow it to the rail instead.
+   Payload forces the content to full width up to 768px, which would push it under the rail. */
+@media (min-width: 641px) {
   .template-default__nav-toggler-wrapper, .app-header__mobile-nav-toggler, .nav__mobile-close { display: none !important; }
+  .template-default .template-default__wrap { min-width: 0; }
+}
+
+/* Phones: a bottom tab bar (NavMenuClient → TabBar) replaces the sidebar; "More" opens
+   Payload's full-screen menu. Above the menu (z 20), below pop-up editors (z 30). */
+.cms-tabbar { display: none; }
+@media (max-width: 640px) {
+  .template-default__nav-toggler-wrapper, .app-header__mobile-nav-toggler { display: none !important; }
+  .cms-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #FFFFFFF2; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 -1px 0 var(--line); }
+  .cms-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; padding: 6px 4px 4px; border: 0; border-radius: 10px; background: none; color: var(--ink-2); font: inherit; font-size: 11px; line-height: 14px; font-weight: 500; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; transition-property: color, background-color, scale; transition-duration: .15s; transition-timing-function: ease-out; }
+  .cms-tab:active { scale: .96; }
+  .cms-tab.is-active { color: var(--ink); }
+  .cms-tab-icon { position: relative; display: grid; place-items: center; width: 44px; height: 28px; border-radius: 9999px; transition-property: background-color; transition-duration: .15s; }
+  .cms-tab.is-active .cms-tab-icon { background: var(--accent-soft); }
+  .cms-tab.is-active svg :is(rect, path, circle) { fill: currentColor; fill-opacity: .14; }
+  .cms-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .cms-tab-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cms-tab-badge { position: absolute; top: -4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9999px; background: var(--accent); color: var(--on-accent); font-size: 11px; line-height: 18px; font-style: normal; font-weight: 600; text-align: center; box-shadow: 0 0 0 2px var(--card); }
+  /* room for the bar under the last content */
+  .template-default__wrap { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 }
 .cms-nav-resizing, .cms-nav-resizing * { cursor: col-resize !important; user-select: none !important; }
 .cms-nav-resizing .template-default, .cms-nav-resizing .nav { transition: none !important; }
@@ -162,7 +183,14 @@ html.cms-nav-collapsed .cms-nav-group { padding-top: 10px; border-top: 1px solid
 html.cms-nav-collapsed .cms-nav-link, html.cms-nav-collapsed .cms-nav-collapse { justify-content: center; padding-inline: 0; position: relative; }
 html.cms-nav-collapsed .cms-nav-badge { position: absolute; top: 4px; right: 6px; width: 8px; height: 8px; padding: 0; font-size: 0; }
 html.cms-nav-collapsed .nav__controls { align-items: center; }
-html.cms-nav-collapsed .nav__wrap { padding-inline: 10px; }
+/* Payload pads both .nav__scroll and .nav__wrap and aligns the wrap's items to the start, which
+   squeezed every rail item to its 18px icon. One 12px gutter, items stretched: each icon sits
+   centred in a 48 × 40 target. */
+html.cms-nav-collapsed .nav__scroll { padding-inline: 0; }
+html.cms-nav-collapsed .nav__wrap { padding-inline: 12px; align-items: stretch; }
+html.cms-nav-collapsed .cms-nav { align-self: stretch; }
+html.cms-nav-collapsed :is(.cms-nav-link, .cms-nav-search, .cms-nav-collapse, .cms-nav-promo-btn) { width: 100%; min-height: 40px; }
+html.cms-nav-collapsed .nav__controls { align-self: stretch; }
 
 /* ── login, forgot-password and first-user screens: the site's dark look ── */
 .template-minimal {
@@ -198,6 +226,30 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 .cms-quickbar p { margin: 0; font-size: .86rem; color: var(--ink-2); }
 .cms-cell-link { padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
 .cms-cell-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── pop-up modals: Payload's slide-in drawers (document editors, uploads, pickers) shown as a
+   centred window over a dimmed page. Payload's full-height "close" strip becomes the whole
+   backdrop, so a click outside still closes. The page editor's section panel (.sf-drawer) stays
+   a side panel beside the live preview. Phones get a full-screen sheet. ── */
+.drawer:not(.sf-drawer) { inset: 0; width: 100%; align-items: center; justify-content: center; padding: 32px; }
+.drawer:not(.sf-drawer) .drawer__blur-bg { background: var(--scrim, #0F0F0F66); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.drawer:not(.sf-drawer) .drawer__close { position: absolute; inset: 0; z-index: 1; flex: none; opacity: 0 !important; background: none; }
+.drawer:not(.sf-drawer) .drawer__content {
+  width: min(1040px, 100%) !important; height: min(880px, 100%); flex: none;
+  border-radius: 16px; background: var(--page); box-shadow: var(--shadow-lg), 0 0 0 1px var(--line);
+  transform: translateY(8px) scale(.98); transition-property: opacity, transform; transition-duration: .18s; transition-timing-function: ease-out;
+}
+.drawer--is-open:not(.sf-drawer) .drawer__content { transform: none; }
+/* a pop-up opened from inside another sits a step smaller, so the one underneath still shows */
+.drawer:not(.sf-drawer) ~ .drawer:not(.sf-drawer) .drawer__content { width: min(880px, 100%) !important; height: min(760px, 100%); }
+@media (max-width: 640px) {
+  .drawer:not(.sf-drawer) { padding: 0; }
+  .drawer:not(.sf-drawer) .drawer__content { width: 100% !important; height: 100%; border-radius: 0; transform: translateY(16px); }
+  .drawer--is-open:not(.sf-drawer) .drawer__content { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer:not(.sf-drawer) .drawer__content { transform: none; }
+}
 
 /* ── section list (components/admin/SectionsField.tsx) ── */
 .sf { margin-block: 8px 24px; }
@@ -353,13 +405,30 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 .cms-delta.is-down, .cms-stats dd.is-down { color: var(--coral); }
 
 /* bento: 8 + 4 columns */
-.cms-bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--d-gap); align-items: start; }
-.cms-col-main { grid-column: span 8; display: flex; flex-direction: column; gap: var(--d-gap); min-width: 0; }
-.cms-col-side { grid-column: span 4; display: flex; flex-direction: column; gap: var(--d-gap); min-width: 0; }
+/* paired rows: each row ends level; the 4-col card stretches to its 8-col partner */
+.cms-bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--d-gap); align-items: stretch; }
+.cms-cell { display: flex; flex-direction: column; min-width: 0; }
+.cms-cell:empty { display: none; }
+/* a side card whose partner rendered nothing (e.g. no projects yet) takes the whole row */
+.cms-cell:empty + .cms-span-4 { grid-column: 1 / -1; }
+/* recent work beside the site-wide card: the three latest */
+.cms-span-8 .cms-work-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cms-span-8 .cms-work-cards > li:nth-child(n + 4) { display: none; }
+.cms-cell > * { flex: 1; }
+.cms-span-8 { grid-column: span 8; }
+.cms-span-4 { grid-column: span 4; }
+.cms-span-12 { grid-column: 1 / -1; }
+/* fill: takes its partner's height instead of adding to it, and scrolls inside */
+.cms-cell.is-fill { position: relative; min-height: 320px; }
+.cms-cell.is-fill > * { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.cms-cell.is-fill .cms-tasks { flex: 1; min-height: 0; max-height: none; }
+/* an empty card centres its message in the height the row gives it */
+.cms-cell > .cms-card { display: flex; flex-direction: column; }
+.cms-cell > .cms-card > .cms-empty:last-child { flex: 1; justify-content: center; background: none; box-shadow: inset 0 0 0 1px var(--d-line); }
 
 /* segmented tabs: sunken track, active item raised on the card colour */
 .cms-tabs { display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--d-sub); }
-.cms-tabs button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: none; color: var(--d-ink-2); font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer; transition-property: background-color, color, box-shadow; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-tabs button { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: none; color: var(--d-ink-2); font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; cursor: pointer; transition-property: background-color, color, box-shadow; transition-duration: .15s; transition-timing-function: ease-out; }
 .cms-tabs button:hover { color: var(--d-ink); }
 .cms-tabs button[aria-pressed='true'] { background: var(--d-card); color: var(--d-ink); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--d-line); }
 .cms-tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
@@ -448,15 +517,16 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 .cms-check-fix { display: inline-block; margin-top: 8px; }
 
 /* site-wide shortcuts */
-.cms-shortcuts { display: flex; flex-direction: column; gap: 2px; margin: 0 -8px; padding: 0; list-style: none; }
-.cms-shortcuts a { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px; border-radius: 8px; color: inherit; text-decoration: none; transition-property: background-color; transition-duration: .15s; transition-timing-function: ease-out; }
+/* tiles: icon above the words, so two fit side by side in the 4-col card and four across when full width */
+.cms-shortcuts { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.cms-shortcuts a { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; height: 100%; padding: 12px; border-radius: 8px; color: inherit; text-decoration: none; box-shadow: inset 0 0 0 1px var(--d-line); transition-property: background-color; transition-duration: .15s; transition-timing-function: ease-out; }
 .cms-shortcuts a:hover { background: var(--d-sub); }
 .cms-shortcuts a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .cms-shortcuts a > span:nth-child(2) { flex: 1; min-width: 0; }
 .cms-shortcuts b { display: block; font-weight: 500; }
-.cms-shortcuts small { display: block; font-size: 12px; line-height: 16px; color: var(--d-ink-2); }
+.cms-shortcuts small { display: -webkit-box; font-size: 12px; line-height: 16px; color: var(--d-ink-2); overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .cms-shortcut-icon { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 8px; background: var(--d-sub); color: var(--d-ink-2); }
-.cms-shortcut-go { color: var(--d-ink-2); }
+.cms-shortcuts .cms-shortcut-go { display: none; }
 
 /* inbox with triage on the row */
 .cms-inbox { display: flex; flex-direction: column; margin: 0 -8px; padding: 0; list-style: none; }
@@ -558,11 +628,13 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
   .cms-insights, .cms-work-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 1100px) {
-  .cms-col-main, .cms-col-side { grid-column: 1 / -1; }
-  .cms-col-side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  /* one column of full-width cards; To do goes back to its own height */
+  .cms-span-8, .cms-span-4 { grid-column: 1 / -1; }
+  .cms-cell.is-fill { min-height: 0; }
+  .cms-cell.is-fill > * { position: static; }
+  .cms-cell.is-fill .cms-tasks { max-height: 372px; }
 }
 @media (max-width: 760px) {
-  .cms-col-side { grid-template-columns: 1fr; }
   .cms-health2 { justify-content: center; }
   .cms-inbox-actions { opacity: 1; }
   .sf-actions { opacity: 1; }

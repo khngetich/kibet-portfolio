@@ -9,22 +9,11 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Icon } from '@/components/ui/Icon';
 import { CommandPalette, openPalette } from './CommandPalette';
 import { DocModalHost } from './DocModal';
+import { sectionIcon } from './sectionIcons';
 
 export type NavGroup = { label: string; items: { slug: string; label: string; href: string; count?: number; badge?: string }[] };
 
 const S = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', className: 'ui-icon' } as const;
-const ICONS: Record<string, React.ReactNode> = {
-  dashboard: <><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></>,
-  pages: <><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v4h4M9 12h6M9 16h6" /></>,
-  projects: <><rect x="3" y="6" width="18" height="14" rx="2" /><path d="M8 6V4h8v2M3 12h18" /></>,
-  media: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 16l5-5 4 4 3-3 6 6" /><circle cx="15.5" cy="8.5" r="1.5" /></>,
-  inquiries: <><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9h8M8 12h5" /></>,
-  users: <><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.5 3 5.2" /></>,
-  header: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /></>,
-  footer: <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 15h18" /></>,
-  site: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></>,
-  default: <><rect x="4" y="4" width="16" height="16" rx="3" /></>,
-};
 
 const noop = () => () => {};
 
@@ -35,8 +24,8 @@ const MAX = 400;
 const DEFAULT = 256;
 const COLLAPSE_AT = 150;
 const STORE = 'cms-nav-width';
-/** Resizing only applies where the sidebar sits beside the content (Payload overlays it below this). */
-const DESKTOP = '(min-width: 1025px)';
+/** From this width up the sidebar sits beside the content; below it, phones get the bottom tab bar. */
+const DESKTOP = '(min-width: 641px)';
 
 function applyWidth(w: number) {
   const root = document.documentElement;
@@ -44,15 +33,16 @@ function applyWidth(w: number) {
   root.classList.toggle('cms-nav-collapsed', w <= RAIL);
 }
 
-/** Below this width (on desktop) the sidebar starts as the icon rail unless you've chosen a width. */
+/** Below this width (tablets, small laptops) the sidebar starts as the icon rail unless you've chosen a width. */
 const ROOMY = '(min-width: 1200px)';
 
 /**
- * Desktop: the sidebar is always there (sticky, never hidden), and the collapse button or the
- * drag handle narrows it to the icon rail. Payload itself closes the sidebar on any screen up
- * to 1440px and only offers its hamburger to bring it back, so on desktop it is held open
- * here and the hamburger is hidden (custom.css). Below 1025px Payload's slide-in drawer and
- * hamburger stay as they are. The width is remembered per browser.
+ * Tablet and desktop (641px up): the sidebar is always there (sticky, never hidden), and the
+ * collapse button or the drag handle narrows it to the icon rail. Payload itself closes the
+ * sidebar on any screen up to 1440px and only offers its hamburger to bring it back, so here
+ * it is held open and the hamburgers are hidden (custom.css). Phones get a bottom tab bar
+ * instead (<TabBar>), whose "More" opens Payload's full-screen menu. The width is remembered
+ * per browser.
  */
 function useSidebarWidth() {
   const [width, setWidth] = useState(DEFAULT);
@@ -128,7 +118,7 @@ function useSidebarWidth() {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
   };
 
-  return { width, desktop, collapsed: desktop && width <= RAIL, toggle, onPointerDown, onKeyDown };
+  return { width, desktop, collapsed: desktop && width <= RAIL, toggle, onPointerDown, onKeyDown, navOpen, setNavOpen };
 }
 
 export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGroup[] }) {
@@ -145,7 +135,7 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
     return (
       <li key={href}>
         <Link href={href} className={`cms-nav-link${active ? ' is-active' : ''}`} aria-current={active ? 'page' : undefined} title={nav.collapsed ? label : undefined}>
-          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" {...S}>{ICONS[slug] ?? ICONS.default}</svg>
+          <Icon name={sectionIcon(slug)} size={18} />
           <span className="cms-nav-label">{label}</span>
           {badge ? <em className="cms-nav-badge">{badge}</em> : count != null && <i className="cms-nav-count">{count}</i>}
         </Link>
@@ -195,6 +185,10 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
       )}
       <CommandPalette admin={admin} groups={groups} />
       <DocModalHost />
+      {mounted && !nav.desktop && createPortal(
+        <TabBar admin={admin} groups={groups} isActive={isActive} menuOpen={nav.navOpen} onMenu={() => nav.setNavOpen(!nav.navOpen)} />,
+        document.body,
+      )}
       {mounted && nav.desktop && createPortal(
         <div
           className="cms-nav-resizer"
@@ -212,5 +206,41 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
         document.body,
       )}
     </div>
+  );
+}
+
+/**
+ * Phones: the main sections as icons along the bottom, in thumb reach. "More" opens Payload's
+ * full-screen menu (every collection and setting, search and the Studio); it closes again on
+ * navigation. Enquiries carries the same "new" count as the sidebar.
+ */
+function TabBar({ admin, groups, isActive, menuOpen, onMenu }: { admin: string; groups: NavGroup[]; isActive: (href: string) => boolean; menuOpen: boolean; onMenu: () => void }) {
+  const find = (slug: string) => groups.flatMap((g) => g.items).find((i) => i.slug === slug);
+  const tabs = [
+    { slug: 'dashboard', label: 'Home', href: admin, badge: undefined as string | undefined },
+    ...(['pages', 'projects', 'inquiries'] as const).flatMap((slug) => {
+      const i = find(slug);
+      return i ? [{ slug, label: slug === 'inquiries' ? 'Inbox' : i.label, href: i.href, badge: i.badge ? i.badge.replace(/\D+/g, '') : undefined }] : [];
+    }),
+  ];
+  return (
+    <nav className="cms-tabbar" aria-label="Main">
+      {tabs.map((t) => {
+        const on = !menuOpen && isActive(t.href);
+        return (
+          <Link key={t.slug} href={t.href} className={`cms-tab${on ? ' is-active' : ''}`} aria-current={on ? 'page' : undefined}>
+            <span className="cms-tab-icon">
+              <Icon name={sectionIcon(t.slug)} size={22} />
+              {t.badge && <em className="cms-tab-badge" aria-label={`${t.badge} new`}>{t.badge}</em>}
+            </span>
+            <span className="cms-tab-label">{t.label}</span>
+          </Link>
+        );
+      })}
+      <button type="button" className={`cms-tab${menuOpen ? ' is-active' : ''}`} aria-expanded={menuOpen} onClick={onMenu}>
+        <span className="cms-tab-icon"><Icon name={menuOpen ? 'close' : 'more'} size={22} /></span>
+        <span className="cms-tab-label">{menuOpen ? 'Close' : 'More'}</span>
+      </button>
+    </nav>
   );
 }

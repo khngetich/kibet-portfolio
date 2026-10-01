@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Icon, type IconName } from '@/components/ui/Icon';
 import type { NavGroup } from './NavMenuClient';
 import { openDoc } from './DocModal';
+import { sectionIcon } from './sectionIcons';
 
 /**
  * ⌘K / Ctrl+K: jump to any page, project, enquiry, file or setting, or start something new.
@@ -26,7 +27,6 @@ const getJSON = async <T,>(url: string, signal?: AbortSignal): Promise<T[]> => {
   return ((await res.json()) as { docs?: T[] }).docs ?? [];
 };
 const norm = (s?: string | null) => (s ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '');
-const ICON_OF: Record<string, IconName> = { pages: 'file', projects: 'folder', media: 'image', inquiries: 'inbox', header: 'pen', footer: 'pen', site: 'globe', theme: 'pen' };
 
 export function CommandPalette({ admin, groups }: { admin: string; groups: NavGroup[] }) {
   const router = useRouter();
@@ -71,7 +71,7 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
       getJSON<{ id: number; title?: string | null; client?: string | null }>(`/api/projects?${qs({ depth: 0, limit: 300, draft: 'true', sort: '-updatedAt', ...fields(['title', 'client']) })}`),
     ]).then(([pages, projects]) => setDocs([
       ...pages.map((p) => ({ id: `page-${p.id}`, label: p.title || 'Untitled page', hint: !p.slug ? 'No address yet' : p.slug === 'home' ? '/' : `/${p.slug}`, group: 'Pages', icon: 'file' as const, href: `${admin}/collections/pages/${p.id}`, doc: { collection: 'pages', id: p.id } })),
-      ...projects.map((p) => ({ id: `project-${p.id}`, label: p.title || 'Untitled project', hint: p.client || 'Project', group: 'Projects', icon: 'folder' as const, href: `${admin}/collections/projects/${p.id}`, doc: { collection: 'projects', id: p.id } })),
+      ...projects.map((p) => ({ id: `project-${p.id}`, label: p.title || 'Untitled project', hint: p.client || 'Project', group: 'Projects', icon: 'portfolio' as const, href: `${admin}/collections/projects/${p.id}`, doc: { collection: 'projects', id: p.id } })),
     ])).catch(() => setDocs([]));
   }, [open, docs, admin]);
 
@@ -99,13 +99,13 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
   }, [q, open, admin]);
 
   const fixed = useMemo<Item[]>(() => [
-    { id: 'new-page', label: 'New page', group: 'Actions', icon: 'plus', href: `${admin}/collections/pages/create`, doc: { collection: 'pages' } },
-    { id: 'new-project', label: 'New project', group: 'Actions', icon: 'plus', href: `${admin}/collections/projects/create`, doc: { collection: 'projects' } },
+    { id: 'new-page', label: 'New page', group: 'Actions', icon: 'file', href: `${admin}/collections/pages/create`, doc: { collection: 'pages' } },
+    { id: 'new-project', label: 'New project', group: 'Actions', icon: 'portfolio', href: `${admin}/collections/projects/create`, doc: { collection: 'projects' } },
     { id: 'upload', label: 'Upload media', group: 'Actions', icon: 'image', href: `${admin}/collections/media/create`, doc: { collection: 'media' } },
     { id: 'studio', label: 'Open Studio', hint: 'Visual editor', group: 'Actions', icon: 'pen', href: '/studio', full: true },
     { id: 'site', label: 'View site', group: 'Actions', icon: 'external', href: '/', external: true },
-    { id: 'dashboard', label: 'Dashboard', group: 'Go to', icon: 'bolt', href: admin },
-    ...groups.flatMap((g) => g.items.map((i) => ({ id: `nav-${i.slug}`, label: i.label, hint: i.badge ?? g.label, group: 'Go to', icon: ICON_OF[i.slug] ?? ('right' as const), href: i.href }))),
+    { id: 'dashboard', label: 'Dashboard', group: 'Go to', icon: 'dashboard', href: admin },
+    ...groups.flatMap((g) => g.items.map((i) => ({ id: `nav-${i.slug}`, label: i.label, hint: i.badge ?? g.label, group: 'Go to', icon: sectionIcon(i.slug), href: i.href }))),
   ], [admin, groups]);
 
   const results = useMemo(() => {

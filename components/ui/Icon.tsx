@@ -31,6 +31,14 @@ const PATHS = {
   pen: <path d="m4.5 19.5 4-1 10.5-10.5-3-3L5.5 15.5zM14 7l3 3" />,
   globe: <><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.5 2.4 3.5 5.2 3.5 8.5s-1 6.1-3.5 8.5c-2.5-2.4-3.5-5.2-3.5-8.5s1-6.1 3.5-8.5Z" /></>,
   bolt: <path d="M13 3.5 5.5 13.5H12l-1 7 7.5-10H12z" />,
+  // CMS sections: one recognisable picture per area
+  dashboard: <><rect x="3.5" y="3.5" width="7" height="8" rx="1.5" /><rect x="13.5" y="3.5" width="7" height="5" rx="1.5" /><rect x="13.5" y="11.5" width="7" height="9" rx="1.5" /><rect x="3.5" y="14.5" width="7" height="6" rx="1.5" /></>,
+  portfolio: <><rect x="3.5" y="7.5" width="13" height="12" rx="2" /><path d="M7.5 4.5h11a2 2 0 0 1 2 2v9" /><path d="m3.5 16.5 3.5-3.5 3 3 2-2 4.5 4.5" /><circle cx="12.5" cy="11" r="1" /></>,
+  users: <><circle cx="9" cy="8.5" r="3.5" /><path d="M3 19.5c.7-3.2 3-5 6-5s5.3 1.8 6 5M15.5 5a3.5 3.5 0 0 1 0 7M18 14.8c1.5.7 2.4 2.2 2.8 4.7" /></>,
+  layoutTop: <><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M3.5 9.5h17M6.5 7h.01M9 7h.01M14.5 7h3" /></>,
+  layoutBottom: <><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M3.5 14.5h17M6.5 17h5M15 17h2.5" /></>,
+  palette: <><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.1 0 1.8-.7 1.8-1.7 0-1.2-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.8-1.7h2a4.1 4.1 0 0 0 4.1-4.1c0-3.8-3.8-6.7-8.5-6.7Z" /><circle cx="7.5" cy="11.5" r="1" /><circle cx="9.5" cy="7.5" r="1" /><circle cx="14.5" cy="7.5" r="1" /></>,
+  settings: <><circle cx="12" cy="12" r="2.75" /><path d="M10.4 3.5h3.2l.5 2.3 1.6.9 2.2-.8 1.6 2.8-1.7 1.6v1.8l1.7 1.5-1.6 2.8-2.2-.7-1.6.9-.5 2.2h-3.2l-.5-2.2-1.6-.9-2.2.7-1.6-2.8 1.7-1.5V11L4.5 9.5l1.6-2.8 2.2.8 1.6-.9z" /></>,
 } as const;
 
 export type IconName = keyof typeof PATHS;

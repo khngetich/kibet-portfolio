@@ -80,7 +80,7 @@ async function Insights({ payload, admin }: { payload: Payload; admin: string })
       action: media.large ? { label: 'Review large files', href: largeHref } : { label: 'Open library', href: `${admin}/collections/media` },
     },
     {
-      key: 'projects', icon: 'folder', value: String(projects.length), label: 'Projects',
+      key: 'projects', icon: 'portfolio', value: String(projects.length), label: 'Projects',
       note: noSamples.length ? `${noSamples.length} without case-study samples` : `${projects.filter((p) => p.featured).length} featured · all have samples`, warn: noSamples.length > 0,
       action: noSamples[0] ? { label: `Add samples to ${noSamples[0].title}`, href: `${admin}/collections/projects/${noSamples[0].id}`, doc: { collection: 'projects', id: noSamples[0].id } } : { label: 'All projects', href: `${admin}/collections/projects` },
     },
@@ -219,7 +219,7 @@ async function RecentWorkCard({ payload, admin }: { payload: Payload; admin: str
   const work = await getRecentWork(payload);
   if (!work.length) return null;
   return (
-    <section className="cms-anim cms-work-strip" aria-labelledby="dash-recent">
+    <section className="cms-card cms-anim cms-work-strip" aria-labelledby="dash-recent">
       <div className="cms-section-head">
         <div>
           <h2 id="dash-recent">Recent work <span className="cms-count is-strong">{work.length}</span></h2>
@@ -258,10 +258,10 @@ async function InboxCard({ payload, admin }: { payload: Payload; admin: string }
 
 function SettingsCard({ admin }: { admin: string }) {
   const links: { href: string; icon: IconName; label: string; sub: string }[] = [
-    { href: `${admin}/globals/header`, icon: 'pen', label: 'Header', sub: 'Menu links and the quote button' },
-    { href: `${admin}/globals/footer`, icon: 'pen', label: 'Footer', sub: 'Call to action, columns, legal' },
-    { href: `${admin}/globals/theme`, icon: 'bolt', label: 'Styles', sub: 'Colours, fonts, buttons, spacing' },
-    { href: `${admin}/globals/site`, icon: 'globe', label: 'Site settings', sub: 'Name, contact, socials, default SEO' },
+    { href: `${admin}/globals/header`, icon: 'layoutTop', label: 'Header', sub: 'Menu links and the quote button' },
+    { href: `${admin}/globals/footer`, icon: 'layoutBottom', label: 'Footer', sub: 'Call to action, columns, legal' },
+    { href: `${admin}/globals/theme`, icon: 'palette', label: 'Styles', sub: 'Colours, fonts, buttons, spacing' },
+    { href: `${admin}/globals/site`, icon: 'settings', label: 'Site settings', sub: 'Name, contact, socials, default SEO' },
   ];
   return (
     <section className="cms-card cms-anim" aria-labelledby="dash-site">
@@ -308,21 +308,19 @@ export async function Dashboard({ payload, user }: Props) {
         <Insights payload={payload} admin={admin} />
       </Suspense>
 
+      {/* Paired rows that end level (no ragged columns), partners chosen for similar heights: each
+          8-col card sets its row's height and the 4-col card beside it stretches to match. To do
+          fills the space beside Content and scrolls inside it rather than making the row taller. */}
       <div className="cms-bento">
-        <div className="cms-col-main">
-          <Suspense fallback={<Skeleton height={392} lines={4} />}><EnquiriesCard payload={payload} /></Suspense>
-          <Suspense fallback={<Skeleton height={360} lines={5} />}><WorkflowCard payload={payload} admin={admin} /></Suspense>
-        </div>
-        <div className="cms-col-side">
-          <Suspense fallback={<Skeleton height={360} lines={5} />}><TasksCard payload={payload} admin={admin} /></Suspense>
-          <Suspense fallback={<Skeleton height={392} lines={4} />}><HealthCard payload={payload} admin={admin} /></Suspense>
-          <SettingsCard admin={admin} />
-        </div>
+        <div className="cms-cell cms-span-8"><Suspense fallback={<Skeleton height={360} lines={4} />}><EnquiriesCard payload={payload} /></Suspense></div>
+        <div className="cms-cell cms-span-4"><Suspense fallback={<Skeleton height={392} lines={4} />}><HealthCard payload={payload} admin={admin} /></Suspense></div>
+        <div className="cms-cell cms-span-8"><Suspense fallback={<Skeleton height={360} lines={5} />}><WorkflowCard payload={payload} admin={admin} /></Suspense></div>
+        <div className="cms-cell cms-span-4 is-fill"><Suspense fallback={<Skeleton height={360} lines={5} />}><TasksCard payload={payload} admin={admin} /></Suspense></div>
+        <div className="cms-cell cms-span-8"><Suspense fallback={<Skeleton height={340} lines={3} />}><RecentWorkCard payload={payload} admin={admin} /></Suspense></div>
+        <div className="cms-cell cms-span-4"><SettingsCard admin={admin} /></div>
+        {/* full width with no partner: an empty inbox stays a slim strip instead of stretching */}
+        <div className="cms-cell cms-span-12"><Suspense fallback={<Skeleton height={200} lines={3} />}><InboxCard payload={payload} admin={admin} /></Suspense></div>
       </div>
-
-      <Suspense fallback={<Skeleton height={280} lines={3} />}><RecentWorkCard payload={payload} admin={admin} /></Suspense>
-
-      <Suspense fallback={<Skeleton height={320} lines={4} />}><InboxCard payload={payload} admin={admin} /></Suspense>
     </div>
   );
 }

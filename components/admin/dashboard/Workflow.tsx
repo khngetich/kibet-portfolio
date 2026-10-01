@@ -54,7 +54,7 @@ export function Workflow({ items }: { items: WorkItem[] }) {
           {shown.map((i) => (
             <li key={i.key}>
               <DocLink collection={i.kind === 'page' ? 'pages' : 'projects'} id={i.id} href={i.href} className="cms-work-row">
-                <span className={`cms-tile tint-${i.kind === 'page' ? 0 : 3}`} aria-hidden="true"><Icon name={i.kind === 'page' ? 'file' : 'folder'} size={16} /></span>
+                <span className={`cms-tile tint-${i.kind === 'page' ? 0 : 3}`} aria-hidden="true"><Icon name={i.kind === 'page' ? 'file' : 'portfolio'} size={16} /></span>
                 <span className="cms-work-main">
                   <b>{i.title}</b>
                   <small>{i.kind === 'page' ? 'Page' : 'Project'} · {i.sub} · edited {i.ago}</small>
