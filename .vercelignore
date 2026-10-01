@@ -1,0 +1,15 @@
+# Files the `vercel` CLI must never upload. Production settings come from the Vercel
+# project's Environment Variables, not from local .env files.
+.env
+.env.*
+!.env.example
+# local uploads: production media lives in Supabase Storage
+/media
+node_modules
+.next
+.vercel
+.claude
+.agents
+data
+supabase/.temp
+.DS_Store

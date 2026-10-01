@@ -1,6 +1,10 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+  // moved here from 20260925_212959_process_circuit, once 'circuit' has been committed to the enum
+  await db.execute(sql`
+   ALTER TABLE "pages_blocks_process" ALTER COLUMN "layout" SET DEFAULT 'circuit';
+   ALTER TABLE "_pages_v_blocks_process" ALTER COLUMN "layout" SET DEFAULT 'circuit';`)
   await db.execute(sql`
    CREATE TYPE "public"."enum_pages_blocks_about_banner_layout" AS ENUM('editorial', 'banner');
   CREATE TYPE "public"."enum__pages_v_blocks_about_banner_layout" AS ENUM('editorial', 'banner');
