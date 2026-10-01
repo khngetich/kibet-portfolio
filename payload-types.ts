@@ -954,6 +954,14 @@ export interface Project {
         | {
             before: number | Media;
             after: number | Media;
+            /**
+             * e.g. “Sketch”, “Concept”, “Old logo”.
+             */
+            beforeLabel?: string | null;
+            /**
+             * e.g. “Final”, “Printed”, “New logo”.
+             */
+            afterLabel?: string | null;
             caption?: string | null;
             id?: string | null;
             blockName?: string | null;
@@ -1062,7 +1070,7 @@ export interface Project {
   liveUrl?: string | null;
   liveType?: ('website' | 'video' | 'post') | null;
   /**
-   * Hex colour used for this project’s accents, e.g. #F5C400
+   * Leave empty and the card, its glow and the case study take their colour from the cover. Set a hex (e.g. #F5C400) to use a brand colour instead.
    */
   accent?: string | null;
   /**
@@ -1119,6 +1127,10 @@ export interface Inquiry {
   email: string;
   service?: string | null;
   budget?: string | null;
+  /**
+   * When they need it, from the brief builder.
+   */
+  timeline?: string | null;
   message: string;
   status?: ('new' | 'replied' | 'archived') | null;
   updatedAt: string;
@@ -1814,6 +1826,8 @@ export interface ProjectsSelect<T extends boolean = true> {
           | {
               before?: T;
               after?: T;
+              beforeLabel?: T;
+              afterLabel?: T;
               caption?: T;
               id?: T;
               blockName?: T;
@@ -1936,6 +1950,7 @@ export interface InquiriesSelect<T extends boolean = true> {
   email?: T;
   service?: T;
   budget?: T;
+  timeline?: T;
   message?: T;
   status?: T;
   updatedAt?: T;
@@ -2229,6 +2244,10 @@ export interface Site {
    */
   whatsapp?: boolean | null;
   /**
+   * Your Cal.com, Calendly or Google booking page. When set, a “Book a call” button appears beside the contact form.
+   */
+  bookingUrl?: string | null;
+  /**
    * Only profiles with a full URL are shown.
    */
   socials?:
@@ -2368,6 +2387,7 @@ export interface SiteSelect<T extends boolean = true> {
   email?: T;
   phone?: T;
   whatsapp?: T;
+  bookingUrl?: T;
   socials?:
     | T
     | {

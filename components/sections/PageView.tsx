@@ -10,10 +10,12 @@ export async function pageMetadata(slug: string): Promise<Metadata> {
   const title = page.meta?.title || (slug === 'home' ? undefined : page.title);
   const description = page.meta?.description || site.metaDescription || undefined;
   const image = asMedia(page.meta?.image) ?? asMedia(site.ogImage);
+  // no image anywhere: a generated card with the page's title, so shared links still preview
+  const card = `/og?${new URLSearchParams({ title: title || site.role || site.name, kicker: slug === 'home' ? (site.studio || '') : page.title })}`;
   return {
     ...(title ? { title: slug === 'home' ? { absolute: title } : title } : {}),
     description,
-    openGraph: image?.url ? { images: [{ url: image.url, width: image.width ?? undefined, height: image.height ?? undefined }] } : undefined,
+    openGraph: { images: [image?.url ? { url: image.url, width: image.width ?? undefined, height: image.height ?? undefined } : { url: card, width: 1200, height: 630, alt: title || site.name }] },
   };
 }
 

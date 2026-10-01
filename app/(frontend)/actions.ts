@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { getPayload } from 'payload';
 import config from '@payload-config';
 
-type Values = { name: string; email: string; service: string; budget: string; message: string };
+type Values = { name: string; email: string; service: string; budget: string; timeline: string; message: string };
 /** `field` names the input to fix; `values` refill the form, which React resets after every submit. */
 export type ContactState = { ok: boolean; error?: string; field?: 'name' | 'email' | 'message'; values?: Values } | null;
 
@@ -38,6 +38,7 @@ export async function sendEnquiry(_prev: ContactState, fd: FormData): Promise<Co
     email: field(fd, 'email', 200).toLowerCase(),
     service: field(fd, 'service', 120),
     budget: field(fd, 'budget', 60),
+    timeline: field(fd, 'timeline', 60),
     message: field(fd, 'message', 5000),
   };
   if (!data.name) return { ok: false, field: 'name', error: 'Please add your name.', values: data };

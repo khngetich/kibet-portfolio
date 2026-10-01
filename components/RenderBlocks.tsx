@@ -50,7 +50,7 @@ function BlockView({ block }: { block: Block }) {
     case 'beforeAfter':
       return (
         <figure className="blk blk-wide reveal">
-          <BeforeAfter before={<Img media={block.before} sizes={SIZES.wide} />} after={<Img media={block.after} sizes={SIZES.wide} />} />
+          <BeforeAfter before={<Img media={block.before} sizes={SIZES.wide} />} after={<Img media={block.after} sizes={SIZES.wide} />} beforeLabel={block.beforeLabel} afterLabel={block.afterLabel} />
           <Caption text={block.caption} />
         </figure>
       );

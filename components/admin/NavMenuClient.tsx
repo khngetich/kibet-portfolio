@@ -123,6 +123,12 @@ function useSidebarWidth() {
 
 export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGroup[] }) {
   const pathname = usePathname();
+  // inside a settings pop-up (DocModal's GlobalWindow): hide the CMS frame, then say we're ready
+  useEffect(() => {
+    if (window.self === window.top) return;
+    document.documentElement.classList.add('cms-embed');
+    window.parent.postMessage('cms:embed-ready', location.origin);
+  }, []);
   const nav = useSidebarWidth();
   const iconOut = useReducedMotion() ? { opacity: 0 } : { opacity: 0, scale: 0.25, filter: 'blur(4px)' };
   // true once on the client (the resizer is portalled into <body>)
@@ -184,7 +190,7 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
         </button>
       )}
       <CommandPalette admin={admin} groups={groups} />
-      <DocModalHost />
+      <DocModalHost admin={admin} />
       {mounted && !nav.desktop && createPortal(
         <TabBar admin={admin} groups={groups} isActive={isActive} menuOpen={nav.navOpen} onMenu={() => nav.setNavOpen(!nav.navOpen)} />,
         document.body,

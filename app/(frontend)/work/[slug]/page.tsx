@@ -1,3 +1,4 @@
+import { paletteVars } from '@/lib/paletteVars';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ViewTransition } from 'react';
@@ -56,7 +57,8 @@ export default async function CaseStudy({ params }: Props) {
         </div>
       </ViewTransition>
 
-      <div className="case-sheet">
+      {/* the same cover colours as its card, so the panel keeps its colour through the morph */}
+      <div className="case-sheet" style={project.palette ? { ...paletteVars(project.palette), '--accent': project.palette.accent } as React.CSSProperties : undefined}>
         <ViewTransition name={`case-sheet-${slug}`} share="case-sheet" default="none">
           <header className="case-sheet-head">
             <span className="pcard-tabrow case-tabrow" aria-hidden="true"><span className="pcard-tab" /><Slope /></span>

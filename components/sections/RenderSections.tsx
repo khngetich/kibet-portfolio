@@ -13,7 +13,8 @@ import { ProcessCircuit } from '@/components/motion/ProcessCircuit';
 import { ContactForm } from '@/components/ContactForm';
 import { ProjectCard } from '@/components/ProjectCard';
 import { WorkGrid } from '@/components/WorkGrid';
-import { Reveal, ScrollWords, SplitWords } from '@/components/motion/Reveal';
+import { Reveal, ScrollWords } from '@/components/motion/Reveal';
+import { LivingTitle } from '@/components/motion/LivingTitle';
 import { MarqueeToggle } from '@/components/motion/PauseButton';
 import { HeroCards } from '@/components/motion/HeroCards';
 import { RoleWheel } from '@/components/motion/RoleWheel';
@@ -174,7 +175,7 @@ function HeroSection({ s, ctx, id, hid }: P<'hero'>) {
       <div className="hero-glow" aria-hidden="true" />
       <div className="wrap hero-inner">
         {!!clients.length && trusted && <p className="hero-proof intro">{trusted.replace('{count}', String(clients.length))}</p>}
-        <h1 className="hero-title" id={hid}><SplitWords text={s.headline} /></h1>
+        <h1 className="hero-title" id={hid}><LivingTitle text={s.headline} /></h1>
         {s.intro && <p className="hero-intro intro" style={{ '--d': '.3s' } as React.CSSProperties}>{s.intro}</p>}
         <div className="intro" style={{ '--d': '.4s' } as React.CSSProperties}>
           <div className="hero-cta">
@@ -466,6 +467,11 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
           <Reveal className="contact-aside">
             {s.intro && <p className="lede">{s.intro}</p>}
             {s.showAvailability !== false && site.availability && <p className="status"><span className="dot" aria-hidden="true" />{site.availability}</p>}
+            {site.bookingUrl && (
+              <a className="btn btn-light contact-book" href={site.bookingUrl} target="_blank" rel="noopener noreferrer">
+                <Icon name="calendar" size={18} /> Book a 15-minute call
+              </a>
+            )}
             <ul className="contact-links">
               <li><a href={`mailto:${site.email}`}><Icon name="mail" size={18} /><span><small>Email</small>{site.email}</span><Icon name="arrow" size={15} /></a></li>
               {ctx.whatsapp && <li><a href={ctx.whatsapp} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={18} /><span><small>WhatsApp</small>{site.phone}</span><Icon name="arrow" size={15} /></a></li>}
@@ -474,7 +480,7 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
               ))}
             </ul>
           </Reveal>
-          <Reveal delay={0.1}><ContactForm services={ctx.serviceTitles} /></Reveal>
+          <Reveal delay={0.1}><ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} /></Reveal>
         </div>
       </div>
     </section>
@@ -507,7 +513,14 @@ function ProjectGridSection({ s, ctx, id, first }: { s: Of<'projectGrid'>; ctx: 
         </header>
         {projects.length ? (
           s.showFilters !== false ? (
-            <WorkGrid items={projects.map((p, i) => ({ disciplines: p.disciplines ?? [], node: <ProjectCard project={p} level={level} sizes="(max-width: 800px) 100vw, 600px" preload={i < 2} /> }))} />
+            <WorkGrid
+              studio={ctx.site.name}
+              items={projects.map((p, i) => ({
+                disciplines: p.disciplines ?? [],
+                node: <ProjectCard project={p} level={level} sizes="(max-width: 800px) 100vw, 600px" preload={i < 2} />,
+                proof: { title: p.title, slug: p.slug, client: p.client, year: p.year, cover: p.cover, featured: p.featured },
+              }))}
+            />
           ) : (
             <div className="grid-work">{projects.map((p, i) => <div key={p.id} className="grid-cell"><ProjectCard project={p} level={level} sizes="(max-width: 800px) 100vw, 600px" preload={i < 2} /></div>)}</div>
           )

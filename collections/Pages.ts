@@ -20,7 +20,7 @@ export const Pages: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'updatedAt'],
     description: 'Every page on the site. Open one to add, reorder, hide or edit its sections.',
-    components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'pages', label: '+ New page', hint: 'Name the page and pick its address; you add sections on the next screen.', then: 'open' } }] },
+    components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'pages', label: '+ New page', hint: 'Name the page and pick its address in the pop-up; it stays open so you can add sections straight away.' } }] },
   },
   access: { read: publishedOrAuthenticated, create: authenticated, update: authenticated, delete: authenticated },
   versions: { drafts: { autosave: { interval: 600 }, schedulePublish: false }, maxPerDoc: 50 },

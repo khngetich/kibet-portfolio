@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ViewTransition } from 'react';
 import type { ProjectCard } from '@/lib/cms';
 import { disciplineList } from '@/lib/format';
+import { paletteVars } from '@/lib/paletteVars';
 import { Img } from './Img';
 import { Icon } from './Icon';
 
@@ -12,6 +13,9 @@ import { Icon } from './Icon';
  * The banner and the panel carry view-transition names shared with the case study page, so
  * opening one morphs the banner into the page's header image and the panel into its article
  * body (see app/(frontend)/work/[slug]/page.tsx and the `case-open` styles in sections.css).
+ *
+ * Colour adaptation: the panel, tab, rim and glow take the cover's own colours (lib/palette.ts),
+ * so each file looks like it belongs to its work.
  */
 export function ProjectFolder({ project: p, size = 'md', sizes, preload }: { project: ProjectCard; size?: 'md' | 'lg'; sizes: string; preload?: boolean }) {
   // the tab holds one category; everything else goes on the discipline line under it
@@ -20,7 +24,7 @@ export function ProjectFolder({ project: p, size = 'md', sizes, preload }: { pro
   const [first, second] = p.stats ?? [];
 
   return (
-    <Link href={`/work/${p.slug}`} className={`pcard pcard-${size}`} transitionTypes={['case-open']} aria-label={`${p.title}: ${category}${p.client && p.client !== p.title ? `, for ${p.client}` : ''}. View the case study`}>
+    <Link href={`/work/${p.slug}`} className={`pcard pcard-${size}`} style={paletteVars(p.palette)} transitionTypes={['case-open']} aria-label={`${p.title}: ${category}${p.client && p.client !== p.title ? `, for ${p.client}` : ''}. View the case study`}>
       <ViewTransition name={`case-cover-${p.slug}`} share="case-cover" default="none">
         <span className="pcard-banner">
           <Img media={p.cover} sizes={sizes} preload={preload} />

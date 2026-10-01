@@ -1,4 +1,6 @@
 import { cache } from 'react';
+import { paletteOf } from './palette';
+import type { Palette } from './paletteVars';
 import { cookies, draftMode } from 'next/headers';
 import { getPayload, type Where } from 'payload';
 import config from '@payload-config';
@@ -45,13 +47,14 @@ export const getPageSlugs = async () => {
 };
 
 const cardSelect = { title: true, slug: true, client: true, year: true, disciplines: true, summary: true, cover: true, featured: true, accent: true, role: true, outcome: true, stats: true } as const;
-export type ProjectCard = Pick<Project, keyof typeof cardSelect | 'id'>;
+export type ProjectCard = Pick<Project, keyof typeof cardSelect | 'id'> & { palette?: Palette | null };
 
 export const getProjects = cache(async (opts: { featured?: boolean } = {}) => {
   const draft = await isPreview();
   const where: Where = { and: [published(draft), ...(opts.featured ? [{ featured: { equals: true } }] : [])] };
   const { docs } = await (await cms()).find({ collection: 'projects', where, sort: '_order', depth: 1, limit: 100, draft, select: cardSelect });
-  return docs as ProjectCard[];
+  // each card's colours come from its cover (lib/palette.ts)
+  return Promise.all(docs.map(async (d) => ({ ...d, palette: await paletteOf(d.cover, d.accent) }))) as Promise<ProjectCard[]>;
 });
 
 export const getProject = cache(async (slug: string) => {
@@ -63,7 +66,8 @@ export const getProject = cache(async (slug: string) => {
     limit: 1,
     draft,
   });
-  return docs[0] ?? null;
+  const doc = docs[0];
+  return doc ? { ...doc, palette: await paletteOf(doc.cover, doc.accent) } : null;
 });
 
 export const getProjectSlugs = async () => {

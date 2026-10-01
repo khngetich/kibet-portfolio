@@ -62,6 +62,10 @@ export const BeforeAfterBlock: Block = {
       { name: 'before', type: 'upload', relationTo: 'media', required: true, admin: { width: '50%' } },
       { name: 'after', type: 'upload', relationTo: 'media', required: true, admin: { width: '50%' } },
     ] },
+    { type: 'row', fields: [
+      { name: 'beforeLabel', type: 'text', admin: { width: '50%', placeholder: 'Before', description: 'e.g. “Sketch”, “Concept”, “Old logo”.' } },
+      { name: 'afterLabel', type: 'text', admin: { width: '50%', placeholder: 'After', description: 'e.g. “Final”, “Printed”, “New logo”.' } },
+    ] },
     { name: 'caption', type: 'text' },
   ],
 };

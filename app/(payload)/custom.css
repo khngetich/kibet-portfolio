@@ -251,6 +251,34 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
   .drawer:not(.sf-drawer) .drawer__content { transform: none; }
 }
 
+/* site-wide settings (globals) in the same kind of window: their editor, embedded (DocModal → GlobalWindow) */
+.cms-window { width: min(1040px, calc(100vw - 64px)); height: min(880px, calc(100dvh - 64px)); max-width: none; max-height: none; margin: auto; padding: 0; border: 0; border-radius: 16px; background: var(--page); box-shadow: var(--shadow-lg), 0 0 0 1px var(--line); overflow: hidden; }
+.cms-window::backdrop { background: var(--scrim, #0F0F0F66); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.cms-window[open] { animation: cms-window-in .18s ease-out; }
+@keyframes cms-window-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.cms-window-box { position: relative; display: flex; flex-direction: column; height: 100%; }
+.cms-window-bar { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 8px 0 20px; border-bottom: 1px solid var(--line); background: var(--card); }
+.cms-window-bar b { flex: 1; font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+.cms-window-full { font-size: 13px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
+.cms-window-full:hover { color: var(--ink); }
+.cms-window-close { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 8px; background: none; color: var(--ink-2); cursor: pointer; transition-property: background-color, color; transition-duration: .15s; }
+.cms-window-close:hover { background: var(--sub); color: var(--ink); }
+.cms-window-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cms-window iframe { flex: 1; width: 100%; border: 0; background: var(--page); opacity: 0; transition: opacity .2s ease-out; }
+.cms-window iframe.is-ready { opacity: 1; }
+.cms-window-loading { position: absolute; inset: 52px 0 0; display: grid; place-items: center; pointer-events: none; }
+.cms-window-loading span { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--ink); animation: cms-spin .7s linear infinite; }
+@media (max-width: 640px) {
+  .cms-window { width: 100vw; height: 100dvh; border-radius: 0; }
+}
+
+/* an admin page shown inside that window: no sidebar, top bar, tab bar or resizer, content full width */
+html.cms-embed .nav, html.cms-embed .app-header, html.cms-embed .cms-tabbar, html.cms-embed .cms-nav-resizer,
+html.cms-embed .template-default__nav-toggler-wrapper, html.cms-embed .template-default__nav-overlay { display: none !important; }
+html.cms-embed .template-default { display: block !important; }
+html.cms-embed .template-default__wrap { width: 100%; min-width: 0; padding-bottom: 0; }
+html.cms-embed body::after { display: none; }
+
 /* ── section list (components/admin/SectionsField.tsx) ── */
 .sf { margin-block: 8px 24px; }
 .sf-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }

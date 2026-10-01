@@ -22,6 +22,7 @@ const paths = {
   sliders: <g {...S}><path d="M4 7h8.5M17.5 7H20M4 17h2.5M11.5 17H20" /><circle cx="15" cy="7" r="2.5" /><circle cx="9" cy="17" r="2.5" /></g>,
   checkCircle: <g {...S}><circle cx="12" cy="12" r="8.5" /><path d="M8.3 12.4l2.6 2.6 4.9-5.2" /></g>,
   layers: <g {...S}><path d="M12 4l8.5 4.5L12 13 3.5 8.5z" /><path d="M3.5 12.5L12 17l8.5-4.5M3.5 16.5L12 21l8.5-4.5" /></g>,
+  calendar: <g {...S}><rect x="3.5" y="5" width="17" height="15" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M14 14h2M8 17h2" /></g>,
   mail: <g {...S}><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M3.5 6.5l8.5 6.5 8.5-6.5" /></g>,
   download: <path {...S} d="M12 4v11M7 10.5l5 5 5-5M5 20h14" />,
   whatsapp: <g {...S}><path d="M4 20l1.3-4A8 8 0 1 1 8 18.8z" /><path d="M9 9.2c0 3 2.8 5.8 5.8 5.8l1-1.5-2-1-.9.9a4 4 0 0 1-2.3-2.3l.9-.9-1-2L9 9.2z" /></g>,

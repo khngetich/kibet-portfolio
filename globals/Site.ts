@@ -45,6 +45,11 @@ export const Site: GlobalConfig = {
             ] },
             { name: 'whatsapp', type: 'checkbox', defaultValue: true, admin: { description: 'Show a WhatsApp button using the phone number above' } },
             {
+              name: 'bookingUrl', type: 'text', label: 'Booking link',
+              admin: { placeholder: 'https://cal.com/your-name/15min', description: 'Your Cal.com, Calendly or Google booking page. When set, a “Book a call” button appears beside the contact form.' },
+              validate: (v: unknown) => !v || (typeof v === 'string' && /^https:\/\/[^/]+\.[^/]+/.test(v)) || 'Paste the full https:// link to your booking page',
+            },
+            {
               name: 'socials',
               type: 'array',
               admin: { description: 'Only profiles with a full URL are shown.' },

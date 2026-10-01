@@ -4,6 +4,7 @@ import type { DefaultCellComponentProps } from 'payload';
 import { useAuth, useConfig, useDocumentDrawer } from '@payloadcms/ui';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { NewDoc } from './DocModal';
 
 /**
  * Pop-up create/edit forms. Short records (enquiries, users, a new page's title, a new
@@ -67,14 +68,18 @@ export function ModalCell({ cellData, rowData, collectionSlug }: DefaultCellComp
   );
 }
 
-/** “Quick add” bar shown above a collection's list (admin.components.beforeListTable). */
-export function ListQuickCreate({ collection, label, hint, then }: { collection: string; label: string; hint?: string; then?: 'refresh' | 'open' }) {
+/**
+ * “Quick add” bar shown above a collection's list (admin.components.beforeListTable). It opens
+ * the create form in the shared pop-up (DocModal), which stays open after the first save so a
+ * new page or project can be finished there; the list underneath refreshes.
+ */
+export function ListQuickCreate({ collection, label, hint }: { collection: string; label: string; hint?: string; then?: 'refresh' | 'open' }) {
   const { permissions } = useAuth();
   if (permissions && !permissions.collections?.[collection]?.create) return null;
   return (
     <div className="cms-quickbar">
       {hint && <p>{hint}</p>}
-      <QuickCreate collection={collection} label={label} then={then} />
+      <NewDoc collection={collection} className="cms-btn cms-btn-primary">{label}</NewDoc>
     </div>
   );
 }

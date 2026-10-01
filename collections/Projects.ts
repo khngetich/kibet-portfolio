@@ -23,7 +23,7 @@ export const Projects: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'client', 'disciplines', 'year', 'featured', '_status'],
     description: 'Drag rows to set the order projects appear on the site.',
-    components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'projects', label: '+ New project', hint: 'Add the basics in a pop-up; the case study opens next.', then: 'open' } }] },
+    components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'projects', label: '+ New project', hint: 'Add the project in a pop-up; it stays open so you can carry on with the case study.' } }] },
   },
   access: { read: publishedOrAuthenticated, create: authenticated, update: authenticated, delete: authenticated },
   versions: { drafts: { autosave: { interval: 800 } }, maxPerDoc: 30 },
@@ -90,7 +90,7 @@ export const Projects: CollectionConfig = {
     { name: 'liveType', label: 'Live link is a…', type: 'select', defaultValue: 'website', options: [
       { label: 'Website', value: 'website' }, { label: 'Video', value: 'video' }, { label: 'Social post', value: 'post' },
     ], admin: { position: 'sidebar', condition: (d) => !!d?.liveUrl } },
-    { name: 'accent', type: 'text', admin: { position: 'sidebar', description: 'Hex colour used for this project’s accents, e.g. #F5C400' } },
+    { name: 'accent', type: 'text', admin: { position: 'sidebar', description: 'Leave empty and the card, its glow and the case study take their colour from the cover. Set a hex (e.g. #F5C400) to use a brand colour instead.' } },
     { name: 'note', type: 'textarea', admin: { position: 'sidebar', description: 'Small print shown at the end (NDA, placeholder images, etc.)' } },
     {
       name: 'stats',

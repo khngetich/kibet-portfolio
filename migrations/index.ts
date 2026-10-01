@@ -8,6 +8,7 @@ import * as migration_20260925_212959_process_circuit from './20260925_212959_pr
 import * as migration_20260926_082828_about_editorial_footer from './20260926_082828_about_editorial_footer';
 import * as migration_20260928_172816_project_samples from './20260928_172816_project_samples';
 import * as migration_20261001_171615_user_roles_site_versions from './20261001_171615_user_roles_site_versions';
+import * as migration_20261001_205913_slider_labels_booking_timeline from './20261001_205913_slider_labels_booking_timeline';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261001_171615_user_roles_site_versions.up,
     down: migration_20261001_171615_user_roles_site_versions.down,
-    name: '20261001_171615_user_roles_site_versions'
+    name: '20261001_171615_user_roles_site_versions',
+  },
+  {
+    up: migration_20261001_205913_slider_labels_booking_timeline.up,
+    down: migration_20261001_205913_slider_labels_booking_timeline.down,
+    name: '20261001_205913_slider_labels_booking_timeline'
   },
 ];

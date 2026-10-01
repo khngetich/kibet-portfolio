@@ -146,9 +146,9 @@ async function HealthCard({ payload, admin }: { payload: Payload; admin: string 
       fix: site.description ? undefined : { label: 'Add a site-wide description in Site settings', href: siteHref },
     },
     {
-      key: 'image', label: 'Share images', fallback: 'use the site image', fallbackPasses: true,
-      pages: pages.map((p) => ({ id: p.id, title: p.title, href: edit(p.id), state: p.meta?.image ? 'own' : site.image ? 'fallback' : 'missing' })),
-      fix: site.image ? undefined : { label: 'Add a default share image in Site settings', href: siteHref },
+      // with no image of its own or a site default, a page shares a generated title card (/og), so none is ever missing
+      key: 'image', label: 'Share images', fallback: site.image ? 'use the site image' : 'use a generated card', fallbackPasses: true,
+      pages: pages.map((p) => ({ id: p.id, title: p.title, href: edit(p.id), state: p.meta?.image ? 'own' : 'fallback' })),
     },
   ];
   return <section className="cms-card cms-anim" aria-labelledby="dash-health"><Health checks={checks} /></section>;
@@ -160,7 +160,7 @@ async function TasksCard({ payload, admin }: { payload: Payload; admin: string }
   const projectDoc = (id: number) => ({ href: `${admin}/collections/projects/${id}`, doc: { collection: 'projects', id } });
   const noTitle = pages.filter((p) => !p.meta?.title);
   const noDesc = pages.filter((p) => !p.meta?.description);
-  const noImage = pages.filter((p) => !p.meta?.image && !site.image);
+  const ownImage = pages.filter((p) => p.meta?.image).length;
   const largeHref = `${admin}/collections/media?${new URLSearchParams({ 'where[and][0][mimeType][like]': 'image', 'where[and][1][filesize][greater_than]': String(LARGE_IMAGE) })}`;
   // one task for a single document opens it in the pop-up; a task over many goes to the first
   const noSamples = projects.filter((p) => !p.samples).sort((a, b) => Number(a.status !== 'live') - Number(b.status !== 'live'));
@@ -189,9 +189,9 @@ async function TasksCard({ payload, admin }: { payload: Payload; admin: string }
       detail: noDesc.length ? noDesc.map((p) => p.title).join(', ') : 'Every page has its own',
     },
     {
-      key: 'share', priority: 'normal', done: noImage.length === 0, ...(site.image ? { href: `${admin}/globals/site` } : firstOf(noImage)),
-      label: noImage.length ? 'Add share images' : 'Share images',
-      detail: noImage.length ? `${plural(noImage.length, 'page')} without one, and no site default` : site.image ? 'Pages without their own use the site default' : 'Every page has its own',
+      key: 'share', priority: 'normal', done: true, href: `${admin}/globals/site`,
+      label: 'Share images',
+      detail: ownImage === pages.length ? 'Every page has its own' : site.image ? 'Pages without their own use the site default' : 'Pages without their own share a generated title card'
     },
     {
       key: 'media', priority: 'normal', done: media.large === 0, href: largeHref,

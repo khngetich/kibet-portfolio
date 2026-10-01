@@ -20,6 +20,7 @@ export const Inquiries: CollectionConfig = {
       { name: 'service', type: 'text', admin: { width: '50%' } },
       { name: 'budget', type: 'text', admin: { width: '50%' } },
     ] },
+    { name: 'timeline', type: 'text', admin: { description: 'When they need it, from the brief builder.' } },
     { name: 'message', type: 'textarea', required: true },
     {
       name: 'status',
