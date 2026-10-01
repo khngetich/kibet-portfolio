@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Icon } from '@/components/ui/Icon';
 
 /**
@@ -21,33 +21,44 @@ export function Scroller({ children, label }: { children: React.ReactNode; label
   );
 }
 
+const noop = () => () => {};
+const timeOfDay = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
+
+/** The dashboard greeting, by the editor's own clock (the server may sit in another time zone). */
+export function Greeting({ name }: { name?: string }) {
+  const hello = useSyncExternalStore(noop, timeOfDay, () => 'Hello');
+  return <>{hello}{name ? `, ${name}` : ''}.</>;
+}
+
 type Range = 'week' | 'month' | 'year';
 const RANGES: { key: Range; label: string }[] = [{ key: 'week', label: 'Week' }, { key: 'month', label: 'Month' }, { key: 'year', label: 'Year' }];
 const DAY = 86400000;
 
-function bucket(dates: number[], range: Range) {
+type Hour = { t: number; n: number };
+const sum = (hours: Hour[], from: number, to: number) => hours.reduce((a, h) => (h.t >= from && h.t < to ? a + h.n : a), 0);
+
+function bucket(hours: Hour[], range: Range) {
   const now = new Date();
   if (range === 'year') {
     return Array.from({ length: 12 }, (_, i) => {
       const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
       const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-      return { label: d.toLocaleDateString('en-GB', { month: 'short' }), long: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }), value: dates.filter((t) => t >= d.getTime() && t < next.getTime()).length };
+      return { label: d.toLocaleDateString('en-GB', { month: 'short' }), long: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }), value: sum(hours, d.getTime(), next.getTime()) };
     });
   }
   const days = range === 'week' ? 7 : 30;
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() - (days - 1) * DAY;
   return Array.from({ length: days }, (_, i) => {
     const d = new Date(start + i * DAY);
-    return { label: range === 'week' ? d.toLocaleDateString('en-GB', { weekday: 'short' }) : String(d.getDate()), long: d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }), value: dates.filter((t) => t >= d.getTime() && t < d.getTime() + DAY).length };
+    return { label: range === 'week' ? d.toLocaleDateString('en-GB', { weekday: 'short' }) : String(d.getDate()), long: d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' }), value: sum(hours, d.getTime(), d.getTime() + DAY) };
   });
 }
 
-/** Enquiries per day (or month) as a single purple area with a crosshair tooltip. */
-export function EnquiryChart({ dates }: { dates: string[] }) {
+/** Enquiries per day (or month) as a single purple area with a crosshair tooltip. Takes hourly counts. */
+export function EnquiryChart({ hours }: { hours: Hour[] }) {
   const [range, setRange] = useState<Range>('month');
   const [hover, setHover] = useState<number | null>(null);
-  const times = useMemo(() => dates.map((d) => new Date(d).getTime()), [dates]);
-  const data = useMemo(() => bucket(times, range), [times, range]);
+  const data = useMemo(() => bucket(hours, range), [hours, range]);
   const total = data.reduce((a, d) => a + d.value, 0);
 
   const W = 640, H = 220, L = 32, R = 12, T = 16, B = 28;

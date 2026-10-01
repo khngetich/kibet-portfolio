@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { deleteMedia, listMedia, listProjects, updateMedia, uploadMedia } from './api';
+import { deleteMedia, listMedia, listProjects, updateMedia } from './api';
+import { uploadFile, type UploadMode } from './upload';
 import { thumbURL } from '@/lib/media';
 import { Modal, useConfirm } from './Modal';
 
@@ -22,6 +23,7 @@ type Ctx = {
   pickMedia: (o?: PickOpts) => Promise<MediaDoc[] | null>;
   projects: ProjectRef[];
   refreshProjects: () => Promise<void>;
+  upload: (file: File) => Promise<MediaDoc>;
 };
 const DataContext = createContext<Ctx | null>(null);
 export const useStudioData = () => {
@@ -30,7 +32,7 @@ export const useStudioData = () => {
   return c;
 };
 
-export function StudioDataProvider({ children }: { children: ReactNode }) {
+export function StudioDataProvider({ children, upload: mode }: { children: ReactNode; upload: UploadMode }) {
   const [media, setMedia] = useState<Record<number, MediaDoc>>({});
   const [projects, setProjects] = useState<ProjectRef[]>([]);
   const pending = useRef(new Set<number>());
@@ -50,10 +52,11 @@ export function StudioDataProvider({ children }: { children: ReactNode }) {
     return () => { live = false; };
   }, []);
 
+  const upload = useCallback((file: File) => uploadFile(file, mode), [mode]);
   const pickMedia = useCallback((o: PickOpts = {}) => new Promise<MediaDoc[] | null>((resolve) => setPicker({ ...o, resolve })), []);
 
   return (
-    <DataContext.Provider value={{ media, ensureMedia, remember, pickMedia, projects, refreshProjects }}>
+    <DataContext.Provider value={{ media, ensureMedia, remember, pickMedia, projects, refreshProjects, upload }}>
       {children}
       <Modal
         open={!!picker}
@@ -77,7 +80,7 @@ const size = (b?: number | null) => (!b ? '' : b > 1048576 ? `${(b / 1048576).to
 
 /** The media grid: search, drag-and-drop upload, choose, edit descriptions, delete. */
 export function MediaLibrary({ selectable, onChoose }: { selectable?: 'single' | 'multiple'; onChoose?: (docs: MediaDoc[]) => void }) {
-  const { remember } = useStudioData();
+  const { remember, upload: send } = useStudioData();
   const confirm = useConfirm();
   const [docs, setDocs] = useState<MediaDoc[]>([]);
   const [search, setSearch] = useState('');
@@ -103,10 +106,8 @@ export function MediaLibrary({ selectable, onChoose }: { selectable?: 'single' |
     const list = Array.from(files);
     setUploads((u) => [...list.map((f) => ({ name: f.name, state: 'uploading' as const })), ...u]);
     for (const f of list) {
-      const fd = new FormData();
-      fd.append('file', f);
       try {
-        const doc = (await uploadMedia(fd)) as MediaDoc;
+        const doc = await send(f);
         remember([doc]);
         setDocs((d) => [doc, ...d]);
         if (selectable === 'single') setChosen([doc.id]);
@@ -178,7 +179,7 @@ export function MediaLibrary({ selectable, onChoose }: { selectable?: 'single' |
             doc={editing}
             onSave={async (alt) => { await updateMedia(editing.id, { alt }); const next = { ...editing, alt }; remember([next]); setDocs((d) => d.map((x) => (x.id === editing.id ? next : x))); setEditing(null); }}
             onDelete={async () => {
-              if (!(await confirm({ title: 'Delete this file?', body: 'It will be removed from the library and from anywhere it is used on the site.', confirmLabel: 'Delete file', danger: true }))) return;
+              if (!(await confirm({ title: 'Delete this file?', body: 'It will be removed from the library, and anywhere it appears on the site will show nothing in its place. Files used as a project cover or sample can’t be deleted until they’re replaced there.', confirmLabel: 'Delete file', danger: true }))) return;
               await deleteMedia(editing.id);
               setDocs((d) => d.filter((x) => x.id !== editing.id));
               setEditing(null);
@@ -193,6 +194,8 @@ export function MediaLibrary({ selectable, onChoose }: { selectable?: 'single' |
 function MediaDetails({ doc, onSave, onDelete }: { doc: MediaDoc; onSave: (alt: string) => Promise<void>; onDelete: () => Promise<void> }) {
   const [alt, setAlt] = useState(doc.alt);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const attempt = async (fn: () => Promise<void>) => { setBusy(true); setErr(null); try { await fn(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); } };
   return (
     <div className="st-media-details">
       <div className="st-media-preview">{doc.mimeType?.startsWith('image/') && doc.url ? <img src={doc.url} alt="" /> : <span className="st-media-type">{doc.filename}</span>}</div>
@@ -201,9 +204,10 @@ function MediaDetails({ doc, onSave, onDelete }: { doc: MediaDoc; onSave: (alt: 
         <textarea className="st-input" rows={3} value={alt} onChange={(e) => setAlt(e.target.value)} />
       </label>
       <p className="st-help">{doc.filename} · {doc.width && doc.height ? `${doc.width}×${doc.height} · ` : ''}{size(doc.filesize)}</p>
+      {err && <p className="st-error" role="alert">{err}</p>}
       <div className="st-row-end">
-        <button type="button" className="st-btn st-btn-danger-ghost" onClick={onDelete}>Delete file</button>
-        <button type="button" className="st-btn st-btn-primary" disabled={busy || !alt.trim()} onClick={async () => { setBusy(true); try { await onSave(alt.trim()); } finally { setBusy(false); } }}>Save</button>
+        <button type="button" className="st-btn st-btn-danger-ghost" disabled={busy} onClick={() => attempt(onDelete)}>Delete file</button>
+        <button type="button" className="st-btn st-btn-primary" disabled={busy || !alt.trim()} onClick={() => attempt(() => onSave(alt.trim()))}>Save</button>
       </div>
     </div>
   );

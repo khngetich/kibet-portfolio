@@ -12,6 +12,7 @@ import {
 import { ConfirmProvider, Modal, useConfirm } from './Modal';
 import { MediaLibrary, StudioDataProvider } from './Data';
 import { FieldList } from './Fields';
+import type { UploadMode } from './upload';
 import { ProjectsManager, EnquiriesManager } from './Managers';
 import { TabList, TabPanel } from './TabList';
 import { defaultsOf, newId, pagePath, slugify, timeAgo, type Rec } from './util';
@@ -32,10 +33,10 @@ type Device = 'desktop' | 'tablet' | 'mobile';
 const DEVICES: Record<Device, number | null> = { desktop: null, tablet: 834, mobile: 390 };
 type SaveState = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
 
-export function Studio(props: { schema: Schema; initialPages: PageRef[]; siteName: string; user: { name: string; email: string }; adminRoute: string }) {
+export function Studio(props: { schema: Schema; initialPages: PageRef[]; siteName: string; user: { name: string; email: string }; adminRoute: string; upload: UploadMode }) {
   return (
     <ConfirmProvider>
-      <StudioDataProvider>
+      <StudioDataProvider upload={props.upload}>
         <StudioApp {...props} />
       </StudioDataProvider>
     </ConfirmProvider>

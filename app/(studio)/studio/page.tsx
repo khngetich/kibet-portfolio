@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getPayload } from 'payload';
 import config from '@payload-config';
+import { directUploads } from '@/payload.config';
 import { pageSections } from '@/blocks/sections';
 import { Projects } from '@/collections/Projects';
 import { Header } from '@/globals/Header';
@@ -37,6 +38,8 @@ export default async function StudioPage() {
       siteName={site.name}
       user={{ name: (user as { name?: string }).name ?? '', email: user.email ?? '' }}
       adminRoute={payload.config.routes.admin}
+      // Vercel refuses request bodies over ~4.5 MB; locally there's no such limit.
+      upload={{ direct: directUploads, maxBytes: process.env.VERCEL ? 4 * 1024 * 1024 : null }}
     />
   );
 }

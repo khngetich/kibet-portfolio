@@ -1131,6 +1131,10 @@ export interface Inquiry {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * Admins can add, remove and change other people’s accounts. Editors can only edit content and their own account.
+   */
+  role: 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1943,6 +1947,7 @@ export interface InquiriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

@@ -1,15 +1,20 @@
 import Link from 'next/link';
 import type { Payload, TypedUser } from 'payload';
+import { sql, type PostgresAdapter } from '@payloadcms/db-postgres';
 import { pagePath } from '@/collections/Pages';
 import { SectionIcon } from './SectionIcon';
-import { EnquiryChart, Scroller } from './DashboardCharts';
+import { EnquiryChart, Greeting, Scroller } from './DashboardCharts';
 import { OpenInModal, QuickCreate } from './Crud';
 import { DashIntro } from './DashIntro';
 
 /**
  * The CMS home screen: the site's pages as cards, enquiries over time, how many sections
  * are live on each page, content stats and an SEO health score. Everything is computed
- * from the CMS on each visit. Colours follow the reference dashboard: a light surface,
+ * from the CMS on each visit.
+ *
+ * Drafts: saving a draft only writes a new version, so a document's own `_status` says
+ * whether it has ever gone live, and its latest version (`draft: true`) says whether there
+ * are changes waiting to be published. Both are shown, for pages and projects alike. Colours follow the reference dashboard: a light surface,
  * blue for active states and purple / coral / amber / blue for data (every coloured mark
  * also carries a text label). New pages, projects and uploads open in pop-up forms.
  */
@@ -28,7 +33,6 @@ const when = (iso?: string | null) => {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 };
 const pct = (part: number, whole: number) => (whole ? Math.round((part / whole) * 100) : 0);
-const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
 
 const TONES = ['purple', 'coral', 'amber', 'blue'] as const;
 type Tone = (typeof TONES)[number] | 'health';
@@ -58,23 +62,38 @@ export async function Dashboard({ payload, user }: Props) {
   // a server component rendered per request, so reading the clock here is intended
   // eslint-disable-next-line react-hooks/purity
   const yearAgo = new Date(Date.now() - 366 * 86400000).toISOString();
-  const [pagesRes, projects, featured, draftProjects, media, lightMedia, enquiriesAll, answered, recent, site, enquiryCount] = await Promise.all([
+  const [pagesRes, livePagesRes, projects, latestProjects, featured, media, lightMedia, enquiryHours, replied, archived, recent, site, enquiryCount] = await Promise.all([
     payload.find({ collection: 'pages', limit: 100, sort: '-updatedAt', depth: 0, draft: true, select: { title: true, slug: true, sections: true, updatedAt: true, _status: true, meta: true } }),
+    payload.find({ collection: 'pages', limit: 100, depth: 0, pagination: false, where: { _status: { equals: 'published' } }, select: { _status: true } }),
     payload.count({ collection: 'projects' }),
+    payload.find({ collection: 'projects', limit: 500, depth: 0, pagination: false, draft: true, select: { _status: true } }),
     payload.count({ collection: 'projects', where: { featured: { equals: true } } }),
-    payload.count({ collection: 'projects', where: { _status: { equals: 'draft' } } }),
     payload.count({ collection: 'media' }),
     payload.count({ collection: 'media', where: { filesize: { less_than: 1024 * 1024 } } }),
-    payload.find({ collection: 'inquiries', limit: 5000, depth: 0, pagination: false, where: { createdAt: { greater_than: yearAgo } }, select: { createdAt: true } }),
-    payload.count({ collection: 'inquiries', where: { status: { not_equals: 'new' } } }),
+    // Hourly counts, not one row per enquiry: no cap on volume, and the browser still groups
+    // them into days in the editor's own time zone.
+    (payload.db as unknown as PostgresAdapter).drizzle.execute(sql`
+      SELECT extract(epoch FROM date_trunc('hour', created_at)) * 1000 AS t, count(*)::int AS n
+      FROM inquiries WHERE created_at > ${yearAgo} GROUP BY 1`),
+    payload.count({ collection: 'inquiries', where: { status: { equals: 'replied' } } }),
+    payload.count({ collection: 'inquiries', where: { status: { equals: 'archived' } } }),
     payload.find({ collection: 'inquiries', limit: 4, sort: '-createdAt', depth: 0 }),
     payload.findGlobal({ slug: 'site', depth: 0 }),
     payload.count({ collection: 'inquiries' }),
   ]);
   const pages = pagesRes.docs as unknown as PageDoc[];
+  const isLive = new Set(livePagesRes.docs.map((p) => p.id));
+  const hasChanges = (p: PageDoc) => p._status === 'draft';
+  const livePages = pages.filter((p) => isLive.has(p.id)).length;
+  const changedPages = pages.filter(hasChanges).length;
+  const changedProjects = latestProjects.docs.filter((p) => p._status === 'draft').length;
   const totalEnquiries = enquiryCount.totalDocs;
-  const livePages = pages.filter((p) => p._status !== 'draft').length;
-  const seoChecks = pages.flatMap((p) => [!!p.meta?.title, !!p.meta?.description, !!p.meta?.image]);
+  // archived messages are set aside, not answered: they leave the "replied" ratio entirely
+  const openEnquiries = totalEnquiries - archived.totalDocs;
+  const hours = (enquiryHours.rows as { t: string | number; n: string | number }[]).map((r) => ({ t: Number(r.t), n: Number(r.n) }));
+  // a page without its own share image falls back to the site default, so either counts
+  const hasImage = (p: PageDoc) => !!p.meta?.image || !!site.ogImage;
+  const seoChecks = pages.flatMap((p) => [!!p.meta?.title, !!p.meta?.description, hasImage(p)]);
   const seoScore = pct(seoChecks.filter(Boolean).length, seoChecks.length);
   const hiddenSections = pages.reduce((a, p) => a + (p.sections ?? []).filter((s) => s.hidden).length, 0);
   const firstName = (user as { name?: string } | null)?.name?.split(' ')[0];
@@ -82,17 +101,17 @@ export async function Dashboard({ payload, user }: Props) {
   const barMax = Math.max(1, ...pages.map((p) => (p.sections ?? []).length));
 
   const tiles = [
-    { label: 'Pages', value: pages.length, ring: pct(livePages, pages.length), note: 'published', href: `${admin}/collections/pages` },
+    { label: 'Pages', value: pages.length, ring: pct(livePages, pages.length), note: 'live', href: `${admin}/collections/pages` },
     { label: 'Projects', value: projects.totalDocs, ring: pct(featured.totalDocs, projects.totalDocs), note: 'featured', href: `${admin}/collections/projects` },
     { label: 'Media', value: media.totalDocs, ring: pct(lightMedia.totalDocs, media.totalDocs), note: 'under 1 MB', href: `${admin}/collections/media` },
-    { label: 'Enquiries', value: totalEnquiries, ring: pct(answered.totalDocs, totalEnquiries), note: 'answered', href: `${admin}/collections/inquiries` },
+    { label: 'Enquiries', value: totalEnquiries, ring: pct(replied.totalDocs, openEnquiries), note: 'replied', href: `${admin}/collections/inquiries` },
   ];
 
   const health = [
     { label: 'Search titles', ok: pages.every((p) => p.meta?.title), detail: `${pages.filter((p) => p.meta?.title).length}/${pages.length} pages` },
     { label: 'Descriptions', ok: pages.every((p) => p.meta?.description), detail: `${pages.filter((p) => p.meta?.description).length}/${pages.length} pages` },
-    { label: 'Share images', ok: pages.every((p) => p.meta?.image) || !!site.ogImage, detail: `${pages.filter((p) => p.meta?.image).length}/${pages.length} pages${site.ogImage ? ' + site default' : ''}` },
-    { label: 'Unpublished changes', ok: pages.length - livePages + draftProjects.totalDocs === 0, detail: `${pages.length - livePages} pages · ${draftProjects.totalDocs} projects` },
+    { label: 'Share images', ok: pages.every(hasImage), detail: site.ogImage ? `${pages.filter((p) => p.meta?.image).length}/${pages.length} own · site default for the rest` : `${pages.filter((p) => p.meta?.image).length}/${pages.length} pages · no site default` },
+    { label: 'Unpublished changes', ok: changedPages + changedProjects === 0, detail: `${changedPages} pages · ${changedProjects} projects` },
   ];
 
   return (
@@ -101,7 +120,7 @@ export async function Dashboard({ payload, user }: Props) {
       <header className="cms-dash-head">
         <div>
           <p className="cms-eyebrow">{site.name} · Content studio</p>
-          <h1>{greeting()}{firstName ? `, ${firstName}` : ''}.</h1>
+          <h1><Greeting name={firstName} /></h1>
         </div>
         <div className="cms-dash-actions">
           <a className="cms-btn" href={siteURL} target="_blank" rel="noopener noreferrer">View site ↗</a>
@@ -136,7 +155,7 @@ export async function Dashboard({ payload, user }: Props) {
                   <span>{when(p.updatedAt)}</span>
                   <span>{pagePath(p.slug)}</span>
                   <span>{sections.length} sections{hidden ? ` · ${hidden} hidden` : ''}</span>
-                  {p._status === 'draft' && <span className="is-warn">Unpublished</span>}
+                  {!isLive.has(p.id) ? <span className="is-warn">Not live</span> : hasChanges(p) && <span className="is-warn">Unpublished changes</span>}
                 </span>
               </Link>
             );
@@ -151,7 +170,7 @@ export async function Dashboard({ payload, user }: Props) {
 
       {/* ── Charts ── */}
       <div className="cms-row">
-        <section className="cms-card cms-span-2"><EnquiryChart dates={enquiriesAll.docs.map((d) => d.createdAt)} /></section>
+        <section className="cms-card cms-span-2"><EnquiryChart hours={hours} /></section>
 
         <section className="cms-card" aria-labelledby="dash-sections">
           <div className="cms-card-head">
@@ -252,6 +271,7 @@ export async function Dashboard({ payload, user }: Props) {
           <ul className="cms-list">
             <li><Link href={`${admin}/globals/header`}><span className="cms-avatar" aria-hidden="true">H</span><span><b>Header</b><small>Menu links and the quote button</small></span></Link></li>
             <li><Link href={`${admin}/globals/footer`}><span className="cms-avatar" aria-hidden="true">F</span><span><b>Footer</b><small>Columns, contact and copyright</small></span></Link></li>
+            <li><Link href={`${admin}/globals/theme`}><span className="cms-avatar" aria-hidden="true">Aa</span><span><b>Styles</b><small>Colours, fonts, buttons and spacing</small></span></Link></li>
             <li><Link href={`${admin}/globals/site`}><span className="cms-avatar" aria-hidden="true">S</span><span><b>Site settings</b><small>Name, contact, socials, default SEO</small></span></Link></li>
           </ul>
         </section>

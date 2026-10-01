@@ -23,6 +23,10 @@ const dirname = path.dirname(filename);
 // Supabase Storage speaks the S3 protocol. When its credentials are set (production),
 // uploads go there; otherwise they are written to ./media on disk (local development).
 const useSupabaseStorage = Boolean(process.env.S3_BUCKET && process.env.S3_ENDPOINT);
+// Vercel caps a request body at about 4.5 MB, so bigger uploads must skip the app: with this on,
+// the browser asks for a signed URL and sends the file straight to Supabase (admin and Studio).
+// Opt-in (S3_CLIENT_UPLOADS=true) because it needs the bucket to accept browser PUTs.
+export const directUploads = useSupabaseStorage && process.env.S3_CLIENT_UPLOADS === 'true';
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
@@ -81,6 +85,7 @@ export default buildConfig({
     }),
     s3Storage({
       enabled: useSupabaseStorage,
+      clientUploads: directUploads,
       collections: {
         media: {
           prefix: 'media',

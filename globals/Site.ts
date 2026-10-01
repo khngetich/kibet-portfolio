@@ -17,6 +17,8 @@ export const Site: GlobalConfig = {
   label: 'Site settings',
   admin: { group: 'Settings' },
   access: { read: anyone, update: authenticated },
+  // Saving publishes immediately; earlier versions stay in History, like the header and footer.
+  versions: { max: 30 },
   hooks: { afterChange: [revalidateGlobal] },
   fields: [
     {

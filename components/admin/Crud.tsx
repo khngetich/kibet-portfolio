@@ -1,7 +1,7 @@
 'use client';
 
 import type { DefaultCellComponentProps } from 'payload';
-import { useConfig, useDocumentDrawer } from '@payloadcms/ui';
+import { useAuth, useConfig, useDocumentDrawer } from '@payloadcms/ui';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -23,7 +23,10 @@ type QuickCreateProps = {
 export function QuickCreate({ collection, label, className = 'cms-btn cms-btn-primary', then = 'refresh', children }: QuickCreateProps) {
   const router = useRouter();
   const { config } = useConfig();
+  const { permissions } = useAuth();
   const [Drawer, , { openDrawer, closeDrawer }] = useDocumentDrawer({ collectionSlug: collection });
+  // e.g. only admins may add editors: hide the button rather than offer a form that will be refused
+  if (permissions && !permissions.collections?.[collection]?.create) return null;
   return (
     <>
       <button type="button" className={className} onClick={openDrawer}>{children ?? label}</button>
@@ -66,6 +69,8 @@ export function ModalCell({ cellData, rowData, collectionSlug }: DefaultCellComp
 
 /** “Quick add” bar shown above a collection's list (admin.components.beforeListTable). */
 export function ListQuickCreate({ collection, label, hint, then }: { collection: string; label: string; hint?: string; then?: 'refresh' | 'open' }) {
+  const { permissions } = useAuth();
+  if (permissions && !permissions.collections?.[collection]?.create) return null;
   return (
     <div className="cms-quickbar">
       {hint && <p>{hint}</p>}

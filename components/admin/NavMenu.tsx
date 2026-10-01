@@ -20,12 +20,13 @@ export async function NavMenu({ payload, permissions }: { payload: Payload; perm
   const collections = payload.config.collections.filter((c) => !c.admin?.hidden && canRead('collections', c.slug));
   const globals = payload.config.globals.filter((g) => !g.admin?.hidden && canRead('globals', g.slug));
 
-  const counts = Object.fromEntries(
-    await Promise.all(collections.map(async (c) => [c.slug, (await payload.count({ collection: c.slug as never })).totalDocs] as const)),
-  );
-  const newEnquiries = collections.some((c) => c.slug === 'inquiries')
-    ? (await payload.count({ collection: 'inquiries', where: { status: { equals: 'new' } } })).totalDocs
-    : 0;
+  // This renders on every admin page, so all the counts go out together: one round trip.
+  const hasInbox = collections.some((c) => c.slug === 'inquiries');
+  const [entries, newEnquiries] = await Promise.all([
+    Promise.all(collections.map(async (c) => [c.slug, (await payload.count({ collection: c.slug as never })).totalDocs] as const)),
+    hasInbox ? payload.count({ collection: 'inquiries', where: { status: { equals: 'new' } } }).then((r) => r.totalDocs) : 0,
+  ]);
+  const counts = Object.fromEntries(entries);
 
   const groups = new Map<string, NavGroup['items']>();
   const push = (group: unknown, item: NavGroup['items'][number]) => {

@@ -1,7 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
-import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload';
+import { APIError, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook, type CollectionConfig, type Where } from 'payload';
 import { anyone, authenticated } from '../access';
 import { revalidateCollection, revalidateOnDelete } from '../hooks/revalidate';
 import { thumbURL } from '../lib/media'
@@ -21,6 +21,21 @@ const addBlurPlaceholder: CollectionBeforeChangeHook = async ({ data, req }) => 
   return data;
 };
 
+/**
+ * Deleting a file clears every field that points at it. Project covers and sample files are
+ * required, so a file still used there can't be deleted (the project would stop saving).
+ * Checks both the live projects and their latest drafts.
+ */
+const refuseIfRequired: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  const where: Where = { or: [{ cover: { equals: id } }, { 'samples.file': { equals: id } }] };
+  const find = (draft: boolean) => req.payload.find({ collection: 'projects', where, draft, depth: 0, limit: 5, pagination: false, select: { title: true }, req });
+  const [live, drafts] = await Promise.all([find(false), find(true)]);
+  const titles = [...new Set([...live.docs, ...drafts.docs].map((p) => p.title))];
+  if (titles.length) {
+    throw new APIError(`This file is the cover or a sample of ${titles.map((t) => `“${t}”`).join(', ')}. Replace it there first, then delete it.`, 400, undefined, true);
+  }
+};
+
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
@@ -31,6 +46,7 @@ export const Media: CollectionConfig = {
   access: { read: anyone, create: authenticated, update: authenticated, delete: authenticated },
   hooks: {
     beforeChange: [addBlurPlaceholder],
+    beforeDelete: [refuseIfRequired],
     afterChange: [revalidateCollection],
     afterDelete: [revalidateOnDelete],
   },
