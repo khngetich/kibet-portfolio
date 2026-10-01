@@ -3,21 +3,38 @@
    and the Payload admin (app/(payload)/custom.css). One definition, so a colour means
    the same thing in both.
 
-   Every "-ink" and text colour is at least 4.5:1 on white, --sub and --page (WCAG AA).
-   The --chart-* series are for marks (lines, arcs, bars), not text; they were checked
-   for colour-blind separation and stay as they are.
+   Values come from the "Web & Dashboards" design system, with its accent swapped for
+   near-black (the system's README allows changing the accent aliases):
+     60%  neutral surfaces   --page, --card, --sub
+     30%  greys              --ink-2, --line, --line-2
+     10%  accent             --accent (primary button, current nav item, selection)
+   Status colours only ever mean state and always come with a word or an icon. Indigo
+   survives as --chart-1: the one series a chart is about.
+
+   Text colours are 4.5:1 or better on --card, --sub and --page; --line-2 is 3:1
+   (control edges).
    ───────────────────────────────────────────────────────────── */
 :root {
-  --blue: #2B62EB; --blue-ink: #1F4FC7; --blue-soft: #EDF2FF;
-  --purple: #6344D1; --purple-soft: #F2EEFE;
-  --coral: #CE2C31; --coral-ink: #B3262B; --coral-soft: #FDEEEE;
-  --amber: #B24A0A; --amber-soft: #FFF1E7;
-  --green: #177245; --green-soft: #E8F7EF;
-  --orange: #C2410C;
-  --note-ink: #33466F;
-  --ink: #1D2130; --ink-2: #5B6170; --ink-3: #666C7A;
-  --page: #F4F5F8; --card: #FFFFFF; --sub: #F8F9FB; --line: #E8EBF0; --line-2: #DDE1E8;
-  --shadow-sm: 0 1px 2px rgba(29, 33, 48, .06);
-  --shadow: 0 1px 2px rgba(29, 33, 48, .04), 0 12px 32px -16px rgba(29, 33, 48, .2);
-  --chart-purple: #7C5CE8; --chart-coral: #E5484D; --chart-amber: #D98B0B; --chart-blue: #2F6BFF; --chart-rest: #8A90A0;
+  /* surfaces */
+  --page: #F7F7F5; --card: #FFFFFF; --sub: #F0F0ED; --inverse: #0F0F0F;
+  /* text and lines */
+  --ink: #0F0F0F; --ink-2: #5A5A63; --line: #E4E4E0; --line-2: #8A8A8F;
+  --on-inverse: #FFFFFF; --on-inverse-2: #A6A6B0;
+  /* accent */
+  --accent: #0F0F0F; --accent-hover: #2C2C32; --on-accent: #FFFFFF; --accent-soft: #E9E9E5;
+  /* status: text on --card / --page and on their own -soft ground */
+  --green: #047857; --green-soft: #ECFDF5;
+  --amber: #B45309; --amber-soft: #FFFBEB;
+  --coral: #B91C1C; --coral-soft: #FEF2F2;
+  --info: #0F766E; --info-soft: #F0FDFA;
+  /* status marks on --inverse (dark cards, toasts) */
+  --inverse-success: #34D399; --inverse-warning: #FBBF24; --inverse-danger: #F87171;
+  /* charts: marks, not text */
+  --chart-1: #4F46E5; --chart-2: #0D9488; --chart-3: #D97706; --chart-4: #8A8A8F; --chart-grid: #ECECEA;
+  /* elevation: borders do most separation; shadows mean "floating" */
+  --shadow-sm: 0 1px 2px #0F0F0F0D;
+  --shadow-md: 0 4px 12px #0F0F0F14, 0 1px 3px #0F0F0F0D;
+  --shadow-lg: 0 16px 48px #0F0F0F29, 0 4px 12px #0F0F0F14;
+  --scrim: #0F0F0F66;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }

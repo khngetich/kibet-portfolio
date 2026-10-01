@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { Icon } from '@/components/ui/Icon';
+import { CommandPalette, openPalette } from './CommandPalette';
 
 export type NavGroup = { label: string; items: { slug: string; label: string; href: string; count?: number; badge?: string }[] };
 
@@ -25,10 +27,10 @@ const ICONS: Record<string, React.ReactNode> = {
 const noop = () => () => {};
 
 /** Sidebar widths (px). Dragging below COLLAPSE_AT snaps to the icon rail. */
-const RAIL = 76;
+const RAIL = 72;
 const MIN = 200;
 const MAX = 400;
-const DEFAULT = 264;
+const DEFAULT = 256;
 const COLLAPSE_AT = 150;
 const STORE = 'cms-nav-width';
 /** Resizing only applies where the sidebar sits beside the content (Payload overlays it below this). */
@@ -118,6 +120,7 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
   const iconOut = useReducedMotion() ? { opacity: 0 } : { opacity: 0, scale: 0.25, filter: 'blur(4px)' };
   // true once on the client (the resizer is portalled into <body>)
   const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const mac = useSyncExternalStore(noop, () => /Mac|iPhone|iPad/.test(navigator.userAgent), () => true);
   const isActive = (href: string) => (href === admin ? pathname === admin : pathname === href || pathname.startsWith(`${href}/`));
 
   const item = (slug: string, label: string, href: string, count?: number, badge?: string) => {
@@ -135,24 +138,30 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
 
   return (
     <div className="cms-nav">
-      <ul>
-        {item('dashboard', 'Dashboard', admin)}
-        <li>
-          {/* the Studio has its own root layout: a full page load, not a <Link> */}
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a href="/studio" className="cms-nav-link cms-nav-studio" title={nav.collapsed ? 'Open Studio' : undefined}>
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" {...S}><path d="M4 20l4-1 11-11-3-3L5 16z" /><path d="M14 6l3 3" /></svg>
-            <span className="cms-nav-label">Studio</span>
-            <em className="cms-nav-badge cms-nav-badge-blue">Edit site</em>
-          </a>
-        </li>
-      </ul>
+      {/* opens the ⌘K palette below; looks like a field so it reads as "search" */}
+      <button type="button" className="cms-nav-search" onClick={() => openPalette()} aria-keyshortcuts={mac ? 'Meta+K' : 'Control+K'} title={nav.collapsed ? 'Search' : undefined}>
+        <Icon name="search" size={16} />
+        <span className="cms-nav-label">Search</span>
+        <kbd className="cms-nav-kbd">{mac ? '⌘' : 'Ctrl'} K</kbd>
+      </button>
+      <ul>{item('dashboard', 'Dashboard', admin)}</ul>
       {groups.map((g) => (
         <div key={g.label} className="cms-nav-group">
           <p>{g.label}</p>
           <ul>{g.items.map((i) => item(i.slug, i.label, i.href, i.count, i.badge))}</ul>
         </div>
       ))}
+      {/* The Studio, as a card at the foot of the sidebar; the icon rail keeps just its mark.
+          It has its own root layout: a full page load, not a <Link>. */}
+      <div className="cms-nav-promo">
+        <span className="cms-nav-promo-mark" aria-hidden="true"><Icon name="pen" size={16} /></span>
+        <b className="cms-nav-label">Studio</b>
+        <p className="cms-nav-label">Edit pages on a live preview of the site.</p>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a href="/studio" className="cms-nav-promo-btn" aria-label="Open Studio" title={nav.collapsed ? 'Open Studio' : undefined}>
+          <Icon name="pen" size={16} className="cms-nav-promo-icon" /><span className="cms-nav-label">Open Studio</span>
+        </a>
+      </div>
       {nav.desktop && (
         <button type="button" className="cms-nav-collapse" onClick={nav.toggle} aria-label={nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
           <span className="ui-swap" aria-hidden="true">
@@ -167,6 +176,7 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
           <span className="cms-nav-label">Collapse</span>
         </button>
       )}
+      <CommandPalette admin={admin} groups={groups} />
       {mounted && nav.desktop && createPortal(
         <div
           className="cms-nav-resizer"
