@@ -41,7 +41,29 @@ export const Projects: CollectionConfig = {
             { name: 'brief', type: 'textarea', admin: { description: 'What the client needed.' } },
             { name: 'approach', type: 'textarea', admin: { description: 'What you did and why.' } },
             { name: 'outcome', type: 'textarea', admin: { description: 'What happened after launch. Keep it factual.' } },
+            { type: 'row', fields: [
+              { name: 'deliverables', type: 'text', hasMany: true, admin: { width: '50%', description: 'What you handed over, e.g. Poster templates, Brand guidelines.' } },
+              { name: 'tools', type: 'text', hasMany: true, admin: { width: '50%', description: 'e.g. Photoshop, Illustrator, Figma.' } },
+            ] },
+            { name: 'timeline', type: 'text', admin: { description: 'How long it took, e.g. “3 weeks” or “Ongoing since 2023”.' } },
           ],
+        },
+        {
+          label: 'Samples',
+          description: 'The work itself: images, PDFs (brand guidelines, decks, print files) and videos. They appear as a grid on the case study and open full screen in a pop-up viewer.',
+          fields: [{
+            name: 'samples',
+            type: 'array',
+            labels: { singular: 'Sample', plural: 'Samples' },
+            admin: { initCollapsed: true },
+            fields: [
+              { name: 'file', type: 'upload', relationTo: 'media', required: true },
+              { type: 'row', fields: [
+                { name: 'title', type: 'text', admin: { width: '50%', placeholder: 'e.g. Matchday poster, week 12' } },
+                { name: 'note', type: 'text', admin: { width: '50%', placeholder: 'Optional one-line caption' } },
+              ] },
+            ],
+          }],
         },
         {
           label: 'Case study',
@@ -64,7 +86,10 @@ export const Projects: CollectionConfig = {
     { name: 'year', type: 'text', required: true, admin: { position: 'sidebar' } },
     { name: 'disciplines', type: 'select', hasMany: true, required: true, options: DISCIPLINES, admin: { position: 'sidebar' } },
     { name: 'role', type: 'text', hasMany: true, admin: { position: 'sidebar', description: 'e.g. Art direction, Layout system' } },
-    { name: 'liveUrl', type: 'text', admin: { position: 'sidebar', description: 'Link to the live site or post, if public' } },
+    { name: 'liveUrl', label: 'Live link', type: 'text', admin: { position: 'sidebar', description: 'The live website, a YouTube/Vimeo video, or a public post. Shows a preview button on the case study.' } },
+    { name: 'liveType', label: 'Live link is a…', type: 'select', defaultValue: 'website', options: [
+      { label: 'Website', value: 'website' }, { label: 'Video', value: 'video' }, { label: 'Social post', value: 'post' },
+    ], admin: { position: 'sidebar', condition: (d) => !!d?.liveUrl } },
     { name: 'accent', type: 'text', admin: { position: 'sidebar', description: 'Hex colour used for this project’s accents, e.g. #F5C400' } },
     { name: 'note', type: 'textarea', admin: { position: 'sidebar', description: 'Small print shown at the end (NDA, placeholder images, etc.)' } },
     {

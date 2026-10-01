@@ -1,6 +1,7 @@
 import { RichText } from '@payloadcms/richtext-lexical/react';
 import type { Project } from '@/payload-types';
 import { asMedia } from '@/lib/cms';
+import { embedURL } from '@/lib/media';
 import { Img } from './Img';
 import { BeforeAfter } from './BeforeAfter';
 
@@ -8,14 +9,6 @@ type Block = NonNullable<Project['layout']>[number];
 
 const SIZES = { contained: '(max-width: 800px) 100vw, 760px', wide: '(max-width: 1240px) 100vw, 1200px', full: '100vw' } as const;
 const width = (w?: string | null) => (w === 'full' || w === 'contained' ? w : 'wide');
-
-function embedURL(url: string) {
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{11})/);
-  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}`;
-  const vimeo = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
-  return null;
-}
 
 function Caption({ text }: { text?: string | null }) {
   return text ? <figcaption>{text}</figcaption> : null;

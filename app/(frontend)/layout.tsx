@@ -4,6 +4,7 @@ import './globals.css';
 import './sections.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { WhatsAppFloat } from '@/components/WhatsAppFloat';
 import { LivePreview } from '@/components/LivePreview';
 import { asMedia, getFooter, getHeader, getSite, getTheme, isPreview, isStudioCanvas } from '@/lib/cms';
 import { StudioBridge } from '@/components/StudioBridge';
@@ -36,7 +37,7 @@ export const viewport: Viewport = {
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const [site, header, footer, theme, preview, studio] = await Promise.all([getSite(), getHeader(), getFooter(), getTheme(), isPreview(), isStudioCanvas()]);
   return (
-    <html lang="en" className={GeistSans.variable} data-theme="dark" data-motion={theme.motion ?? 'full'} data-scroll-behavior="smooth">
+    <html lang="en" className={GeistSans.variable} data-theme="dark" data-motion={theme.motion ?? 'full'} data-scroll-behavior="smooth" data-wa={!studio && site.phone && site.whatsapp ? '' : undefined}>
       <body>
         <ThemeStyle theme={theme} />
         <MotionPrefs motion={theme.motion}>
@@ -58,6 +59,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
           />
           <main id="main">{children}</main>
           <Footer site={site} footer={footer} />
+          {!studio && site.phone && site.whatsapp && <WhatsAppFloat phone={site.phone} name={site.name} />}
         </MotionPrefs>
       </body>
     </html>

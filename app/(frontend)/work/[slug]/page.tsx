@@ -9,6 +9,8 @@ import { Icon } from '@/components/Icon';
 import { RenderBlocks } from '@/components/RenderBlocks';
 import { Slope } from '@/components/ProjectFolder';
 import { CaseArrival } from '@/components/motion/CaseArrival';
+import { SampleGrid, WatchButton } from '@/components/motion/SampleViewer';
+import { embedURL, toItems } from '@/lib/media';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -37,6 +39,11 @@ export default async function CaseStudy({ params }: Props) {
   const i = all.findIndex((p) => p.slug === slug);
   const next = all.length > 1 ? all[(i + 1) % all.length] : null;
   const overview = [['Brief', project.brief], ['Approach', project.approach], ['Outcome', project.outcome]].filter(([, v]) => v) as [string, string][];
+  const samples = toItems(project.samples ?? []);
+  const details = [['Deliverables', project.deliverables], ['Tools', project.tools]].filter(([, v]) => v?.length) as [string, string[]][];
+  // the live link: videos play in the viewer when they're YouTube/Vimeo, everything else opens in a new tab
+  const live = project.liveUrl ? { url: project.liveUrl, type: project.liveType ?? 'website', embed: project.liveType === 'video' ? embedURL(project.liveUrl) : null } : null;
+  const liveLabel = live?.type === 'video' ? 'Watch the video' : live?.type === 'post' ? 'View the live post' : 'Visit the live website';
 
   return (
     <article className="case" style={project.accent ? ({ '--accent': project.accent } as React.CSSProperties) : undefined}>
@@ -62,9 +69,16 @@ export default async function CaseStudy({ params }: Props) {
                 <div><dt>Client</dt><dd>{project.client}</dd></div>
                 <div><dt>Year</dt><dd>{project.year}</dd></div>
                 {!!project.role?.length && <div><dt>Role</dt><dd>{project.role.join(', ')}</dd></div>}
+                {project.timeline && <div><dt>Timeline</dt><dd>{project.timeline}</dd></div>}
                 {project.stats?.map((st) => <div key={st.id ?? st.label}><dt>{st.label}</dt><dd>{st.value}</dd></div>)}
-                {project.liveUrl && <div><dt>Live</dt><dd><a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Visit <Icon name="external" size={13} /></a></dd></div>}
               </dl>
+              <div className="case-actions">
+                {live && (live.embed
+                  ? <WatchButton embed={live.embed} title={project.title}><Icon name="right" size={15} /> {liveLabel}</WatchButton>
+                  : <a className="btn btn-light" href={live.url} target="_blank" rel="noopener noreferrer">{liveLabel} <Icon name="external" size={15} /></a>)}
+                {samples.length > 0 && <a className="btn btn-outline" href="#samples">See {samples.length} sample{samples.length === 1 ? '' : 's'}</a>}
+                <Link className="btn btn-ghost" href="/#contact">Start a similar project <Icon name="arrow" size={15} /></Link>
+              </div>
             </div>
           </header>
         </ViewTransition>
@@ -74,6 +88,28 @@ export default async function CaseStudy({ params }: Props) {
           {overview.map(([k, v]) => (
             <div key={k} className="reveal"><h2>{k}</h2><p>{v}</p></div>
           ))}
+        </section>
+      )}
+
+      {(details.length > 0 || project.timeline) && (
+        <section className="wrap case-details" aria-labelledby="case-details-title">
+          <h2 id="case-details-title" className="kicker">Project details</h2>
+          <div className="case-details-grid">
+            {details.map(([k, v]) => (
+              <div key={k}><h3>{k}</h3><ul className="case-chips">{v.map((x) => <li key={x}>{x}</li>)}</ul></div>
+            ))}
+            {project.timeline && <div><h3>Timeline</h3><p>{project.timeline}</p></div>}
+          </div>
+        </section>
+      )}
+
+      {samples.length > 0 && (
+        <section className="wrap case-samples" id="samples" aria-labelledby="case-samples-title">
+          <div className="case-samples-head">
+            <h2 id="case-samples-title" className="h-md">Samples</h2>
+            <p className="muted">{samples.length} item{samples.length === 1 ? '' : 's'} · click any to view it full size</p>
+          </div>
+          <SampleGrid items={samples} />
         </section>
       )}
 

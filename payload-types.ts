@@ -886,6 +886,26 @@ export interface Project {
    * What happened after launch. Keep it factual.
    */
   outcome?: string | null;
+  /**
+   * What you handed over, e.g. Poster templates, Brand guidelines.
+   */
+  deliverables?: string[] | null;
+  /**
+   * e.g. Photoshop, Illustrator, Figma.
+   */
+  tools?: string[] | null;
+  /**
+   * How long it took, e.g. “3 weeks” or “Ongoing since 2023”.
+   */
+  timeline?: string | null;
+  samples?:
+    | {
+        file: number | Media;
+        title?: string | null;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   layout?:
     | (
         | {
@@ -1037,9 +1057,10 @@ export interface Project {
    */
   role?: string[] | null;
   /**
-   * Link to the live site or post, if public
+   * The live website, a YouTube/Vimeo video, or a public post. Shows a preview button on the case study.
    */
   liveUrl?: string | null;
+  liveType?: ('website' | 'video' | 'post') | null;
   /**
    * Hex colour used for this project’s accents, e.g. #F5C400
    */
@@ -1741,6 +1762,17 @@ export interface ProjectsSelect<T extends boolean = true> {
   brief?: T;
   approach?: T;
   outcome?: T;
+  deliverables?: T;
+  tools?: T;
+  timeline?: T;
+  samples?:
+    | T
+    | {
+        file?: T;
+        title?: T;
+        note?: T;
+        id?: T;
+      };
   layout?:
     | T
     | {
@@ -1857,6 +1889,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   disciplines?: T;
   role?: T;
   liveUrl?: T;
+  liveType?: T;
   accent?: T;
   note?: T;
   stats?:
