@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { DocLink } from '../DocModal';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useId, useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
@@ -13,7 +14,7 @@ import { Icon } from '@/components/ui/Icon';
  * Each check is one segment of the ring; clicking a segment or its row lists the pages behind it.
  */
 
-export type HealthPage = { title: string; href: string; state: 'own' | 'fallback' | 'missing' };
+export type HealthPage = { id: number; title: string; href: string; state: 'own' | 'fallback' | 'missing' };
 export type HealthCheck = { key: string; label: string; fallback: string; fallbackPasses: boolean; pages: HealthPage[]; fix?: { label: string; href: string } };
 
 const SIZE = 148, STROKE = 12, GAP = 10; // gap between segments, in degrees
@@ -101,11 +102,11 @@ export function Health({ checks }: { checks: HealthCheck[] }) {
                   <ul>
                     {current.pages.filter((p) => p.state !== 'own').sort((a, b) => Number(passes(current, a)) - Number(passes(current, b))).map((p) => (
                       <li key={p.href}>
-                        <Link href={p.href}>
+                        <DocLink collection="pages" id={p.id} href={p.href}>
                           <span>{p.title}</span>
                           <em className={passes(current, p) ? undefined : 'is-missing'}>{p.state === 'missing' ? 'Missing' : current.fallback}</em>
                           <Icon name="right" size={14} />
-                        </Link>
+                        </DocLink>
                       </li>
                     ))}
                   </ul>

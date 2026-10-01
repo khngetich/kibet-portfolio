@@ -75,6 +75,25 @@ export const getProjects = cache(async (payload: Payload) => {
   }));
 });
 
+/** The latest four projects with their covers, for the visual "Recent work" strip. Status comes from getProjects (same rule). */
+export const getRecentWork = cache(async (payload: Payload) => {
+  const [latest, all] = await Promise.all([
+    payload.find({ collection: 'projects', draft: true, depth: 1, limit: 4, sort: '-updatedAt', select: { title: true, client: true, year: true, cover: true, samples: true } }),
+    getProjects(payload),
+  ]);
+  const byId = new Map(all.map((p) => [p.id, p]));
+  return latest.docs.map((p) => ({
+    id: p.id,
+    title: p.title || 'Untitled project',
+    client: p.client ?? null,
+    year: p.year ?? null,
+    cover: p.cover ?? null,
+    samples: (p.samples ?? []).length,
+    status: byId.get(p.id)?.status ?? 'draft',
+    ago: byId.get(p.id)?.ago ?? '',
+  }));
+});
+
 export const getSiteDefaults = cache(async (payload: Payload) => {
   const site = await payload.findGlobal({ slug: 'site', depth: 0, select: { name: true, metaDescription: true, ogImage: true } });
   return { name: site.name, description: !!site.metaDescription, image: !!site.ogImage };

@@ -225,7 +225,10 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
       <header className="st-top">
         <h1 className="st-sr">Studio: editing {page?.title ?? 'the site'}</h1>
         <div className="st-top-left">
-          <a className="st-brand" href={adminRoute} title="Back to the CMS dashboard">{siteName.split(' ')[0]}<i>.</i> <span>Studio</span></a>
+          <a className="st-brand" href={adminRoute} title="Back to the CMS dashboard">
+            <span className="st-brand-mark" aria-hidden="true">{siteName.trim().slice(0, 1).toUpperCase()}</span>
+            <span className="st-brand-text"><b>Studio</b><small>{siteName}</small></span>
+          </a>
           <select className="st-input st-page-select" value={pageId ?? ''} onChange={(e) => openPage(Number(e.target.value))} aria-label="Page">
             {pages.map((p) => <option key={p.id} value={p.id}>{p.title}{p._status === 'draft' ? ' •' : ''}</option>)}
           </select>

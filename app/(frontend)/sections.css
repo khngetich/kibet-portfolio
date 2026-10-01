@@ -713,10 +713,11 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 }
 
 /* ── Studio canvas (components/StudioBridge.tsx; only inside the editor's iframe) ── */
-.studio-outline { position: fixed; z-index: 9999; pointer-events: none; border-radius: 6px; box-shadow: inset 0 0 0 1.5px #2F6BFF; }
-.studio-outline.is-hover { box-shadow: inset 0 0 0 1px rgba(47, 107, 255, .7); background: rgba(47, 107, 255, .04); }
-.studio-outline span { position: absolute; top: 6px; left: 6px; padding: 2px 8px; border-radius: 6px; background: #2F6BFF; color: #fff; font: 600 11px/1.4 var(--font); }
-.studio-outline.is-hover span { background: rgba(47, 107, 255, .85); }
+/* Studio canvas selection: a two-tone ring (white inside a dark edge) reads on dark and light sections alike */
+.studio-outline { position: fixed; z-index: 9999; pointer-events: none; border-radius: 6px; box-shadow: inset 0 0 0 2px #FFFFFF, inset 0 0 0 3px #0F0F0F99; }
+.studio-outline.is-hover { box-shadow: inset 0 0 0 1px #FFFFFFB3, inset 0 0 0 2px #0F0F0F66; background: #FFFFFF0A; }
+.studio-outline span { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 6px; background: #FFFFFF; color: #0F0F0F; font: 600 12px/16px var(--font); box-shadow: 0 1px 3px #0F0F0F40; }
+.studio-outline.is-hover span { background: #FFFFFFD9; }
 .in-studio .is-studio-hidden { opacity: .35; filter: grayscale(.6); }
 .in-studio .avail-badge { display: none; }
 .studio-empty { display: grid; place-items: center; min-height: 60vh; margin: 24px; border: 1px dashed var(--line); border-radius: 20px; color: var(--ink-3); }

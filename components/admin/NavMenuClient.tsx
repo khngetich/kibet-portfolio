@@ -4,9 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
+import { useNav } from '@payloadcms/ui';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Icon } from '@/components/ui/Icon';
 import { CommandPalette, openPalette } from './CommandPalette';
+import { DocModalHost } from './DocModal';
 
 export type NavGroup = { label: string; items: { slug: string; label: string; href: string; count?: number; badge?: string }[] };
 
@@ -42,11 +44,25 @@ function applyWidth(w: number) {
   root.classList.toggle('cms-nav-collapsed', w <= RAIL);
 }
 
-/** Drag handle on the sidebar's edge plus a collapse button; the width is remembered per browser. */
+/** Below this width (on desktop) the sidebar starts as the icon rail unless you've chosen a width. */
+const ROOMY = '(min-width: 1200px)';
+
+/**
+ * Desktop: the sidebar is always there (sticky, never hidden), and the collapse button or the
+ * drag handle narrows it to the icon rail. Payload itself closes the sidebar on any screen up
+ * to 1440px and only offers its hamburger to bring it back, so on desktop it is held open
+ * here and the hamburger is hidden (custom.css). Below 1025px Payload's slide-in drawer and
+ * hamburger stay as they are. The width is remembered per browser.
+ */
 function useSidebarWidth() {
   const [width, setWidth] = useState(DEFAULT);
   const [desktop, setDesktop] = useState(false);
   const last = useRef(DEFAULT);
+  const { navOpen, setNavOpen } = useNav();
+
+  useEffect(() => {
+    if (desktop && !navOpen) setNavOpen(true);
+  }, [desktop, navOpen, setNavOpen]);
 
   useEffect(() => {
     const mq = window.matchMedia(DESKTOP);
@@ -56,8 +72,9 @@ function useSidebarWidth() {
         document.documentElement.style.removeProperty('--nav-width');
         document.documentElement.classList.remove('cms-nav-collapsed');
       } else {
-        let stored = DEFAULT;
-        try { stored = Number(localStorage.getItem(STORE)) || DEFAULT; } catch { /* private mode */ }
+        // no saved choice yet: full width on roomy screens, the rail on small laptops
+        let stored = window.matchMedia(ROOMY).matches ? DEFAULT : RAIL;
+        try { stored = Number(localStorage.getItem(STORE)) || stored; } catch { /* private mode */ }
         setWidth(stored);
         applyWidth(stored);
       }
@@ -177,6 +194,7 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
         </button>
       )}
       <CommandPalette admin={admin} groups={groups} />
+      <DocModalHost />
       {mounted && nav.desktop && createPortal(
         <div
           className="cms-nav-resizer"

@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
 import type { Status } from './data';
+import { DocLink } from '../DocModal';
 
-export type WorkItem = { key: string; kind: 'page' | 'project'; title: string; sub: string; path: string | null; href: string; status: Status; ago: string };
+export type WorkItem = { key: string; id: number; kind: 'page' | 'project'; title: string; sub: string; path: string | null; href: string; status: Status; ago: string };
 
 const LABEL: Record<Status, string> = { live: 'Live', edits: 'Unpublished changes', draft: 'Not live' };
 const HINT: Record<Status, string> = {
@@ -53,7 +53,7 @@ export function Workflow({ items }: { items: WorkItem[] }) {
         <ul className="cms-work">
           {shown.map((i) => (
             <li key={i.key}>
-              <Link href={i.href} className="cms-work-row">
+              <DocLink collection={i.kind === 'page' ? 'pages' : 'projects'} id={i.id} href={i.href} className="cms-work-row">
                 <span className={`cms-tile tint-${i.kind === 'page' ? 0 : 3}`} aria-hidden="true"><Icon name={i.kind === 'page' ? 'file' : 'folder'} size={16} /></span>
                 <span className="cms-work-main">
                   <b>{i.title}</b>
@@ -61,7 +61,7 @@ export function Workflow({ items }: { items: WorkItem[] }) {
                 </span>
                 <StatusBadge status={i.status} />
                 <span className="cms-work-edit" aria-hidden="true">Edit</span>
-              </Link>
+              </DocLink>
               {i.status !== 'draft' && i.path && (
                 <a className="cms-work-view" href={i.path} target="_blank" rel="noopener noreferrer" aria-label={`View ${i.title} on the site`} title="View on the site"><Icon name="external" size={15} /></a>
               )}

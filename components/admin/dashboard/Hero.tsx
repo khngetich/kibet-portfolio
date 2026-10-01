@@ -29,6 +29,31 @@ export function Greeting({ name }: { name?: string }) {
 }
 
 /**
+ * The dashboard header, pinned under Payload's top bar while the page scrolls. A sentinel just
+ * above it tells when it has stuck, and only then does it take a surface (blurred page colour
+ * and a hairline): its height never changes, so pinning can't nudge the scroll position.
+ */
+export function StickyHero({ children }: { children: React.ReactNode }) {
+  const sentinel = useRef<HTMLSpanElement>(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    // stuck = the sentinel has gone under Payload's (sticky) top bar
+    const top = document.querySelector('.app-header')?.getBoundingClientRect().height ?? 0;
+    const io = new IntersectionObserver(([e]) => setStuck(!e.isIntersecting), { rootMargin: `-${top + 1}px 0px 0px 0px` });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <>
+      <span ref={sentinel} className="cms-hero-sentinel" aria-hidden="true" />
+      <header className={`cms-hero cms-anim${stuck ? ' is-stuck' : ''}`}>{children}</header>
+    </>
+  );
+}
+
+/**
  * Keeps the numbers fresh without a socket: re-fetches the server-rendered cards every two
  * minutes while the tab is visible and nothing is open on top, and when the editor comes back
  * to a tab that has gone stale. router.refresh() keeps all client state (filters, open rows).

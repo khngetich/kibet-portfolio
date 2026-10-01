@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import type { NavGroup } from './NavMenuClient';
+import { openDoc } from './DocModal';
 
 /**
  * ⌘K / Ctrl+K: jump to any page, project, enquiry, file or setting, or start something new.
@@ -12,7 +13,8 @@ import type { NavGroup } from './NavMenuClient';
  * searched on the server as you type.
  */
 
-type Item = { id: string; label: string; hint?: string; group: string; icon: IconName; href: string; full?: boolean; external?: boolean };
+/** `doc`: open in the pop-up editor (DocModal) instead of navigating; `id` left out = create. */
+type Item = { id: string; label: string; hint?: string; group: string; icon: IconName; href: string; full?: boolean; external?: boolean; doc?: { collection: string; id?: number } };
 
 const EVENT = 'cms:palette';
 export const openPalette = () => window.dispatchEvent(new Event(EVENT));
@@ -68,8 +70,8 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
       getJSON<{ id: number; title?: string | null; slug?: string | null }>(`/api/pages?${qs({ depth: 0, limit: 200, draft: 'true', sort: '-updatedAt', ...fields(['title', 'slug']) })}`),
       getJSON<{ id: number; title?: string | null; client?: string | null }>(`/api/projects?${qs({ depth: 0, limit: 300, draft: 'true', sort: '-updatedAt', ...fields(['title', 'client']) })}`),
     ]).then(([pages, projects]) => setDocs([
-      ...pages.map((p) => ({ id: `page-${p.id}`, label: p.title || 'Untitled page', hint: !p.slug ? 'No address yet' : p.slug === 'home' ? '/' : `/${p.slug}`, group: 'Pages', icon: 'file' as const, href: `${admin}/collections/pages/${p.id}` })),
-      ...projects.map((p) => ({ id: `project-${p.id}`, label: p.title || 'Untitled project', hint: p.client || 'Project', group: 'Projects', icon: 'folder' as const, href: `${admin}/collections/projects/${p.id}` })),
+      ...pages.map((p) => ({ id: `page-${p.id}`, label: p.title || 'Untitled page', hint: !p.slug ? 'No address yet' : p.slug === 'home' ? '/' : `/${p.slug}`, group: 'Pages', icon: 'file' as const, href: `${admin}/collections/pages/${p.id}`, doc: { collection: 'pages', id: p.id } })),
+      ...projects.map((p) => ({ id: `project-${p.id}`, label: p.title || 'Untitled project', hint: p.client || 'Project', group: 'Projects', icon: 'folder' as const, href: `${admin}/collections/projects/${p.id}`, doc: { collection: 'projects', id: p.id } })),
     ])).catch(() => setDocs([]));
   }, [open, docs, admin]);
 
@@ -87,8 +89,8 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
           getJSON<{ id: number; alt?: string | null; filename?: string | null }>(`/api/media?${qs({ depth: 0, limit: 5, sort: '-createdAt', ...like(['alt', 'filename']), 'select[alt]': 'true', 'select[filename]': 'true' })}`, ctrl.signal),
         ]);
         setFound({ term, items: [
-          ...enquiries.map((e) => ({ id: `enquiry-${e.id}`, label: e.name || 'Enquiry', hint: `${e.service || e.email || ''}${e.status === 'new' ? ' · New' : ''}`, group: 'Enquiries', icon: 'inbox' as const, href: `${admin}/collections/inquiries/${e.id}` })),
-          ...media.map((m) => ({ id: `media-${m.id}`, label: m.alt || m.filename || 'File', hint: m.filename ?? undefined, group: 'Media', icon: 'image' as const, href: `${admin}/collections/media/${m.id}` })),
+          ...enquiries.map((e) => ({ id: `enquiry-${e.id}`, label: e.name || 'Enquiry', hint: `${e.service || e.email || ''}${e.status === 'new' ? ' · New' : ''}`, group: 'Enquiries', icon: 'inbox' as const, href: `${admin}/collections/inquiries/${e.id}`, doc: { collection: 'inquiries', id: e.id } })),
+          ...media.map((m) => ({ id: `media-${m.id}`, label: m.alt || m.filename || 'File', hint: m.filename ?? undefined, group: 'Media', icon: 'image' as const, href: `${admin}/collections/media/${m.id}`, doc: { collection: 'media', id: m.id } })),
         ] });
       } catch { /* aborted by the next keystroke */ }
       finally { if (!ctrl.signal.aborted) setSearching(false); }
@@ -97,9 +99,9 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
   }, [q, open, admin]);
 
   const fixed = useMemo<Item[]>(() => [
-    { id: 'new-page', label: 'New page', group: 'Actions', icon: 'plus', href: `${admin}/collections/pages/create` },
-    { id: 'new-project', label: 'New project', group: 'Actions', icon: 'plus', href: `${admin}/collections/projects/create` },
-    { id: 'upload', label: 'Upload media', group: 'Actions', icon: 'image', href: `${admin}/collections/media/create` },
+    { id: 'new-page', label: 'New page', group: 'Actions', icon: 'plus', href: `${admin}/collections/pages/create`, doc: { collection: 'pages' } },
+    { id: 'new-project', label: 'New project', group: 'Actions', icon: 'plus', href: `${admin}/collections/projects/create`, doc: { collection: 'projects' } },
+    { id: 'upload', label: 'Upload media', group: 'Actions', icon: 'image', href: `${admin}/collections/media/create`, doc: { collection: 'media' } },
     { id: 'studio', label: 'Open Studio', hint: 'Visual editor', group: 'Actions', icon: 'pen', href: '/studio', full: true },
     { id: 'site', label: 'View site', group: 'Actions', icon: 'external', href: '/', external: true },
     { id: 'dashboard', label: 'Dashboard', group: 'Go to', icon: 'bolt', href: admin },
@@ -134,7 +136,8 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
   const go = (item?: Item) => {
     if (!item) return;
     setOpen(false);
-    if (item.external) window.open(item.href, '_blank', 'noopener');
+    if (item.doc) openDoc(item.doc);
+    else if (item.external) window.open(item.href, '_blank', 'noopener');
     else if (item.full) window.location.assign(item.href);
     else router.push(item.href);
   };

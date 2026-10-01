@@ -44,7 +44,12 @@ html[data-theme='light'] {
 
 body { letter-spacing: 0; }
 h1, h2, h3, h4, h5, h6 { letter-spacing: -.015em; font-weight: 600; text-wrap: balance; }
-a { transition: color .15s; }
+/* Payload's base styles underline every link, so cards, rows, icon buttons and menu items
+   that are links all came out underlined. In the CMS a link is UI unless it sits in running
+   text: only prose links (rich text, field help, notices) keep an underline, so they're
+   still told apart from the words around them by more than colour. */
+a { transition: color .15s; text-decoration: none; }
+:is(.rich-text-lexical, .ContentEditable__root, .field-description, .banner, .cms-prose) a { text-decoration: underline; text-underline-offset: 3px; }
 
 /* ── buttons: radius-md, label 14/500; one primary per view, others secondary ── */
 .btn { border-radius: 8px; font-weight: 500; transition-property: background-color, color, box-shadow, scale; transition-duration: .15s; transition-timing-function: ease-out; }
@@ -72,7 +77,8 @@ a { transition: color .15s; }
 .field-type input:focus, .field-type textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
 /* ── top bar ── */
-.app-header { background: rgba(255, 255, 255, .88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+/* pinned on every screen, so search, breadcrumbs and the account menu stay in reach */
+.app-header { position: sticky; top: 0; background: rgba(255, 255, 255, .88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 
 /* ── list views: page title h3, small controls on radius-sm, the table as one card ── */
 .list-header__title, .doc-header__title { font-size: 24px; line-height: 32px; letter-spacing: -.015em; }
@@ -96,10 +102,10 @@ a { transition: color .15s; }
 .nav__wrap > .nav-group, .nav__wrap > div > .nav-group { display: none; }
 /* SideNav: search on top, label 14/500 items on radius-md, overline group titles, the
    Studio card at the foot. The current page is the accent at work: a near-black fill. */
-.cms-nav { flex: 1; display: flex; flex-direction: column; gap: 24px; padding-block: 12px 16px; }
+.cms-nav { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-block: 12px 16px; }
 .cms-nav ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.cms-nav-group p { margin: 0 0 8px 12px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
-.cms-nav-link { display: flex; align-items: center; gap: 12px; min-height: 40px; padding: 8px 12px; border-radius: 8px; color: var(--ink-2); text-decoration: none; font-size: 14px; line-height: 20px; font-weight: 500; transition-property: background-color, color; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-nav-group p { margin: 0 0 4px 12px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
+.cms-nav-link { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 8px 12px; border-radius: 8px; color: var(--ink-2); text-decoration: none; font-size: 14px; line-height: 20px; font-weight: 500; transition-property: background-color, color; transition-duration: .15s; transition-timing-function: ease-out; }
 .cms-nav-link svg { flex: none; color: currentColor; }
 /* outline icons at rest; the current page's icon is filled */
 .cms-nav-link.is-active svg :is(rect, path, circle) { fill: currentColor; fill-opacity: .14; }
@@ -121,11 +127,11 @@ a { transition: color .15s; }
 .cms-nav-kbd { flex: none; padding: 2px 6px; border-radius: 6px; background: var(--card); color: var(--ink-2); font: 500 12px/16px var(--font-mono); box-shadow: inset 0 0 0 1px var(--line); }
 
 /* Studio card: the inverse surface, like a plan card in a SaaS sidebar */
-.cms-nav-promo { margin-top: auto; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px; border-radius: 12px; background: var(--inverse); color: var(--on-inverse); }
-.cms-nav-promo-mark { display: grid; place-items: center; width: 32px; height: 32px; margin-bottom: 8px; border-radius: 8px; background: var(--card); color: var(--ink); }
+.cms-nav-promo { margin-top: auto; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; padding: 12px; border-radius: 12px; background: var(--inverse); color: var(--on-inverse); }
+.cms-nav-promo-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--card); color: var(--ink); }
 .cms-nav-promo b { font-size: 14px; line-height: 20px; font-weight: 600; }
-.cms-nav-promo p { margin: 0 0 12px; font-size: 12px; line-height: 16px; color: var(--on-inverse-2); white-space: normal; }
-.cms-nav-promo-btn { display: flex; align-items: center; justify-content: center; gap: 8px; align-self: stretch; min-height: 32px; padding: 0 12px; border-radius: 6px; background: var(--card); color: var(--ink); font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none; transition-property: background-color, scale; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-nav-promo p { grid-column: 1 / -1; margin: 4px 0 8px; font-size: 12px; line-height: 16px; color: var(--on-inverse-2); white-space: normal; }
+.cms-nav-promo-btn { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 32px; padding: 0 12px; border-radius: 6px; background: var(--card); color: var(--ink); font-size: 14px; line-height: 20px; font-weight: 500; text-decoration: none; transition-property: background-color, scale; transition-duration: .15s; transition-timing-function: ease-out; }
 .cms-nav-promo-btn:hover { background: var(--sub); }
 .cms-nav-promo-btn:active { scale: .96; }
 .cms-nav-promo-btn .cms-nav-label { flex: none; }
@@ -137,14 +143,19 @@ a { transition: color .15s; }
 .cms-nav-resizer::after { content: ''; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; background: var(--accent); opacity: 0; transition: opacity .15s; }
 .cms-nav-resizer:hover::after, .cms-nav-resizer:focus-visible::after, .cms-nav-resizing .cms-nav-resizer::after { opacity: 1; }
 .cms-nav-resizer:focus-visible { outline: none; }
-/* Only while the sidebar is showing (Payload's own toggle can hide it). */
+/* Only while the sidebar is showing (on small screens it is Payload's slide-in drawer). */
 html:not(:has(.template-default--nav-open)) .cms-nav-resizer { display: none; }
+/* Desktop: the sidebar is static (NavMenuClient keeps it open), so Payload's show/hide
+   hamburgers go; the collapse button and drag handle narrow it to the rail instead. */
+@media (min-width: 1025px) {
+  .template-default__nav-toggler-wrapper, .app-header__mobile-nav-toggler, .nav__mobile-close { display: none !important; }
+}
 .cms-nav-resizing, .cms-nav-resizing * { cursor: col-resize !important; user-select: none !important; }
 .cms-nav-resizing .template-default, .cms-nav-resizing .nav { transition: none !important; }
 html.cms-nav-collapsed .cms-nav-label, html.cms-nav-collapsed .cms-nav-count, html.cms-nav-collapsed .cms-nav-group p { display: none; }
 html.cms-nav-collapsed .cms-nav-kbd, html.cms-nav-collapsed .cms-nav-promo-mark { display: none; }
 html.cms-nav-collapsed .cms-nav-search { justify-content: center; padding: 0; }
-html.cms-nav-collapsed .cms-nav-promo { padding: 0; background: none; }
+html.cms-nav-collapsed .cms-nav-promo { display: block; padding: 0; background: none; }
 html.cms-nav-collapsed .cms-nav-promo-btn { min-height: 40px; padding: 0; border-radius: 8px; background: var(--inverse); color: var(--on-inverse); }
 html.cms-nav-collapsed .cms-nav-promo-icon { display: block; }
 html.cms-nav-collapsed .cms-nav-group { padding-top: 10px; border-top: 1px solid var(--line); }
@@ -284,12 +295,12 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 .cms-muted { margin: 4px 0 0; color: var(--d-ink-2); font-size: 12px; line-height: 16px; }
 .cms-dash-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .cms-link { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--accent-hover); text-decoration: none; white-space: nowrap; transition-property: color; transition-duration: .15s; }
-.cms-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.cms-link:hover { color: var(--accent); }
 .cms-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 .cms-card { position: relative; min-width: 0; padding: var(--d-pad); border-radius: var(--d-radius); background: var(--d-card); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--d-line); }
 .cms-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 16px; }
-.cms-card-head h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px; line-height: 26px; letter-spacing: -.01em; }
+.cms-card-head h2, .cms-section-head h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 18px; line-height: 26px; letter-spacing: -.01em; }
 .cms-empty { display: flex; align-items: center; gap: 8px; margin: 0; padding: 16px; border-radius: 8px; background: var(--d-sub); color: var(--d-ink-2); }
 .cms-empty .ui-icon { color: var(--green); }
 .cms-alert { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; background: var(--coral-soft); color: var(--coral); }
@@ -323,7 +334,7 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 .cms-insight-note i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
 .cms-insight.is-warn .cms-insight-note { color: var(--amber); }
 .cms-insight-action { display: inline-flex; align-items: center; gap: 4px; margin-top: auto; padding-top: 12px; font-size: 14px; line-height: 20px; font-weight: 500; color: var(--d-ink); text-decoration: none; min-width: 0; }
-.cms-insight-action:hover { text-decoration: underline; text-underline-offset: 3px; }
+.cms-insight-action:hover { color: var(--accent); }
 .cms-insight-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 .cms-insight-action .ui-icon { transition-property: translate; transition-duration: .15s; transition-timing-function: ease-out; }
 .cms-insight-action:hover .ui-icon { translate: 2px 0; }
@@ -472,6 +483,46 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 .cms-inbox-undo button { margin-left: auto; padding: 4px 12px; border: 0; border-radius: 6px; background: none; color: var(--accent-hover); font: inherit; font-weight: 500; cursor: pointer; }
 .cms-inbox-undo button:hover { background: var(--d-sub); }
 
+/* sticky header: pinned under the top bar; it only gains a surface once it has stuck
+   (the sentinel above it, see Hero.tsx). Its height never changes while pinned. */
+.cms-hero-sentinel { display: block; height: 0; margin-bottom: calc(-1 * var(--d-gap)); }
+.cms-hero { position: sticky; top: var(--app-header-height); z-index: 20; margin: -12px calc(-1 * var(--gutter-h)) 0; padding: 12px var(--gutter-h); transition-property: background-color, box-shadow; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-hero.is-stuck { background: #F7F7F5F5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--line); }
+/* on short or narrow screens the header and its wrapped buttons would take too much room */
+@media (max-width: 640px), (max-height: 640px) { .cms-hero { position: static; } }
+
+/* to do: one checklist of the dashboard's findings, open items by priority */
+.cms-tabs-block { display: flex; margin-bottom: 12px; }
+.cms-tabs-block button { flex: 1; justify-content: center; }
+.cms-tasks { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; max-height: 372px; overflow-y: auto; overscroll-behavior: contain; }
+.cms-task { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-radius: 8px; color: inherit; text-decoration: none; box-shadow: inset 0 0 0 1px var(--d-line); transition-property: background-color; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-task:hover { background: var(--d-sub); }
+.cms-task:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cms-task-mark { display: grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.cms-task-mark.is-done { background: var(--green); color: #FFFFFF; box-shadow: none; }
+.cms-task-main { flex: 1; min-width: 0; }
+.cms-task-main b { display: -webkit-box; font-weight: 500; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; text-wrap: pretty; }
+.cms-task-main small { display: block; font-size: 12px; line-height: 16px; color: var(--d-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cms-task.is-done b { color: var(--d-ink-2); text-decoration: line-through; text-decoration-color: var(--line-2); }
+.cms-prio { flex: none; padding: 2px 8px; border-radius: 9999px; font-size: 12px; line-height: 16px; font-weight: 500; white-space: nowrap; }
+.cms-prio.is-high { background: var(--coral-soft); color: var(--coral); }
+.cms-prio.is-medium { background: var(--amber-soft); color: var(--amber); }
+.cms-prio.is-normal { background: var(--d-sub); color: var(--d-ink-2); }
+
+/* recent work: a heading outside the cards, then four project cards with their covers */
+.cms-section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.cms-work-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--d-gap); margin: 0; padding: 0; list-style: none; }
+.cms-work-card { display: flex; flex-direction: column; height: 100%; border-radius: var(--d-radius); background: var(--d-card); color: inherit; text-decoration: none; overflow: hidden; box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--d-line); transition-property: box-shadow; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-work-card:hover { box-shadow: var(--shadow-md), inset 0 0 0 1px var(--d-line); }
+.cms-work-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cms-work-cover { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 10; background: var(--d-sub); color: var(--d-ink-2); }
+.cms-work-cover img { outline: 1px solid oklch(0 0 0 / .1); outline-offset: -1px; }
+.cms-work-card-body { display: flex; flex-direction: column; gap: 4px; padding: 16px; min-width: 0; }
+.cms-work-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.cms-work-card-top b { min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cms-work-card-body > small { font-size: 12px; line-height: 16px; color: var(--d-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cms-work-card-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--d-line); font-size: 12px; line-height: 16px; color: var(--d-ink-2); }
+
 /* skeletons: same footprint as the card that replaces them */
 .cms-skel { display: flex; flex-direction: column; gap: 12px; }
 .cms-skel-bar { display: block; height: 16px; border-radius: 6px; background: linear-gradient(90deg, var(--d-sub) 0%, var(--page) 50%, var(--d-sub) 100%) 0 0 / 200% 100%; animation: cms-shimmer 1.4s ease-in-out infinite; }
@@ -504,7 +555,7 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 
 /* ── responsive ── */
 @media (max-width: 1280px) {
-  .cms-insights { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cms-insights, .cms-work-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 1100px) {
   .cms-col-main, .cms-col-side { grid-column: 1 / -1; }
@@ -520,7 +571,7 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 }
 @media (max-width: 640px) {
   .cms-dash { --d-pad: 16px; --d-gap: 16px; padding-top: 16px; }
-  .cms-insights { grid-template-columns: 1fr; }
+  .cms-insights, .cms-work-cards { grid-template-columns: 1fr; }
   .cms-hero { align-items: stretch; }
   .cms-dash-actions > .cms-btn { flex: 1 1 calc(50% - 4px); }
   .cms-stats dd { font-size: 16px; line-height: 24px; }
