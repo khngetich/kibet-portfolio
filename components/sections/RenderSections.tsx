@@ -1,5 +1,9 @@
 import Link from 'next/link';
 import { RichText } from '@payloadcms/richtext-lexical/react';
+import { Showreel } from '@/components/motion/Showreel';
+import { PostCard } from '@/components/PostCard';
+import { embedURL } from '@/lib/media';
+import { getPosts, getTools } from '@/lib/cms';
 import type { Header, Media, Page, Project, Site } from '@/payload-types';
 import { asMedia, getHeader, getProjects, getSite, type ProjectCard as Card } from '@/lib/cms';
 import { digits, price } from '@/lib/format';
@@ -86,7 +90,7 @@ const linkOf = (l: Link, fallback: { label: string; url: string }) => ({ label: 
 /** Section types that render the page's h1 when they come first. */
 const H1_SECTIONS = ['hero', 'projectGrid', 'profile'];
 /** Section types numbered as chapters of the page's story. */
-const CHAPTERS: string[] = ['workShowcase', 'process', 'aboutBanner', 'services', 'testimonials', 'contact', 'audience', 'faq'];
+const CHAPTERS: string[] = ['workShowcase', 'process', 'aboutBanner', 'services', 'testimonials', 'contact', 'audience', 'faq', 'tools', 'showreel', 'insights'];
 
 export async function RenderSections({ sections, studio = false, title }: { sections: Page['sections']; studio?: boolean; title?: string }) {
   const visible = (sections ?? []).map((s, index) => ({ s, index })).filter(({ s }) => studio || !s.hidden);
@@ -143,6 +147,9 @@ export async function RenderSections({ sections, studio = false, title }: { sect
             case 'mediaSection': return <MediaSection s={s} id={id} />;
             case 'ctaBanner': return <CtaSection s={s} ctx={ctx} id={id} hid={hid} />;
             case 'faq': return <FaqSection s={s} id={id} hid={hid} />;
+            case 'tools': return <ToolsSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
+            case 'showreel': return <ShowreelSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
+            case 'insights': return <InsightsSection s={s} id={id} hid={hid} chapter={chapterOf(index)} />;
             default: return null;
           }
         })();
@@ -632,6 +639,100 @@ function FaqSection({ s, id, hid }: Omit<P<'faq'>, 'ctx'>) {
             </Reveal>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── tools, showreel, insights ── */
+
+// A short mark for well-known tools (the way their app icons abbreviate them); others use their initials.
+const TOOL_MARKS: Record<string, string> = {
+  photoshop: 'Ps', illustrator: 'Ai', indesign: 'Id', 'after effects': 'Ae', 'premiere pro': 'Pr', premiere: 'Pr', lightroom: 'Lr', xd: 'Xd',
+  figma: 'Fi', blender: 'Bl', canva: 'Ca', procreate: 'Pc', 'cinema 4d': 'C4', 'davinci resolve': 'Dv', framer: 'Fr', webflow: 'Wf', notion: 'No',
+};
+const markOf = (name: string) => {
+  const known = TOOL_MARKS[name.toLowerCase().replace(/^adobe\s+/, '')];
+  if (known) return known;
+  const words = name.split(/\s+/).filter(Boolean);
+  return (words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2)).replace(/^./, (c) => c.toUpperCase());
+};
+
+async function ToolsSection({ s, id, hid, chapter }: P<'tools'>) {
+  const used = await getTools();
+  // tools typed under "Also show" join the list once, after the ones projects used
+  const seen = new Set(used.map((t) => t.name.toLowerCase()));
+  const extra = (s.extra ?? []).map((t) => t.trim()).filter((t) => t && !seen.has(t.toLowerCase())).map((name) => ({ name, n: 0 }));
+  const tools = [...used, ...extra];
+  if (!tools.length) return null;
+  const heading = s.heading?.trim() ?? '';
+  return (
+    <section className="tools-section dark" id={id} {...labelled(heading, hid, 'Tools')}>
+      <div className="wrap">
+        <Reveal className="section-intro">
+          <Chapter n={chapter} label={s.eyebrow} />
+          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          {s.intro && <p className="lede">{s.intro}</p>}
+        </Reveal>
+        <ul className="tools-grid">
+          {tools.map((t, i) => (
+            <li key={t.name}>
+              <Reveal delay={Math.min(i, 8) * 0.04} y={16} className="tool">
+                <span className="tool-mark" aria-hidden="true">{markOf(t.name)}</span>
+                <b>{t.name}</b>
+                {s.showCounts !== false && t.n > 0 && <small>{t.n} {t.n === 1 ? 'project' : 'projects'}</small>}
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function ShowreelSection({ s, ctx, id, hid, chapter }: P<'showreel'>) {
+  const video = asMedia(s.video);
+  const embed = s.link ? embedURL(s.link) : null;
+  const title = s.heading?.trim() || 'Showreel';
+  const item = video?.url ? { kind: 'video' as const, url: video.url, title, media: video } : embed ? { kind: 'embed' as const, url: embed, title } : null;
+  if (!item) return null;
+  const heading = s.heading?.trim() ?? '';
+  const label = text(s.buttonLabel, 'Watch the showreel');
+  return (
+    <section className="reel-section dark" id={id} {...labelled(heading, hid, 'Showreel')}>
+      <div className="wrap reel">
+        <Reveal className="reel-intro">
+          <Chapter n={chapter} label={s.eyebrow} />
+          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          {s.text && <p className="lede">{s.text}</p>}
+          <p className="reel-hint"><Icon name="play" size={14} /> {label}</p>
+        </Reveal>
+        <Reveal className="reel-frame" delay={0.1}>
+          <Showreel item={item} poster={s.poster ?? ctx.covers[0] ?? null} label={label} />
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+async function InsightsSection({ s, id, hid, chapter }: Omit<P<'insights'>, 'ctx'>) {
+  const posts = await getPosts(Math.min(Math.max(s.count ?? 3, 1), 6));
+  if (!posts.length) return null;
+  const heading = s.heading?.trim() ?? '';
+  const button = linkOf(s.button, { label: 'Read all insights', url: '/insights' });
+  return (
+    <section className="insights-section dark" id={id} {...labelled(heading, hid, 'Insights')}>
+      <div className="wrap">
+        <Reveal className="insights-head">
+          <div>
+            <Chapter n={chapter} label={s.eyebrow} />
+            {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          </div>
+          <a className={btn(button.variant, 'btn-outline')} href={button.url}>{button.label} <Icon name="arrow" size={15} /></a>
+        </Reveal>
+        <ul className="post-grid">
+          {posts.map((p, i) => <li key={p.id}><Reveal delay={i * 0.06}><PostCard post={p} /></Reveal></li>)}
+        </ul>
       </div>
     </section>
   );

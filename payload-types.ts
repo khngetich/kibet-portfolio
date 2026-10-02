@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     pages: Page;
     projects: Project;
+    posts: Post;
     media: Media;
     inquiries: Inquiry;
     users: User;
@@ -81,6 +82,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -840,6 +842,122 @@ export interface Page {
             blockName?: string | null;
             blockType: 'faq';
           }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            intro?: string | null;
+            /**
+             * Tools that aren’t on a project yet. The rest come from your projects.
+             */
+            extra?: string[] | null;
+            showCounts?: boolean | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'tools';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            text?: string | null;
+            /**
+             * An uploaded video file. Or use a YouTube/Vimeo link below instead.
+             */
+            video?: (number | null) | Media;
+            /**
+             * Used when there’s no uploaded video.
+             */
+            link?: string | null;
+            /**
+             * Shown before it plays. Defaults to the first project cover.
+             */
+            poster?: (number | null) | Media;
+            buttonLabel?: string | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'showreel';
+          }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            heading?: string | null;
+            count?: number | null;
+            button?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'insights';
+          }
       )[]
     | null;
   meta?: {
@@ -1123,6 +1241,56 @@ export interface Media {
   focalY?: number | null;
 }
 /**
+ * Short articles and design notes. They appear at /insights and in the Insights section.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * One or two sentences for the card and search/social previews.
+   */
+  excerpt: string;
+  /**
+   * Landscape 16:10 works best. Without one, the card shows a coloured panel with the title.
+   */
+  cover?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  publishedAt: string;
+  /**
+   * e.g. Branding, Process
+   */
+  tags?: string[] | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Defaults to the title.
+   */
+  metaTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "inquiries".
  */
@@ -1203,6 +1371,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'projects';
         value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
       } | null)
     | ({
         relationTo: 'media';
@@ -1757,6 +1929,91 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        tools?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              intro?: T;
+              extra?: T;
+              showCounts?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        showreel?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              text?: T;
+              video?: T;
+              link?: T;
+              poster?: T;
+              buttonLabel?: T;
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        insights?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              count?: T;
+              button?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   meta?:
     | T
@@ -1922,6 +2179,24 @@ export interface ProjectsSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  excerpt?: T;
+  cover?: T;
+  content?: T;
+  publishedAt?: T;
+  tags?: T;
+  generateSlug?: T;
+  slug?: T;
+  metaTitle?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

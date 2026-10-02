@@ -16,6 +16,9 @@ const shapes: Record<string, React.ReactNode> = {
   mediaSection: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 16l5-5 4 4 3-3 6 6" /><circle cx="15.5" cy="9" r="1.5" /></>,
   ctaBanner: <><rect x="3" y="7" width="18" height="10" rx="5" /><path d="M9 12h6M13 10l2 2-2 2" /></>,
   faq: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5v.4M12 17h.01" /></>,
+  tools: <><rect x="3" y="4" width="7" height="7" rx="2" /><rect x="14" y="4" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /><path d="M5.5 7.5h2M16.5 7.5h2" /></>,
+  showreel: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M10.5 9.5v5l4-2.5z" /></>,
+  insights: <><rect x="3" y="4" width="8" height="16" rx="1.5" /><rect x="13" y="4" width="8" height="16" rx="1.5" /><path d="M5 15h4M5 17.5h3M15 15h4M15 17.5h3" /></>,
 };
 
 export function SectionIcon({ type, size = 22 }: { type: string; size?: number }) {

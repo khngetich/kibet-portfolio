@@ -11,6 +11,7 @@ const paths = {
   check: <path {...S} strokeWidth={2.2} d="M5 12.5l4.5 4.5L19 7.5" />,
   star: <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z" fill="currentColor" />,
   spark: <path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z" fill="currentColor" />,
+  play: <path d="M9 6.6c0-.9 1-1.4 1.7-.9l7.6 5.4c.6.4.6 1.3 0 1.8l-7.6 5.4c-.7.5-1.7 0-1.7-.9z" fill="currentColor" />,
   close: <path {...S} d="M6 6l12 12M18 6L6 18" />,
   // process steps (outline, 1.8 stroke to sit beside the step titles)
   compass: <g {...S}><circle cx="12" cy="12" r="8.5" /><path d="M15.3 8.7l-2 4.6-4.6 2 2-4.6z" /></g>,

@@ -418,6 +418,46 @@ export const FaqSection = section({
   ],
 });
 
+export const ToolsSection = section({
+  slug: 'tools',
+  labels: { singular: 'Tools', plural: 'Tools' },
+  description: 'The tools you work with, gathered from your projects’ Tools lists, with how many projects used each.',
+  fields: [
+    eyebrow('Tools'),
+    heading('Tools I work with'),
+    intro,
+    { name: 'extra', label: 'Also show', type: 'text', hasMany: true, admin: { description: 'Tools that aren’t on a project yet. The rest come from your projects.' } },
+    { name: 'showCounts', label: 'Show how many projects used each', type: 'checkbox', defaultValue: true },
+  ],
+});
+
+export const ShowreelSection = section({
+  slug: 'showreel',
+  labels: { singular: 'Showreel', plural: 'Showreels' },
+  description: 'A wide video still with a play button; the reel opens full screen.',
+  fields: [
+    eyebrow('Showreel'),
+    heading('A quick look at my work'),
+    { name: 'text', type: 'textarea', defaultValue: 'A short reel of recent work, from first sketch to final frame.' },
+    { name: 'video', type: 'upload', relationTo: 'media', admin: { description: 'An uploaded video file. Or use a YouTube/Vimeo link below instead.' } },
+    { name: 'link', label: 'YouTube or Vimeo link', type: 'text', admin: { description: 'Used when there’s no uploaded video.' } },
+    { name: 'poster', label: 'Still image', type: 'upload', relationTo: 'media', admin: { description: 'Shown before it plays. Defaults to the first project cover.' } },
+    { name: 'buttonLabel', label: 'Button', type: 'text', defaultValue: 'Watch the showreel' },
+  ],
+});
+
+export const InsightsSection = section({
+  slug: 'insights',
+  labels: { singular: 'Insights', plural: 'Insights' },
+  description: 'Your latest insights (articles) as cards, with a link to all of them.',
+  fields: [
+    eyebrow('Insights'),
+    heading('Insights & ideas'),
+    { name: 'count', label: 'How many', type: 'number', defaultValue: 3, min: 1, max: 6 },
+    link('button', 'Button', { label: 'Read all insights', url: '/insights' }),
+  ],
+});
+
 export const pageSections = [
   HeroSection,
   WorkShowcaseSection,
@@ -433,4 +473,7 @@ export const pageSections = [
   MediaSection,
   CtaSection,
   FaqSection,
+  ToolsSection,
+  ShowreelSection,
+  InsightsSection,
 ];

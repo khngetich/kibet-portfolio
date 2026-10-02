@@ -10,6 +10,7 @@ import sharp from 'sharp';
 import { Users } from './collections/Users';
 import { Media } from './collections/Media';
 import { Projects } from './collections/Projects';
+import { Posts } from './collections/Posts';
 import { Inquiries } from './collections/Inquiries';
 import { Pages, pagePath } from './collections/Pages';
 import { Site } from './globals/Site';
@@ -64,7 +65,7 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Pages, Projects, Media, Inquiries, Users],
+  collections: [Pages, Projects, Posts, Media, Inquiries, Users],
   globals: [Header, Footer, Theme, Site],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

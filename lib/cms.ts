@@ -75,4 +75,37 @@ export const getProjectSlugs = async () => {
   return docs.map((d) => d.slug).filter(Boolean) as string[];
 };
 
+/** Insights (articles), newest first. Cards only need these fields. */
+const postSelect = { title: true, slug: true, excerpt: true, cover: true, publishedAt: true, tags: true } as const;
+
+export const getPosts = cache(async (limit = 100) => {
+  const draft = await isPreview();
+  const { docs } = await (await cms()).find({ collection: 'posts', where: published(draft), sort: '-publishedAt', depth: 1, limit, draft, select: postSelect });
+  return docs;
+});
+
+export const getPost = cache(async (slug: string) => {
+  const draft = await isPreview();
+  const { docs } = await (await cms()).find({ collection: 'posts', where: { and: [{ slug: { equals: slug } }, published(draft)] }, depth: 2, limit: 1, draft });
+  return docs[0] ?? null;
+});
+
+export const getPostSlugs = async () => {
+  const { docs } = await (await cms()).find({ collection: 'posts', where: published(false), limit: 1000, depth: 0, select: { slug: true } });
+  return docs.map((d) => d.slug).filter(Boolean) as string[];
+};
+
+/** Every tool named on a published project, with how many projects used it, most used first. */
+export const getTools = cache(async () => {
+  const draft = await isPreview();
+  const { docs } = await (await cms()).find({ collection: 'projects', where: published(draft), depth: 0, limit: 300, draft, select: { tools: true } });
+  const counts = new Map<string, { name: string; n: number }>();
+  for (const d of docs) for (const t of new Set((d.tools ?? []).map((x) => x.trim()).filter(Boolean))) {
+    const key = t.toLowerCase();
+    const cur = counts.get(key);
+    counts.set(key, { name: cur?.name ?? t, n: (cur?.n ?? 0) + 1 });
+  }
+  return [...counts.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name));
+});
+
 export { asMedia } from './media';
