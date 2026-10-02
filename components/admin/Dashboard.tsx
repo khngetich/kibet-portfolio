@@ -7,7 +7,9 @@ import { DocLink, NewDoc } from './DocModal';
 import { DashIntro } from './DashIntro';
 import { EnquiryChart } from './DashboardCharts';
 import { Img } from '@/components/Img';
-import { getEnquiryStats, getInbox, getMediaStats, getPages, getProjects, getRecentWork, getSiteDefaults, LARGE_IMAGE } from './dashboard/data';
+import { DISCIPLINES } from '@/collections/Projects';
+import { getCaseStudies, getDisciplines, getEnquiryStats, getInbox, getMediaStats, getPages, getProjects, getRecentWork, getServiceMix, getSiteDefaults, LARGE_IMAGE } from './dashboard/data';
+import { Availability, CaseStudies, Folders } from './dashboard/Portfolio';
 import { Greeting, LiveStatus, StickyHero } from './dashboard/Hero';
 import { Tasks, type Task } from './dashboard/Tasks';
 import { Health, type HealthCheck } from './dashboard/Health';
@@ -18,10 +20,13 @@ import { StatusBadge, Workflow, type WorkItem } from './dashboard/Workflow';
  * The CMS home screen, laid out as a command centre:
  *   hero      greeting and date, live status, quick actions (search is ⌘K, in the sidebar);
  *             pinned under the top bar while the page scrolls
+ *             with the "open for work" line from Site settings as a pill
  *   insights  four tiles that each say what needs doing and link straight to it; the first,
  *             the inbox, sits on the dark inverse surface as the headline number
+ *   folders   the work grouped by discipline, each folder with its newest cover peeking out
  *   bento     enquiries + content workflow (8 cols) beside to-do, site health and settings (4)
  *   work      the four latest projects, with their covers
+ *   case      how complete each project's case study is, least complete first
  *   inbox     latest enquiries with triage on the row
  *
  * The hero renders at once; every card below is its own Suspense boundary, so each streams in
@@ -114,8 +119,29 @@ async function Insights({ payload, admin }: { payload: Payload; admin: string })
 /* ── cards ── */
 
 async function EnquiriesCard({ payload }: { payload: Payload }) {
-  const { hours, replyRate } = await getEnquiryStats(payload);
-  return <section className="cms-card cms-anim" aria-labelledby="dash-enquiries"><EnquiryChart hours={hours} replyRate={replyRate} /></section>;
+  const [{ hours, replyRate }, mix] = await Promise.all([getEnquiryStats(payload), getServiceMix(payload)]);
+  const top = Math.max(1, ...mix.map((m) => m.n));
+  const total = mix.reduce((a, m) => a + m.n, 0);
+  return (
+    <section className="cms-card cms-anim" aria-labelledby="dash-enquiries">
+      <EnquiryChart hours={hours} replyRate={replyRate} />
+      {/* what people ask for: worth promoting what's in demand */}
+      {mix.length > 0 && (
+        <div className="cms-mix">
+          <p className="cms-mix-head">Most asked for <span>last 12 months</span></p>
+          <ul>
+            {mix.map((m) => (
+              <li key={m.service}>
+                <span className="cms-mix-label">{m.service}</span>
+                <span className="cms-mix-bar" aria-hidden="true"><i style={{ width: `${(m.n / top) * 100}%` }} /></span>
+                <span className="cms-mix-n">{m.n} <small>{Math.round((m.n / total) * 100)}%</small></span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
 }
 
 async function WorkflowCard({ payload, admin }: { payload: Payload; admin: string }) {
@@ -251,6 +277,14 @@ async function RecentWorkCard({ payload, admin }: { payload: Payload; admin: str
   );
 }
 
+async function FoldersCard({ payload, admin }: { payload: Payload; admin: string }) {
+  return <Folders folders={await getDisciplines(payload, DISCIPLINES)} admin={admin} disciplines={DISCIPLINES} />;
+}
+
+async function CaseStudiesCard({ payload, admin }: { payload: Payload; admin: string }) {
+  return <CaseStudies items={await getCaseStudies(payload)} admin={admin} />;
+}
+
 async function InboxCard({ payload, admin }: { payload: Payload; admin: string }) {
   const inbox = await getInbox(payload);
   return <section className="cms-card cms-anim" aria-labelledby="dash-inbox"><Inbox items={inbox.items} unread={inbox.unread} admin={admin} /></section>;
@@ -290,12 +324,15 @@ export async function Dashboard({ payload, user }: Props) {
   const admin = payload.config.routes.admin;
   const firstName = (user as { name?: string } | null)?.name?.split(' ')[0];
   const siteURL = process.env.NEXT_PUBLIC_SERVER_URL || '/';
+  // one small cached query, awaited so the pill is in the header's first paint (no shift)
+  const site = await getSiteDefaults(payload);
 
   return (
     <div className="cms-dash is-intro">
       <DashIntro />
       <StickyHero>
-        <Greeting name={firstName} />
+        {/* the availability chip rides in the subtitle line, so the pinned header stays one row */}
+        <Greeting name={firstName}><Availability text={site.availability} admin={admin} /></Greeting>
         <div className="cms-dash-actions">
           <LiveStatus />
           <a className="cms-btn cms-btn-ghost" href={siteURL} target="_blank" rel="noopener noreferrer">View site <Icon name="external" size={14} /></a>
@@ -308,6 +345,8 @@ export async function Dashboard({ payload, user }: Props) {
         <Insights payload={payload} admin={admin} />
       </Suspense>
 
+      <Suspense fallback={<Skeleton height={260} lines={2} />}><FoldersCard payload={payload} admin={admin} /></Suspense>
+
       {/* Paired rows that end level (no ragged columns), partners chosen for similar heights: each
           8-col card sets its row's height and the 4-col card beside it stretches to match. To do
           fills the space beside Content and scrolls inside it rather than making the row taller. */}
@@ -318,6 +357,7 @@ export async function Dashboard({ payload, user }: Props) {
         <div className="cms-cell cms-span-4 is-fill"><Suspense fallback={<Skeleton height={360} lines={5} />}><TasksCard payload={payload} admin={admin} /></Suspense></div>
         <div className="cms-cell cms-span-8"><Suspense fallback={<Skeleton height={340} lines={3} />}><RecentWorkCard payload={payload} admin={admin} /></Suspense></div>
         <div className="cms-cell cms-span-4"><SettingsCard admin={admin} /></div>
+        <div className="cms-cell cms-span-12"><Suspense fallback={<Skeleton height={280} lines={4} />}><CaseStudiesCard payload={payload} admin={admin} /></Suspense></div>
         {/* full width with no partner: an empty inbox stays a slim strip instead of stretching */}
         <div className="cms-cell cms-span-12"><Suspense fallback={<Skeleton height={200} lines={3} />}><InboxCard payload={payload} admin={admin} /></Suspense></div>
       </div>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useNav } from '@payloadcms/ui';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
@@ -10,6 +10,7 @@ import { Icon } from '@/components/ui/Icon';
 import { CommandPalette, openPalette } from './CommandPalette';
 import { DocModalHost } from './DocModal';
 import { sectionIcon } from './sectionIcons';
+import { RecentlyOpened } from './RecentlyOpened';
 
 export type NavGroup = { label: string; items: { slug: string; label: string; href: string; count?: number; badge?: string }[] };
 
@@ -134,6 +135,8 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
   // true once on the client (the resizer is portalled into <body>)
   const mounted = useSyncExternalStore(noop, () => true, () => false);
   const mac = useSyncExternalStore(noop, () => /Mac|iPhone|iPad/.test(navigator.userAgent), () => true);
+  // settings pages' names, for the Recent list (globals have no title of their own)
+  const globalLabels = useMemo(() => Object.fromEntries(groups.flatMap((g) => g.items).filter((i) => i.href.includes('/globals/')).map((i) => [i.slug, i.label])), [groups]);
   const isActive = (href: string) => (href === admin ? pathname === admin : pathname === href || pathname.startsWith(`${href}/`));
 
   const item = (slug: string, label: string, href: string, count?: number, badge?: string) => {
@@ -164,6 +167,7 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
           <ul>{g.items.map((i) => item(i.slug, i.label, i.href, i.count, i.badge))}</ul>
         </div>
       ))}
+      <RecentlyOpened admin={admin} globals={globalLabels} />
       {/* The Studio, as a card at the foot of the sidebar; the icon rail keeps just its mark.
           It has its own root layout: a full page load, not a <Link>. */}
       <div className="cms-nav-promo">

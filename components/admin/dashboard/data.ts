@@ -94,9 +94,70 @@ export const getRecentWork = cache(async (payload: Payload) => {
   }));
 });
 
+/**
+ * What a full case study has beyond the required title, summary and cover. A project's score is
+ * the share of these it has; the dashboard lists the lowest first, with what each one is missing.
+ */
+export const CASE_STUDY_PARTS = [
+  { key: 'brief', label: 'brief' },
+  { key: 'approach', label: 'approach' },
+  { key: 'outcome', label: 'outcome' },
+  { key: 'samples', label: 'samples' },
+  { key: 'tools', label: 'tools or deliverables' },
+  { key: 'timeline', label: 'timeline' },
+] as const;
+
+const filled = (v: unknown) => (Array.isArray(v) ? v.length > 0 : typeof v === 'string' ? v.trim().length > 0 : v != null);
+
+export const getCaseStudies = cache(async (payload: Payload) => {
+  const [rows, all] = await Promise.all([
+    payload.find({ collection: 'projects', draft: true, depth: 0, limit: 300, pagination: false, sort: '-updatedAt', select: { title: true, client: true, brief: true, approach: true, outcome: true, samples: true, tools: true, deliverables: true, timeline: true } }),
+    getProjects(payload),
+  ]);
+  const byId = new Map(all.map((p) => [p.id, p]));
+  return rows.docs.map((p) => {
+    const has: Record<(typeof CASE_STUDY_PARTS)[number]['key'], boolean> = {
+      brief: filled(p.brief), approach: filled(p.approach), outcome: filled(p.outcome), samples: filled(p.samples),
+      tools: filled(p.tools) || filled(p.deliverables), timeline: filled(p.timeline),
+    };
+    const missing = CASE_STUDY_PARTS.filter((c) => !has[c.key]).map((c) => c.label);
+    return {
+      id: p.id,
+      title: p.title || 'Untitled project',
+      client: p.client ?? null,
+      status: byId.get(p.id)?.status ?? ('draft' as Status),
+      score: Math.round(((CASE_STUDY_PARTS.length - missing.length) / CASE_STUDY_PARTS.length) * 100),
+      missing,
+    };
+  });
+});
+
+/**
+ * Projects grouped by discipline, each group with its newest project's cover (one small media
+ * query for at most one cover per discipline). A project with several disciplines counts in each.
+ */
+export const getDisciplines = cache(async (payload: Payload, options: readonly { label: string; value: string }[]) => {
+  const [rows, all] = await Promise.all([
+    payload.find({ collection: 'projects', draft: true, depth: 0, limit: 300, pagination: false, sort: '-updatedAt', select: { title: true, disciplines: true, cover: true } }),
+    getProjects(payload),
+  ]);
+  const byId = new Map(all.map((p) => [p.id, p]));
+  const groups = options.map((o) => {
+    const list = rows.docs.filter((p) => (p.disciplines ?? []).includes(o.value as never));
+    const coverId = list.map((p) => (typeof p.cover === 'object' ? p.cover?.id : p.cover)).find((c) => c != null) ?? null;
+    return { value: o.value, label: o.label, count: list.length, live: list.filter((p) => byId.get(p.id)?.status !== 'draft').length, latest: list[0]?.title ?? null, coverId };
+  });
+  const ids = [...new Set(groups.map((g) => g.coverId).filter((c): c is number => c != null))];
+  const covers = ids.length
+    ? (await payload.find({ collection: 'media', depth: 0, limit: ids.length, pagination: false, where: { id: { in: ids } } })).docs
+    : [];
+  const coverById = new Map(covers.map((m) => [m.id, m]));
+  return groups.map(({ coverId, ...g }) => ({ ...g, cover: coverId != null ? coverById.get(coverId) ?? null : null }));
+});
+
 export const getSiteDefaults = cache(async (payload: Payload) => {
-  const site = await payload.findGlobal({ slug: 'site', depth: 0, select: { name: true, metaDescription: true, ogImage: true } });
-  return { name: site.name, description: !!site.metaDescription, image: !!site.ogImage };
+  const site = await payload.findGlobal({ slug: 'site', depth: 0, select: { name: true, metaDescription: true, ogImage: true, availability: true } });
+  return { name: site.name, description: !!site.metaDescription, image: !!site.ogImage, availability: site.availability?.trim() || null };
 });
 
 export const getMediaStats = cache(async (payload: Payload) => {
@@ -126,6 +187,15 @@ export const getEnquiryStats = cache(async (payload: Payload) => {
   // archived messages were set aside, not answered: they leave the reply rate entirely
   const open = total.totalDocs - archived.totalDocs;
   return { hours, replyRate: open ? Math.round((replied.totalDocs / open) * 100) : null };
+});
+
+/** What people ask for: enquiries per service over the last twelve months, most asked first. */
+export const getServiceMix = cache(async (payload: Payload) => {
+  const since = new Date(Date.now() - 366 * DAY).toISOString();
+  const rows = await (payload.db as unknown as PostgresAdapter).drizzle.execute(sql`
+    SELECT coalesce(nullif(trim(service), ''), 'General enquiry') AS service, count(*)::int AS n
+    FROM inquiries WHERE created_at > ${since} GROUP BY 1 ORDER BY 2 DESC LIMIT 6`);
+  return (rows.rows as { service: string; n: number | string }[]).map((r) => ({ service: r.service, n: Number(r.n) }));
 });
 
 export const getInbox = cache(async (payload: Payload) => {

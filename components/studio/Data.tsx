@@ -13,7 +13,7 @@ import { Modal, useConfirm } from './Modal';
  */
 
 export type MediaDoc = { id: number; url?: string | null; alt: string; filename?: string | null; mimeType?: string | null; width?: number | null; height?: number | null; filesize?: number | null };
-export type ProjectRef = { id: number; title: string; slug?: string | null; client?: string | null; cover?: number | null; featured?: boolean | null; _status?: string | null; updatedAt?: string };
+export type ProjectRef = { id: number; title: string; slug?: string | null; client?: string | null; cover?: number | null; featured?: boolean | null; _status?: string | null; updatedAt?: string; disciplines?: string[] | null; live?: boolean; samples?: number; score?: number; missing?: string[] };
 type PickOpts = { multiple?: boolean; accept?: 'image' | 'any' };
 
 type Ctx = {

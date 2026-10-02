@@ -150,10 +150,29 @@ async function deleteMediaImpl(id: number) {
 
 /* ── projects and enquiries ── */
 
+// the parts of a case study beyond the required title, summary and cover (same rule as the dashboard)
+const STORY_PARTS = ['brief', 'approach', 'outcome', 'samples', 'tools', 'timeline'] as const;
+const filled = (v: unknown) => (Array.isArray(v) ? v.length > 0 : typeof v === 'string' ? v.trim().length > 0 : v != null);
+
 async function listProjectsImpl() {
   const { payload, user } = await session();
-  const res = await payload.find({ collection: 'projects', user, overrideAccess: false, draft: true, depth: 0, limit: 200, sort: '_order', select: { title: true, slug: true, client: true, cover: true, featured: true, _status: true, updatedAt: true } });
-  return json(res.docs);
+  const [res, main] = await Promise.all([
+    payload.find({ collection: 'projects', user, overrideAccess: false, draft: true, depth: 0, limit: 200, sort: '_order', select: { title: true, slug: true, client: true, cover: true, featured: true, _status: true, updatedAt: true, disciplines: true, brief: true, approach: true, outcome: true, samples: true, tools: true, deliverables: true, timeline: true } }),
+    // the main row says whether a project is on the site; the latest draft says whether edits wait
+    payload.find({ collection: 'projects', user, overrideAccess: false, depth: 0, limit: 200, pagination: false, select: { _status: true } }),
+  ]);
+  const live = new Map(main.docs.map((d) => [d.id, d._status === 'published']));
+  return json(res.docs.map(({ brief, approach, outcome, samples, tools, deliverables, timeline, ...p }) => {
+    const has = { brief: filled(brief), approach: filled(approach), outcome: filled(outcome), samples: filled(samples), tools: filled(tools) || filled(deliverables), timeline: filled(timeline) };
+    const missing = STORY_PARTS.filter((k) => !has[k]);
+    return {
+      ...p,
+      live: live.get(p.id) ?? false,
+      samples: Array.isArray(samples) ? samples.length : 0,
+      score: Math.round(((STORY_PARTS.length - missing.length) / STORY_PARTS.length) * 100),
+      missing,
+    };
+  }));
 }
 
 async function getProjectImpl(id: number) {

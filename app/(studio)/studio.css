@@ -348,6 +348,70 @@ textarea.st-input { resize: vertical; line-height: 1.5; }
 .st-versions b { display: block; font-size: 14px; line-height: 20px; font-weight: 500; }
 .st-versions small { font-size: 12px; line-height: 16px; color: var(--ink-2); }
 
+/* projects as a board: one column per publishing state (components/studio/Managers.tsx) */
+.st-manager-bar { gap: 12px; }
+.st-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.st-board-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 12px; border-radius: 12px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+.st-board-col header { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 4px 8px; }
+.st-board-col header b { font-size: 14px; line-height: 20px; font-weight: 600; }
+.st-board-col header small { grid-column: 1 / -1; font-size: 12px; line-height: 16px; color: var(--ink-2); }
+.st-board-n { min-width: 24px; padding: 2px 6px; border-radius: 6px; background: var(--inverse); color: var(--on-inverse); font-size: 12px; line-height: 16px; text-align: center; font-variant-numeric: tabular-nums; }
+.st-board-col ul { display: flex; flex-direction: column; gap: 8px; }
+.st-board-card { display: flex; flex-direction: column; width: 100%; padding: 0; overflow: hidden; border: 0; border-radius: 12px; background: var(--card); text-align: left; box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line); transition-property: box-shadow; transition-duration: .15s; transition-timing-function: ease-out; }
+.st-board-card:hover { box-shadow: var(--shadow-md), inset 0 0 0 1px var(--line-2); }
+.st-board-cover { display: grid; place-items: center; aspect-ratio: 16 / 9; background: var(--sub); color: var(--ink-2); }
+.st-board-cover img { width: 100%; height: 100%; object-fit: cover; outline: 1px solid oklch(0 0 0 / .1); outline-offset: -1px; }
+.st-board-body { display: flex; flex-direction: column; gap: 4px; padding: 12px; min-width: 0; }
+.st-board-body b { font-size: 14px; line-height: 20px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-board-body > small { font-size: 12px; line-height: 16px; color: var(--ink-2); }
+.st-board-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.st-board-tags i { padding: 2px 8px; border-radius: 6px; background: var(--sub); color: var(--ink-2); font-size: 12px; line-height: 16px; font-style: normal; }
+.st-board-meter { display: block; height: 4px; margin-top: 8px; border-radius: 9999px; background: var(--line); overflow: hidden; }
+.st-board-meter i { display: block; height: 100%; border-radius: inherit; background: var(--chart-1); }
+.st-board-meter i.is-done { background: var(--green); }
+.st-board-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; line-height: 16px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.st-board-missing { color: var(--amber) !important; }
+.st-board-empty { padding: 24px 8px; border-radius: 8px; text-align: center; color: var(--ink-2); font-size: 12px; border: 1px dashed var(--line-2); }
+@media (max-width: 900px) { .st-board { grid-template-columns: 1fr; } }
+
+/* enquiries as a mail client: the list beside the open message (components/studio/Inbox.tsx) */
+.st-mail { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 0; min-height: min(560px, calc(100dvh - 220px)); margin: 0 -24px -24px; border-top: 1px solid var(--line); }
+.st-mail-list { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--line); background: var(--page); }
+.st-mail-filters { display: flex; margin: 12px; }
+.st-mail-filters button { padding-inline: 8px; }
+.st-mail-n { margin-left: 4px; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.st-mail-list ul { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 0 12px 12px; }
+.st-mail-item { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 12px; border: 0; border-radius: 12px; background: var(--card); text-align: left; box-shadow: inset 0 0 0 1px var(--line); transition-property: box-shadow; transition-duration: .15s; transition-timing-function: ease-out; }
+.st-mail-item:hover { box-shadow: inset 0 0 0 1px var(--line-2); }
+.st-mail-item.is-on { box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--accent); }
+.st-mail-avatar { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--sub); color: var(--ink); font-size: 12px; font-weight: 600; }
+.st-mail-avatar.is-lg { width: 40px; height: 40px; font-size: 14px; }
+.st-mail-item.is-new .st-mail-avatar { background: var(--inverse); color: var(--on-inverse); }
+.st-mail-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.st-mail-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.st-mail-top b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; line-height: 20px; font-weight: 500; }
+.st-mail-item.is-new .st-mail-top b { font-weight: 600; }
+.st-mail-top small { flex: none; font-size: 12px; color: var(--ink-2); }
+.st-mail-subject { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 20px; }
+.st-mail-subject i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.st-mail-excerpt { font-size: 12px; line-height: 16px; color: var(--ink-2); overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.st-mail-read { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding: 16px 24px 24px; overflow-y: auto; }
+.st-mail-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.st-mail-title { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -.015em; }
+.st-mail-from { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; font-size: 14px; }
+.st-mail-from a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; }
+.st-mail-from small { font-size: 12px; color: var(--ink-2); }
+.st-mail-facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.st-mail-facts div { padding: 8px 12px; border-radius: 8px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+.st-mail-facts dt { font-size: 12px; line-height: 16px; color: var(--ink-2); }
+.st-mail-facts dd { margin: 0; font-size: 14px; line-height: 20px; font-weight: 500; }
+.st-mail-reply { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 12px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+.st-mail-templates { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+@media (max-width: 760px) {
+  .st-mail { grid-template-columns: 1fr; }
+  .st-mail-list { border-right: 0; border-bottom: 1px solid var(--line); max-height: 40dvh; }
+}
+
 /* toasts */
 .st-toasts { position: fixed; left: 50%; bottom: 20px; z-index: 50; display: flex; flex-direction: column; gap: 8px; transform: translateX(-50%); pointer-events: none; }
 .st-toast { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--inverse); color: var(--on-inverse); font-size: 14px; line-height: 20px; box-shadow: var(--shadow-lg); pointer-events: auto; animation: st-toast .2s ease-out; }

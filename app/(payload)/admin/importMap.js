@@ -29,6 +29,7 @@ import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c08
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { ListQuickCreate as ListQuickCreate_dd144b88905f1ed24c3200f8b1531436 } from '../../../components/admin/Crud'
+import { ProjectHeader as ProjectHeader_5fe712d13042821cfa8482e9a42cce62 } from '../../../components/admin/ProjectHeader'
 import { ModalCell as ModalCell_dd144b88905f1ed24c3200f8b1531436 } from '../../../components/admin/Crud'
 import { LinkRowLabel as LinkRowLabel_5b7ce49defdf2cdbdd8c55dff55c7042 } from '../../../components/admin/LinkRowLabel'
 import { Icon as Icon_81fda60f3e3709e861f40982a767707d } from '../../../components/admin/Brand'
@@ -71,6 +72,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "/components/admin/Crud#ListQuickCreate": ListQuickCreate_dd144b88905f1ed24c3200f8b1531436,
+  "/components/admin/ProjectHeader#ProjectHeader": ProjectHeader_5fe712d13042821cfa8482e9a42cce62,
   "/components/admin/Crud#ModalCell": ModalCell_dd144b88905f1ed24c3200f8b1531436,
   "/components/admin/LinkRowLabel#LinkRowLabel": LinkRowLabel_5b7ce49defdf2cdbdd8c55dff55c7042,
   "/components/admin/Brand#Icon": Icon_81fda60f3e3709e861f40982a767707d,

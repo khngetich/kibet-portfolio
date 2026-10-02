@@ -29,6 +29,8 @@ export const Projects: CollectionConfig = {
   versions: { drafts: { autosave: { interval: 800 } }, maxPerDoc: 30 },
   hooks: { afterChange: [revalidateCollection], afterDelete: [revalidateOnDelete] },
   fields: [
+    // the editor's banner: cover, facts and case-study completeness (stores nothing)
+    { name: 'projectHeader', type: 'ui', admin: { components: { Field: '/components/admin/ProjectHeader#ProjectHeader' } } },
     { name: 'title', type: 'text', required: true },
     {
       type: 'tabs',

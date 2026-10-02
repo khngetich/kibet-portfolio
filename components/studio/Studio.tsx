@@ -13,7 +13,8 @@ import { ConfirmProvider, Modal, useConfirm } from './Modal';
 import { MediaLibrary, StudioDataProvider } from './Data';
 import { FieldList } from './Fields';
 import type { UploadMode } from './upload';
-import { ProjectsManager, EnquiriesManager } from './Managers';
+import { ProjectsManager } from './Managers';
+import { EnquiriesManager } from './Inbox';
 import { TabList, TabPanel } from './TabList';
 import { defaultsOf, newId, pagePath, slugify, timeAgo, type Rec } from './util';
 
@@ -397,7 +398,7 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
       <VersionsModal open={modal === 'versions'} pageId={pageId} onClose={() => setModal(null)} onRestored={async () => { setModal(null); if (pageId != null) { const d = await getPage(pageId); setDoc(d as unknown as Rec); latest.current = d as unknown as Rec; post({ type: 'refresh' }); setStatus('Earlier version restored as a draft.'); } }} />
       <Modal open={modal === 'media'} onClose={() => setModal(null)} title="Media library" description="Drop files anywhere in this window to upload. Click a file to edit its description or delete it." size="xl"><MediaLibrary /></Modal>
       <Modal open={modal === 'projects'} onClose={() => setModal(null)} title="Projects" description="Case studies shown on Work and in the showcase sections." size="xl"><ProjectsManager fields={schema.project} onChanged={() => post({ type: 'refresh' })} /></Modal>
-      <Modal open={modal === 'enquiries'} onClose={() => setModal(null)} title="Enquiries" description="Messages sent through the contact form." size="lg"><EnquiriesManager /></Modal>
+      <Modal open={modal === 'enquiries'} onClose={() => setModal(null)} title="Enquiries" description="Messages sent through the contact form. Reply from your own email app." size="xl"><EnquiriesManager /></Modal>
     </div>
   );
 }

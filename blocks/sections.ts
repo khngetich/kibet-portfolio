@@ -96,7 +96,7 @@ export const HeroSection = section({
   description: 'Big headline with a word-by-word reveal, a button, the scrolling client names and three project cards.',
   fields: [
     { name: 'trustedText', label: 'Clients line', type: 'text', defaultValue: COPY.trustedText, admin: { description: 'Above the headline. {count} becomes the number of clients. Leave empty to hide.' } },
-    { name: 'headline', type: 'text', required: true },
+    { name: 'headline', type: 'text', required: true, admin: { description: 'Wrap words in *asterisks* to give them a hand-drawn underline, e.g. I craft *experiences*.' } },
     { name: 'intro', type: 'textarea' },
     { name: 'ctaText', label: 'Button prompt', type: 'text', defaultValue: COPY.heroCtaText, admin: { description: 'The short line beside the button.' } },
     link('button', 'Button', { url: '#contact' }),

@@ -777,6 +777,27 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 
 /* ── living type (components/motion/LivingTitle.tsx): ink spreads as a stroke, so no reflow ── */
 .living .ch { -webkit-text-stroke: calc(var(--ink, 0) * 1em) currentColor; paint-order: stroke fill; }
+/* marker: *words* in the hero headline get a hand-drawn underline, drawn in once the words land */
+.living .marker { position: relative; white-space: nowrap; }
+.living .marker::after {
+  content: ''; position: absolute; left: -.04em; right: -.04em; bottom: -.02em; height: .2em; z-index: -1;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13C40 6 80 4 120 8s60 7 77-1' fill='none' stroke='%23000' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 20' preserveAspectRatio='none'%3E%3Cpath d='M3 13C40 6 80 4 120 8s60 7 77-1' fill='none' stroke='%23000' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  transform-origin: left center; animation: marker-draw .7s cubic-bezier(0.2, 0, 0, 1) both; animation-delay: calc(.4s + var(--mi, 0) * .08s);
+}
+@keyframes marker-draw { from { scale: 0 1; } }
+.hero-title { isolation: isolate; }
+[data-motion='off'] .living .marker::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .living .marker::after { animation: none; } }
+
+/* hero stickers: role and location from Site settings, as tilted badges */
+.hero-stickers { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 0; padding: 0; list-style: none; }
+.sticker { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 9999px; background: #FFFFFF; color: #0A0A0A; font-size: .82rem; font-weight: 600; line-height: 1.2; box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .06); rotate: -2.5deg; transition-property: rotate, translate; transition-duration: .3s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.sticker + .sticker { rotate: 2deg; }
+.sticker:hover { rotate: 0deg; translate: 0 -2px; }
+.sticker.is-place { background: var(--accent-strong); color: #FFFFFF; }
+@media (prefers-reduced-motion: reduce) { .sticker, .sticker + .sticker { rotate: 0deg; transition: none; } }
 
 /* ── ink and paper: a fine paper grain over the whole site, and project images that slip out of
    register on hover like a riso print (the #misreg filter is defined in layout.tsx) ── */

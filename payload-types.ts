@@ -152,6 +152,9 @@ export interface Page {
              * Above the headline. {count} becomes the number of clients. Leave empty to hide.
              */
             trustedText?: string | null;
+            /**
+             * Wrap words in *asterisks* to give them a hand-drawn underline, e.g. I craft *experiences*.
+             */
             headline: string;
             intro?: string | null;
             /**

@@ -176,6 +176,14 @@ function HeroSection({ s, ctx, id, hid }: P<'hero'>) {
       <div className="wrap hero-inner">
         {!!clients.length && trusted && <p className="hero-proof intro">{trusted.replace('{count}', String(clients.length))}</p>}
         <h1 className="hero-title" id={hid}><LivingTitle text={s.headline} /></h1>
+        {/* stickers: what you do and where you are, straight from Site settings (availability
+            already has its own floating chip, so it isn't repeated here) */}
+        {(ctx.site.role || ctx.site.location) && (
+          <ul className="hero-stickers intro" style={{ '--d': '.9s' } as React.CSSProperties} aria-label="At a glance">
+            {ctx.site.role && <li className="sticker is-role"><Icon name="spark" size={12} />{ctx.site.role}</li>}
+            {ctx.site.location && <li className="sticker is-place"><Icon name="compass" size={14} />Based in {ctx.site.location}</li>}
+          </ul>
+        )}
         {s.intro && <p className="hero-intro intro" style={{ '--d': '.3s' } as React.CSSProperties}>{s.intro}</p>}
         <div className="intro" style={{ '--d': '.4s' } as React.CSSProperties}>
           <div className="hero-cta">

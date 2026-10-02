@@ -11,7 +11,7 @@ const never = () => () => {};
  * morning would read "Good night" there. Until hydration a neutral "Welcome back" holds the
  * line (same height, no layout shift).
  */
-export function Greeting({ name }: { name?: string }) {
+export function Greeting({ name, children }: { name?: string; children?: React.ReactNode }) {
   const now = useSyncExternalStore(
     never,
     () => { const d = new Date(); return `${d.getHours()}|${d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}`; },
@@ -23,7 +23,7 @@ export function Greeting({ name }: { name?: string }) {
   return (
     <div className="cms-hero-hello">
       <h1>{hello}{name ? `, ${name}` : ''}</h1>
-      <p className="cms-hero-sub">{date ? `${date} · ` : ''}Here’s what needs your attention on the site.</p>
+      <p className="cms-hero-sub"><span>{date ? `${date} · ` : ''}Here’s what needs your attention on the site.</span>{children}</p>
     </div>
   );
 }

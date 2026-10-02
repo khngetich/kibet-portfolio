@@ -1,22 +1,36 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SField } from '@/lib/studio-schema';
-import { deleteEnquiry, deleteProject, getProject, listEnquiries, saveProject, setEnquiryStatus } from './api';
+import { deleteProject, getProject, saveProject } from './api';
 import { Icon } from '@/components/ui/Icon';
 import { thumbURL } from '@/lib/media';
-import { useStudioData } from './Data';
+import { useStudioData, type ProjectRef } from './Data';
 import { FieldList } from './Fields';
 import { Modal, useConfirm } from './Modal';
-import { defaultsOf, timeAgo, type Rec } from './util';
+import { defaultsOf, type Rec } from './util';
 
-/** Projects: card list, and a pop-up editor with every project field (including the case study). */
+const DISCIPLINE: Record<string, string> = { social: 'Social media', brand: 'Brand identity', web: 'Web design', print: 'Print', packaging: 'Packaging', illustration: 'Illustration', motion: 'Motion' };
+type Column = { key: 'draft' | 'edits' | 'live'; label: string; hint: string };
+const COLUMNS: Column[] = [
+  { key: 'draft', label: 'Not live', hint: 'Drafts visitors can’t see yet' },
+  { key: 'edits', label: 'Unpublished changes', hint: 'Live, with newer edits waiting' },
+  { key: 'live', label: 'Live', hint: 'On the site, nothing waiting' },
+];
+const columnOf = (p: ProjectRef): Column['key'] => (!p.live ? 'draft' : p._status === 'draft' ? 'edits' : 'live');
+
+/**
+ * Projects: a grid of covers, or a board in publishing columns (Not live → Unpublished changes
+ * → Live) whose cards show how complete each case study is. Either opens a pop-up editor with
+ * every project field (including the case study).
+ */
 export function ProjectsManager({ fields, onChanged }: { fields: SField[]; onChanged: () => void }) {
   const { projects, refreshProjects, media, ensureMedia } = useStudioData();
   const confirm = useConfirm();
   const [editing, setEditing] = useState<{ id: number | null; value: Rec } | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [view, setView] = useState<'grid' | 'board'>('board');
 
   useEffect(() => { ensureMedia(projects.map((p) => p.cover).filter((c): c is number => typeof c === 'number')); }, [projects, ensureMedia]);
 
@@ -45,18 +59,57 @@ export function ProjectsManager({ fields, onChanged }: { fields: SField[]; onCha
 
   return (
     <div className="st-manager">
-      <div className="st-manager-bar"><span className="st-help">{projects.length} projects</span><button type="button" className="st-btn st-btn-primary" onClick={() => open(null)}><Icon name="plus" size={14} /> New project</button></div>
-      <ul className="st-cards">
-        {projects.map((p) => (
-          <li key={p.id}>
-            <button type="button" className="st-card" onClick={() => open(p.id)}>
-              <span className="st-card-media">{p.cover && media[p.cover]?.url ? <img src={thumbURL(media[p.cover], 384)!} alt="" loading="lazy" /> : null}</span>
-              <b>{p.title}</b>
-              <small>{p.client} · {p._status === 'draft' ? 'Draft' : 'Published'}{p.featured ? ' · Featured' : ''}</small>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="st-manager-bar">
+        <span className="st-help">{projects.length} projects</span>
+        <span className="st-spacer" />
+        <div className="st-seg" role="group" aria-label="View">
+          {(['board', 'grid'] as const).map((v) => <button key={v} type="button" className={view === v ? 'is-on' : undefined} aria-pressed={view === v} onClick={() => setView(v)}>{v === 'board' ? 'Board' : 'Grid'}</button>)}
+        </div>
+        <button type="button" className="st-btn st-btn-primary" onClick={() => open(null)}><Icon name="plus" size={14} /> New project</button>
+      </div>
+      {view === 'grid' ? (
+        <ul className="st-cards">
+          {projects.map((p) => (
+            <li key={p.id}>
+              <button type="button" className="st-card" onClick={() => open(p.id)}>
+                <span className="st-card-media">{p.cover && media[p.cover]?.url ? <img src={thumbURL(media[p.cover], 384)!} alt="" loading="lazy" /> : null}</span>
+                <b>{p.title}</b>
+                <small>{p.client} · {p._status === 'draft' ? 'Draft' : 'Published'}{p.featured ? ' · Featured' : ''}</small>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="st-board">
+          {COLUMNS.map((c) => {
+            const list = projects.filter((p) => columnOf(p) === c.key);
+            return (
+              <section key={c.key} className="st-board-col" aria-label={c.label}>
+                <header><b>{c.label}</b><span className="st-board-n">{list.length}</span><small>{c.hint}</small></header>
+                {list.length ? (
+                  <ul>
+                    {list.map((p) => (
+                      <li key={p.id}>
+                        <button type="button" className="st-board-card" onClick={() => open(p.id)}>
+                          <span className="st-board-cover">{p.cover && media[p.cover]?.url ? <img src={thumbURL(media[p.cover], 384)!} alt="" loading="lazy" /> : <Icon name="image" size={18} />}</span>
+                          <span className="st-board-body">
+                            <b>{p.title}</b>
+                            <small>{p.client || 'No client yet'}{p.featured ? ' · Featured' : ''}</small>
+                            {!!p.disciplines?.length && <span className="st-board-tags">{p.disciplines.map((d) => <i key={d}>{DISCIPLINE[d] ?? d}</i>)}</span>}
+                            <span className="st-board-meter" role="img" aria-label={`Case study ${p.score ?? 0}% complete`}><i style={{ width: `${p.score ?? 0}%` }} className={(p.score ?? 0) >= 100 ? 'is-done' : undefined} /></span>
+                            <span className="st-board-meta"><span>{p.score ?? 0}% story</span><span>{p.samples ? `${p.samples} sample${p.samples === 1 ? '' : 's'}` : 'No samples'}</span></span>
+                            {!!p.missing?.length && <small className="st-board-missing">Missing {p.missing.join(', ')}</small>}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <p className="st-board-empty">Nothing here</p>}
+              </section>
+            );
+          })}
+        </div>
+      )}
       <Modal
         open={!!editing}
         onClose={() => setEditing(null)}
@@ -76,55 +129,5 @@ export function ProjectsManager({ fields, onChanged }: { fields: SField[]; onCha
         {editing && <FieldList fields={fields} value={editing.value} onChange={(v) => setEditing({ ...editing, value: v })} />}
       </Modal>
     </div>
-  );
-}
-
-type Enquiry = { id: number; name: string; email: string; service?: string | null; budget?: string | null; message: string; status: 'new' | 'replied' | 'archived'; createdAt: string };
-
-/** Enquiries: inbox list; each opens in a pop-up with its status and a delete option. */
-export function EnquiriesManager() {
-  const confirm = useConfirm();
-  const [rows, setRows] = useState<Enquiry[] | null>(null);
-  const [open, setOpen] = useState<Enquiry | null>(null);
-  const load = useCallback(async () => setRows((await listEnquiries()) as unknown as Enquiry[]), []);
-  useEffect(() => {
-    let live = true;
-    listEnquiries().then((r) => { if (live) setRows(r as unknown as Enquiry[]); }).catch(() => { if (live) setRows([]); });
-    return () => { live = false; };
-  }, []);
-
-  const status = async (e: Enquiry, s: Enquiry['status']) => { await setEnquiryStatus(e.id, s); setOpen({ ...e, status: s }); load(); };
-  const remove = async (e: Enquiry) => {
-    if (!(await confirm({ title: 'Delete this enquiry?', body: `The message from ${e.name} will be removed permanently.`, confirmLabel: 'Delete', danger: true }))) return;
-    await deleteEnquiry(e.id); setOpen(null); load();
-  };
-
-  if (!rows) return <p className="st-help">Loading…</p>;
-  if (!rows.length) return <p className="st-empty-note">No messages yet. They arrive here from the contact form.</p>;
-  return (
-    <>
-      <ul className="st-inbox">
-        {rows.map((e) => (
-          <li key={e.id}>
-            <button type="button" onClick={() => setOpen(e)}>
-              <span className="st-avatar">{e.name.slice(0, 1).toUpperCase()}</span>
-              <span className="st-inbox-text"><b>{e.name}</b><small>{e.service || 'General enquiry'} · {timeAgo(e.createdAt)}</small></span>
-              <em className={`st-badge is-${e.status}`}>{e.status}</em>
-            </button>
-          </li>
-        ))}
-      </ul>
-      <Modal open={!!open} onClose={() => setOpen(null)} title={open ? `From ${open.name}` : ''} description={open ? `${open.email}${open.budget ? ` · Budget: ${open.budget}` : ''}` : ''} size="md"
-        footer={open && <><button type="button" className="st-btn st-btn-danger-ghost" onClick={() => remove(open)}>Delete</button><span className="st-spacer" /><a className="st-btn st-btn-primary" href={`mailto:${open.email}?subject=${encodeURIComponent('Re: your enquiry')}`}>Reply by email</a></>}>
-        {open && (
-          <div className="st-fields">
-            <p className="st-message">{open.message}</p>
-            <div className="st-field"><span className="st-label" id="st-enquiry-status">Status</span>
-              <div className="st-seg" role="group" aria-labelledby="st-enquiry-status">{(['new', 'replied', 'archived'] as const).map((s) => <button key={s} type="button" aria-pressed={open.status === s} className={open.status === s ? 'is-on' : undefined} onClick={() => status(open, s)}>{s[0].toUpperCase() + s.slice(1)}</button>)}</div>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </>
   );
 }

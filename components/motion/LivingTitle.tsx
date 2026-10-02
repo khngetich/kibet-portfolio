@@ -11,7 +11,23 @@ import { Fragment, useEffect, useRef } from 'react';
  *
  * Words keep the `.word` spans and `--i` of the CSS entrance (sections.css), so the first paint
  * is unchanged; screen readers get the plain sentence.
+ *
+ * Marker: words wrapped in asterisks (`I craft *experiences*`) get a hand-drawn underline that
+ * draws itself in after the words land. The asterisks never show, in the title or to screen readers.
  */
+
+/**
+ * "a *b c*. d" → [{ words: ['a'] }, { words: ['b', 'c'], marked: true, space: true }, { words: ['.'] }, …]
+ * `space`: the text had a space before this group (so "*word*." keeps its full stop attached).
+ */
+function parse(text: string) {
+  const parts = text.split(/(\*[^*]+\*)/);
+  return parts.map((p, i) => {
+    const marked = p.startsWith('*') && p.endsWith('*') && p.length > 2;
+    const space = i > 0 && (/^\s/.test(p) || /\s$/.test(parts[i - 1]));
+    return { marked, space, words: (marked ? p.slice(1, -1) : p).trim().split(/\s+/).filter(Boolean) };
+  }).filter((g) => g.words.length);
+}
 
 const RADIUS = 140; // px of influence around the pointer
 const MAX = 0.055; // em of stroke at the centre
@@ -82,16 +98,25 @@ export function LivingTitle({ text }: { text: string }) {
     };
   }, [reduce, text]);
 
-  const words = text.split(/\s+/);
+  const groups = parse(text);
+  const plain = groups.map((g, i) => `${i > 0 && g.space ? ' ' : ''}${g.words.join(' ')}`).join('');
+  let n = 0; // word index across groups, for the staggered entrance
+  const word = (w: string) => {
+    const i = n++;
+    return <span className="word" style={{ '--i': i } as React.CSSProperties}>{Array.from(w).map((ch, j) => <span key={j} className="ch">{ch}</span>)}</span>;
+  };
   return (
     <>
-      <span className="sr-only">{text}</span>
+      <span className="sr-only">{plain}</span>
       <span ref={root} className="living" aria-hidden="true">
-        {words.map((word, i) => (
-          <Fragment key={`${word}-${i}`}>
-            <span className="word" style={{ '--i': i } as React.CSSProperties}>
-              {Array.from(word).map((ch, j) => <span key={j} className="ch">{ch}</span>)}
-            </span>{' '}
+        {groups.map((g, gi) => (
+          <Fragment key={gi}>
+            {gi > 0 && g.space && ' '}
+            {g.marked ? (
+              <span className="marker" style={{ '--mi': n + g.words.length } as React.CSSProperties}>
+                {g.words.map((w, wi) => <Fragment key={wi}>{wi > 0 && ' '}{word(w)}</Fragment>)}
+              </span>
+            ) : g.words.map((w, wi) => <Fragment key={wi}>{wi > 0 && ' '}{word(w)}</Fragment>)}
           </Fragment>
         ))}
       </span>
