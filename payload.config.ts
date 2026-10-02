@@ -85,13 +85,16 @@ export default buildConfig({
     }),
     s3Storage({
       enabled: useSupabaseStorage,
+      // The plugin adds a `prefix` column to media when it's on; keeping it on everywhere means
+      // local and production share one schema (migration 20261001_224434_media_prefix).
+      alwaysInsertFields: true,
       clientUploads: directUploads,
       collections: {
         media: {
           prefix: 'media',
           // Serve files straight from Supabase's public CDN instead of proxying through the app.
           disablePayloadAccessControl: true,
-          generateFileURL: ({ filename, prefix }) => `${process.env.S3_PUBLIC_URL}/${prefix}/${filename}`,
+          generateFileURL: ({ filename, prefix }) => `${process.env.S3_PUBLIC_URL}/${prefix || 'media'}/${filename}`,
         },
       },
       bucket: process.env.S3_BUCKET || '',
