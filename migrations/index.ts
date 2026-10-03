@@ -16,6 +16,8 @@ import * as migration_20261003_111048_services_policies_simple_footer from './20
 import * as migration_20261003_111200_seed_services_policies from './20261003_111200_seed_services_policies';
 import * as migration_20261003_151213_orange_accent from './20261003_151213_orange_accent';
 import * as migration_20261003_152920_service_flag_defaults from './20261003_152920_service_flag_defaults';
+import * as migration_20261003_153100_resume_section from './20261003_153100_resume_section';
+import * as migration_20261003_153200_seed_resume_page from './20261003_153200_seed_resume_page';
 
 export const migrations = [
   {
@@ -106,6 +108,16 @@ export const migrations = [
   {
     up: migration_20261003_152920_service_flag_defaults.up,
     down: migration_20261003_152920_service_flag_defaults.down,
-    name: '20261003_152920_service_flag_defaults'
+    name: '20261003_152920_service_flag_defaults',
+  },
+  {
+    up: migration_20261003_153100_resume_section.up,
+    down: migration_20261003_153100_resume_section.down,
+    name: '20261003_153100_resume_section',
+  },
+  {
+    up: migration_20261003_153200_seed_resume_page.up,
+    down: migration_20261003_153200_seed_resume_page.down,
+    name: '20261003_153200_seed_resume_page',
   },
 ];

@@ -1010,6 +1010,182 @@ export interface Page {
             blockName?: string | null;
             blockType: 'insights';
           }
+        | {
+            /**
+             * The small line above the heading.
+             */
+            eyebrow?: string | null;
+            /**
+             * Wrap a word in *asterisks* for the serif accent, e.g. Humphrey *Kibet.*
+             */
+            name: string;
+            role?: string | null;
+            intro?: string | null;
+            currentLead?: string | null;
+            current?: string | null;
+            /**
+             * Adds the download buttons. Leave empty to hide them.
+             */
+            cv?: (number | null) | Media;
+            cvLabel?: string | null;
+            /**
+             * The dark card beside your name. Leave the heading empty to hide it.
+             */
+            card?: {
+              kicker?: string | null;
+              heading?: string | null;
+              text?: string | null;
+              topicsLabel?: string | null;
+              /**
+               * Type one and press Enter.
+               */
+              topics?: string[] | null;
+              /**
+               * Shown as outlined chips, e.g. Remote-first, Full-time, Contract.
+               */
+              workTypes?: string[] | null;
+              place?: string | null;
+            };
+            cardLink?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            /**
+             * A row of figures under the intro.
+             */
+            stats?:
+              | {
+                  value: string;
+                  label: string;
+                  id?: string | null;
+                }[]
+              | null;
+            profileHeading?: string | null;
+            /**
+             * A blank line starts a new paragraph.
+             */
+            profile?: string | null;
+            /**
+             * Optional. Set large in the serif italic.
+             */
+            quote?: string | null;
+            pillars?:
+              | {
+                  title: string;
+                  text?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            xpHeading?: string | null;
+            /**
+             * Newest first.
+             */
+            jobs?:
+              | {
+                  role: string;
+                  company: string;
+                  dates?: string | null;
+                  place?: string | null;
+                  mode?: string | null;
+                  about?: string | null;
+                  /**
+                   * Optional. A bold line above the points.
+                   */
+                  summary?: string | null;
+                  /**
+                   * What you did and what changed. Type one and press Enter.
+                   */
+                  points?: string[] | null;
+                  linkLabel?: string | null;
+                  linkUrl?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            workHeading?: string | null;
+            workIntro?: string | null;
+            /**
+             * Up to four. Leave empty to show the first featured projects.
+             */
+            projects?: (number | Project)[] | null;
+            workLink?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            skillsHeading?: string | null;
+            skillGroups?:
+              | {
+                  label: string;
+                  /**
+                   * Type one and press Enter.
+                   */
+                  items?: string[] | null;
+                  id?: string | null;
+                }[]
+              | null;
+            eduHeading?: string | null;
+            schools?:
+              | {
+                  qualification: string;
+                  years?: string | null;
+                  school: string;
+                  place?: string | null;
+                  note?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            certs?:
+              | {
+                  title: string;
+                  year?: string | null;
+                  issuer?: string | null;
+                  note?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            closingKicker?: string | null;
+            closingHeading?: string | null;
+            closingText?: string | null;
+            closingLink?: {
+              label?: string | null;
+              /**
+               * A page (/about), a section (/#contact) or a full URL.
+               */
+              url?: string | null;
+              variant?: ('default' | 'light' | 'dark' | 'accent' | 'outline' | 'ghost') | null;
+            };
+            showEmail?: boolean | null;
+            showLinkedIn?: boolean | null;
+            /**
+             * Leave anything empty to keep the design’s default.
+             */
+            style?: {
+              background?: string | null;
+              text?: string | null;
+              accent?: string | null;
+              paddingTop?: number | null;
+              paddingBottom?: number | null;
+              minHeight?: number | null;
+              width?: ('default' | 'narrow' | 'wide' | 'full') | null;
+              align?: ('default' | 'left' | 'center') | null;
+              visibility?: ('all' | 'desktop' | 'mobile') | null;
+            };
+            hidden?: boolean | null;
+            /**
+             * Optional. Lets menu links jump here, e.g. “work” for /#work. Letters, numbers and dashes only.
+             */
+            anchor?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'resume';
+          }
       )[]
     | null;
   meta?: {
@@ -2163,6 +2339,136 @@ export interface PagesSelect<T extends boolean = true> {
                     url?: T;
                     variant?: T;
                   };
+              style?:
+                | T
+                | {
+                    background?: T;
+                    text?: T;
+                    accent?: T;
+                    paddingTop?: T;
+                    paddingBottom?: T;
+                    minHeight?: T;
+                    width?: T;
+                    align?: T;
+                    visibility?: T;
+                  };
+              hidden?: T;
+              anchor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        resume?:
+          | T
+          | {
+              eyebrow?: T;
+              name?: T;
+              role?: T;
+              intro?: T;
+              currentLead?: T;
+              current?: T;
+              cv?: T;
+              cvLabel?: T;
+              card?:
+                | T
+                | {
+                    kicker?: T;
+                    heading?: T;
+                    text?: T;
+                    topicsLabel?: T;
+                    topics?: T;
+                    workTypes?: T;
+                    place?: T;
+                  };
+              cardLink?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              stats?:
+                | T
+                | {
+                    value?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              profileHeading?: T;
+              profile?: T;
+              quote?: T;
+              pillars?:
+                | T
+                | {
+                    title?: T;
+                    text?: T;
+                    id?: T;
+                  };
+              xpHeading?: T;
+              jobs?:
+                | T
+                | {
+                    role?: T;
+                    company?: T;
+                    dates?: T;
+                    place?: T;
+                    mode?: T;
+                    about?: T;
+                    summary?: T;
+                    points?: T;
+                    linkLabel?: T;
+                    linkUrl?: T;
+                    id?: T;
+                  };
+              workHeading?: T;
+              workIntro?: T;
+              projects?: T;
+              workLink?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              skillsHeading?: T;
+              skillGroups?:
+                | T
+                | {
+                    label?: T;
+                    items?: T;
+                    id?: T;
+                  };
+              eduHeading?: T;
+              schools?:
+                | T
+                | {
+                    qualification?: T;
+                    years?: T;
+                    school?: T;
+                    place?: T;
+                    note?: T;
+                    id?: T;
+                  };
+              certs?:
+                | T
+                | {
+                    title?: T;
+                    year?: T;
+                    issuer?: T;
+                    note?: T;
+                    id?: T;
+                  };
+              closingKicker?: T;
+              closingHeading?: T;
+              closingText?: T;
+              closingLink?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                  };
+              showEmail?: T;
+              showLinkedIn?: T;
               style?:
                 | T
                 | {

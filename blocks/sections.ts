@@ -489,6 +489,178 @@ export const InsightsSection = section({
   ],
 });
 
+export const ResumeSection = section({
+  slug: 'resume',
+  labels: { singular: 'Résumé', plural: 'Résumés' },
+  summary: 'name',
+  description: 'A full CV on one page: name, role and a download button beside an availability card, figures, profile, roles, selected work, skills, education and a closing call. An “At a glance” menu follows down the side.',
+  fields: [
+    { type: 'tabs', tabs: [
+      {
+        label: 'Intro',
+        fields: [
+          eyebrow('Résumé / The experience behind the ideas'),
+          { name: 'name', type: 'text', required: true, admin: { description: 'Wrap a word in *asterisks* for the serif accent, e.g. Humphrey *Kibet.*' } },
+          { name: 'role', type: 'text' },
+          { name: 'intro', type: 'textarea' },
+          { type: 'row', fields: [
+            { name: 'currentLead', label: 'Current role: lead', type: 'text', defaultValue: 'Currently', admin: { width: '30%' } },
+            { name: 'current', label: 'Current role', type: 'text', admin: { width: '70%', placeholder: 'Design Lead at BrighterMonday Kenya' } },
+          ] },
+          { type: 'row', fields: [
+            { name: 'cv', label: 'CV file (PDF)', type: 'upload', relationTo: 'media', admin: { width: '50%', description: 'Adds the download buttons. Leave empty to hide them.' } },
+            { name: 'cvLabel', label: 'Download button', type: 'text', defaultValue: 'Download résumé', admin: { width: '50%' } },
+          ] },
+          {
+            name: 'card',
+            label: 'Availability card',
+            type: 'group',
+            admin: { description: 'The dark card beside your name. Leave the heading empty to hide it.' },
+            fields: [
+              { name: 'kicker', type: 'text', admin: { placeholder: 'Based in Kenya · Open to global roles' } },
+              { name: 'heading', type: 'text', admin: { placeholder: 'Nairobi roots. *Global outlook.*' } },
+              { name: 'text', type: 'textarea' },
+              { name: 'topicsLabel', label: 'Topics label', type: 'text', defaultValue: 'Let’s talk about' },
+              { name: 'topics', type: 'text', hasMany: true, admin: { description: 'Type one and press Enter.' } },
+              { name: 'workTypes', label: 'Ways of working', type: 'text', hasMany: true, admin: { description: 'Shown as outlined chips, e.g. Remote-first, Full-time, Contract.' } },
+              { name: 'place', label: 'Location line', type: 'text', admin: { placeholder: 'Nairobi, Kenya · UTC+3' } },
+            ],
+          },
+          link('cardLink', 'Card link', { label: 'Discuss an opportunity', url: '/#contact' }),
+          {
+            name: 'stats',
+            label: 'Figures',
+            type: 'array',
+            maxRows: 4,
+            admin: { initCollapsed: true, description: 'A row of figures under the intro.' },
+            fields: [{ type: 'row', fields: [
+              { name: 'value', type: 'text', required: true, admin: { width: '30%', placeholder: '5+' } },
+              { name: 'label', type: 'text', required: true, admin: { width: '70%', placeholder: 'years in brand design' } },
+            ] }],
+          },
+        ],
+      },
+      {
+        label: 'Profile',
+        fields: [
+          { name: 'profileHeading', label: 'Heading', type: 'text', defaultValue: 'Profile. *In short.*' },
+          { name: 'profile', label: 'Text', type: 'textarea', admin: { description: 'A blank line starts a new paragraph.' } },
+          { name: 'quote', type: 'textarea', admin: { description: 'Optional. Set large in the serif italic.' } },
+          {
+            name: 'pillars',
+            label: 'What you bring',
+            type: 'array',
+            maxRows: 3,
+            admin: { initCollapsed: true },
+            fields: [
+              { name: 'title', type: 'text', required: true },
+              { name: 'text', type: 'textarea' },
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Experience',
+        fields: [
+          { name: 'xpHeading', label: 'Heading', type: 'text', defaultValue: 'Experience. *Hands on.*' },
+          {
+            name: 'jobs',
+            label: 'Roles',
+            type: 'array',
+            admin: { initCollapsed: true, description: 'Newest first.' },
+            fields: [
+              { type: 'row', fields: [
+                { name: 'role', type: 'text', required: true, admin: { width: '50%' } },
+                { name: 'company', type: 'text', required: true, admin: { width: '50%' } },
+              ] },
+              { type: 'row', fields: [
+                { name: 'dates', type: 'text', admin: { width: '34%', placeholder: 'Aug 2025 – Present' } },
+                { name: 'place', label: 'Location', type: 'text', admin: { width: '33%', placeholder: 'Nairobi, Kenya' } },
+                { name: 'mode', label: 'Arrangement', type: 'text', admin: { width: '33%', placeholder: 'Hybrid' } },
+              ] },
+              { name: 'about', label: 'About the company', type: 'text', admin: { placeholder: 'Career and recruitment platform' } },
+              { name: 'summary', label: 'In one line', type: 'text', admin: { description: 'Optional. A bold line above the points.' } },
+              { name: 'points', type: 'text', hasMany: true, admin: { description: 'What you did and what changed. Type one and press Enter.' } },
+              { type: 'row', fields: [
+                { name: 'linkLabel', type: 'text', admin: { width: '40%', placeholder: 'See the campaign' } },
+                { name: 'linkUrl', type: 'text', admin: { width: '60%', placeholder: '/work/future-of-work' } },
+              ] },
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Work & skills',
+        fields: [
+          { name: 'workHeading', label: 'Work heading', type: 'text', defaultValue: 'The work, *made visible.*' },
+          { name: 'workIntro', label: 'Work intro', type: 'textarea' },
+          { name: 'projects', type: 'relationship', relationTo: 'projects', hasMany: true, maxRows: 4, admin: { description: 'Up to four. Leave empty to show the first featured projects.' } },
+          link('workLink', 'Link under the work', { label: 'See all work', url: '/work' }),
+          { name: 'skillsHeading', label: 'Skills heading', type: 'text', defaultValue: 'Skills. *And the tools.*' },
+          {
+            name: 'skillGroups',
+            label: 'Skill groups',
+            type: 'array',
+            admin: { initCollapsed: true },
+            fields: [
+              { name: 'label', type: 'text', required: true },
+              { name: 'items', type: 'text', hasMany: true, admin: { description: 'Type one and press Enter.' } },
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Education',
+        fields: [
+          { name: 'eduHeading', label: 'Heading', type: 'text', defaultValue: 'Education. *Still learning.*' },
+          {
+            name: 'schools',
+            label: 'Education',
+            type: 'array',
+            admin: { initCollapsed: true },
+            fields: [
+              { type: 'row', fields: [
+                { name: 'qualification', type: 'text', required: true, admin: { width: '60%' } },
+                { name: 'years', type: 'text', admin: { width: '40%', placeholder: '2014 – 2017' } },
+              ] },
+              { type: 'row', fields: [
+                { name: 'school', type: 'text', required: true, admin: { width: '60%' } },
+                { name: 'place', label: 'Location', type: 'text', admin: { width: '40%' } },
+              ] },
+              { name: 'note', type: 'text' },
+            ],
+          },
+          {
+            name: 'certs',
+            label: 'Certifications',
+            type: 'array',
+            admin: { initCollapsed: true },
+            fields: [
+              { type: 'row', fields: [
+                { name: 'title', type: 'text', required: true, admin: { width: '60%' } },
+                { name: 'year', type: 'text', admin: { width: '40%' } },
+              ] },
+              { name: 'issuer', type: 'text' },
+              { name: 'note', type: 'textarea' },
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Closing',
+        fields: [
+          { name: 'closingKicker', label: 'Eyebrow', type: 'text', defaultValue: 'The next chapter' },
+          { name: 'closingHeading', label: 'Heading', type: 'text', defaultValue: 'Building a brand? *Let’s talk.*' },
+          { name: 'closingText', label: 'Text', type: 'textarea' },
+          link('closingLink', 'Button', { label: 'Let’s talk about it', url: '/#contact' }),
+          { name: 'showEmail', label: 'Show your email (from Site settings)', type: 'checkbox', defaultValue: true },
+          { name: 'showLinkedIn', label: 'Show LinkedIn (from Site settings → Socials)', type: 'checkbox', defaultValue: true },
+        ],
+      },
+    ] },
+  ],
+});
+
 export const pageSections = [
   HeroSection,
   WorkShowcaseSection,
@@ -507,4 +679,5 @@ export const pageSections = [
   ToolsSection,
   ShowreelSection,
   InsightsSection,
+  ResumeSection,
 ];

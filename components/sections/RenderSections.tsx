@@ -30,6 +30,7 @@ import { AboutEditorial } from '@/components/motion/AboutEditorial';
 import { AboutPortrait } from '@/components/motion/AboutPortrait';
 import { GrowMedia } from '@/components/motion/GrowMedia';
 import { ServiceLink } from '@/components/motion/ServiceLink';
+import { ResumeSection } from '@/components/sections/Resume';
 
 /**
  * Renders a page's sections in order, skipping hidden ones. Each section type is defined
@@ -99,7 +100,7 @@ const linkOf = (l: Link, fallback: { label: string; url: string }) => ({ label: 
  * tags every section with its index for click-to-select.
  */
 /** Section types that render the page's h1 when they come first. */
-const H1_SECTIONS = ['hero', 'projectGrid', 'profile'];
+const H1_SECTIONS = ['hero', 'projectGrid', 'profile', 'resume'];
 /** Section types numbered as chapters of the page's story. */
 const CHAPTERS: string[] = ['workShowcase', 'process', 'aboutBanner', 'services', 'testimonials', 'contact', 'audience', 'faq', 'tools', 'showreel', 'insights'];
 
@@ -162,6 +163,7 @@ export async function RenderSections({ sections, studio = false, title }: { sect
             case 'tools': return <ToolsSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'showreel': return <ShowreelSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'insights': return <InsightsSection s={s} id={id} hid={hid} chapter={chapterOf(index)} />;
+            case 'resume': return <ResumeSection s={s} site={ctx.site} featured={ctx.featured} id={id} first={i === 0} />;
             default: return null;
           }
         })();
@@ -652,7 +654,7 @@ function ProfileSection({ s, id, first }: { s: Of<'profile'>; id?: string; first
           )}
           {!!s.skills?.length && <div><p className="kicker">Skills</p><ul className="tags">{s.skills.map((k) => <li key={k}>{k}</li>)}</ul></div>}
           {!!s.tools?.length && <div><p className="kicker">Tools</p><ul className="tags">{s.tools.map((k) => <li key={k}>{k}</li>)}</ul></div>}
-        </aside>
+        </div>
       </div>
     </section>
   );

@@ -19,6 +19,7 @@ const shapes: Record<string, React.ReactNode> = {
   tools: <><rect x="3" y="4" width="7" height="7" rx="2" /><rect x="14" y="4" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /><path d="M5.5 7.5h2M16.5 7.5h2" /></>,
   showreel: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M10.5 9.5v5l4-2.5z" /></>,
   insights: <><rect x="3" y="4" width="8" height="16" rx="1.5" /><rect x="13" y="4" width="8" height="16" rx="1.5" /><path d="M5 15h4M5 17.5h3M15 15h4M15 17.5h3" /></>,
+  resume: <><path d="M6 3h9l4 4v14H6z" /><path d="M14.5 3v4.5H19" /><circle cx="10" cy="10" r="1.8" /><path d="M9 14.5h7M9 17.5h5" /></>,
 };
 
 export function SectionIcon({ type, size = 22 }: { type: string; size?: number }) {
