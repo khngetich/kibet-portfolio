@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { asMedia, getPage, getSite, isStudioCanvas } from '@/lib/cms';
-import { canonical, ogCard, pageTitle } from '@/lib/seo';
+import { canonical, ogCard, pageTitle, personLd } from '@/lib/seo';
+import { JsonLd } from '@/components/JsonLd';
 import { pagePath } from '@/collections/Pages';
 import { RenderSections } from './RenderSections';
 
@@ -23,8 +24,14 @@ export async function pageMetadata(slug: string): Promise<Metadata> {
 }
 
 export async function PageView({ slug }: { slug: string }) {
-  const [page, studio] = await Promise.all([getPage(slug), isStudioCanvas()]);
+  const [page, studio, site] = await Promise.all([getPage(slug), isStudioCanvas(), getSite()]);
   if (!page) notFound();
   if (studio && !page.sections?.length) return <div className="studio-empty" data-section-empty="">This page has no sections yet. Add one from the navigator.</div>;
-  return <RenderSections sections={page.sections} studio={studio} title={page.title} />;
+  return (
+    <>
+      {/* who this site is about, for search engines: on the homepage and the About page */}
+      {(slug === 'home' || slug === 'about') && <JsonLd data={personLd(site)} />}
+      <RenderSections sections={page.sections} studio={studio} title={page.title} />
+    </>
+  );
 }
