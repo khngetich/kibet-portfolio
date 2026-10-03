@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { paletteOf } from './palette';
 import type { Palette } from './paletteVars';
-import { cookies, draftMode } from 'next/headers';
+import { cookies, draftMode, headers } from 'next/headers';
 import { getPayload, type Where } from 'payload';
 import config from '@payload-config';
 import type { Project, Service } from '@/payload-types';
@@ -14,7 +14,15 @@ import type { Project, Service } from '@/payload-types';
 
 const cms = () => getPayload({ config });
 
-export const isPreview = async () => (await draftMode()).isEnabled;
+/**
+ * Draft mode shows unpublished content, so it also needs a signed-in editor: the preview cookie
+ * alone (say, left in a browser after signing out) only ever shows published pages.
+ */
+export const isPreview = cache(async () => {
+  if (!(await draftMode()).isEnabled) return false;
+  const { user } = await (await cms()).auth({ headers: await headers() });
+  return !!user;
+});
 
 /** True inside the Studio's canvas iframe (draft mode entered with ?studio=1). */
 export const isStudioCanvas = async () => (await isPreview()) && (await cookies()).get('studio-canvas')?.value === '1';
@@ -128,5 +136,16 @@ export const getTools = cache(async () => {
   }
   return [...counts.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name));
 });
+
+/** Every published URL with when it last changed, for the sitemap. */
+export const getSitemapEntries = async () => {
+  const payload = await cms();
+  const list = async (collection: 'pages' | 'projects' | 'services' | 'posts') =>
+    (await payload.find({ collection, where: published(false), limit: 1000, depth: 0, select: { slug: true, updatedAt: true } })).docs
+      .filter((d) => d.slug)
+      .map((d) => ({ slug: d.slug as string, updatedAt: d.updatedAt }));
+  const [pages, projects, services, posts] = await Promise.all([list('pages'), list('projects'), list('services'), list('posts')]);
+  return { pages, projects, services, posts };
+};
 
 export { asMedia } from './media';

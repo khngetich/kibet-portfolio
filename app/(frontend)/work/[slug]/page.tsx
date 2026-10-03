@@ -12,6 +12,9 @@ import { Slope } from '@/components/ProjectFolder';
 import { CaseArrival } from '@/components/motion/CaseArrival';
 import { SampleGrid, ViewerButton, WatchButton } from '@/components/motion/SampleViewer';
 import { embedURL, toItems } from '@/lib/media';
+import { getSite } from '@/lib/cms';
+import { breadcrumbLd, canonical, creativeWorkLd, ogCard, pageTitle } from '@/lib/seo';
+import { JsonLd } from '@/components/JsonLd';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -19,15 +22,20 @@ export async function generateStaticParams() {
   return (await getProjectSlugs()).map((slug) => ({ slug }));
 }
 
+/** The SEO title, unless it was left as the slug (an auto-filled value that reads badly in a tab). */
+const seoTitle = (p: { title: string; slug?: string | null; metaTitle?: string | null }) => (p.metaTitle && p.metaTitle !== p.slug ? p.metaTitle : p.title);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = await getProject((await params).slug);
   if (!project) return {};
   const og = asMedia(project.ogImage) ?? asMedia(project.cover);
   const description = project.metaDescription || project.summary;
+  const title = seoTitle(project);
   return {
-    title: project.metaTitle || project.title,
+    title: pageTitle(title, (await getSite()).name),
     description,
-    openGraph: { title: project.metaTitle || project.title, description, images: og?.url ? [{ url: og.url, width: og.width ?? undefined, height: og.height ?? undefined, alt: og.alt }] : undefined },
+    alternates: { canonical: canonical(`/work/${project.slug}`) },
+    openGraph: { title, description, images: [og?.url ? { url: og.url, width: og.width ?? undefined, height: og.height ?? undefined, alt: og.alt } : { url: ogCard(title, 'Case study'), width: 1200, height: 630, alt: title }] },
   };
 }
 
@@ -36,7 +44,7 @@ export default async function CaseStudy({ params }: Props) {
   const project = await getProject(slug);
   if (!project) notFound();
 
-  const all = await getProjects();
+  const [all, site] = await Promise.all([getProjects(), getSite()]);
   const i = all.findIndex((p) => p.slug === slug);
   const next = all.length > 1 ? all[(i + 1) % all.length] : null;
   const samples = toItems(project.samples ?? []);
@@ -54,6 +62,7 @@ export default async function CaseStudy({ params }: Props) {
   return (
     <article className="case" style={project.accent ? ({ '--accent': project.accent } as React.CSSProperties) : undefined}>
       <CaseArrival />
+      <JsonLd data={[creativeWorkLd({ ...project, image: asMedia(project.cover)?.url }, site.name), breadcrumbLd([{ name: 'Work', path: '/work' }, { name: project.title, path: `/work/${project.slug}` }])]} />
       {/* the project card's banner and dark panel morph into these two (components/ProjectFolder.tsx) */}
       <ViewTransition name={`case-cover-${slug}`} share="case-cover" default="none">
         <div className="case-hero">

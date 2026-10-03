@@ -324,15 +324,9 @@ export interface Page {
             expertise?: string[] | null;
             servicesHeading?: string | null;
             /**
-             * Each one also appears in the contact form’s “What do you need?” list.
+             * Red banner layout: pick from Content → Services; each links to its own page. Leave empty to list every published service.
              */
-            services?:
-              | {
-                  title: string;
-                  description?: string | null;
-                  id?: string | null;
-                }[]
-              | null;
+            services?: (number | Service)[] | null;
             cta?: {
               label?: string | null;
               /**
@@ -448,7 +442,7 @@ export interface Page {
                   description?: string | null;
                   points?: string[] | null;
                   /**
-                   * Stacking-cards layout only. Leave empty to use a project cover.
+                   * Leave empty to use a project cover.
                    */
                   image?: (number | null) | Media;
                   id?: string | null;
@@ -498,48 +492,17 @@ export interface Page {
              */
             services?: (number | Service)[] | null;
             /**
-             * Kept for older pages. Used only when there are no published services in Content → Services.
-             */
-            items?:
-              | {
-                  title: string;
-                  /**
-                   * One line, shown on the card.
-                   */
-                  description?: string | null;
-                  /**
-                   * The bullet points shown when the card is opened.
-                   */
-                  deliverables?: string[] | null;
-                  /**
-                   * Leave empty to hide the price
-                   */
-                  priceFrom?: number | null;
-                  currency?: ('KES' | 'USD') | null;
-                  unit?: string | null;
-                  /**
-                   * The picture at the top of the card, ideally real work for this service. Leave empty to use a project cover.
-                   */
-                  image?: (number | null) | Media;
-                  /**
-                   * Under the picture, e.g. “Triad Brands / Brand identity”.
-                   */
-                  imageCaption?: string | null;
-                  /**
-                   * Shown inverted (dark), with a “Featured” label.
-                   */
-                  featured?: boolean | null;
-                  /**
-                   * Marks a small, low-risk way to start working together.
-                   */
-                  starter?: boolean | null;
-                  id?: string | null;
-                }[]
-              | null;
-            /**
              * Small add-ons shown as chips under the cards, e.g. “Logo animation”.
              */
             extras?: string[] | null;
+            /**
+             * Leave anything empty to keep the default shown in grey.
+             */
+            labels?: {
+              featured?: string | null;
+              extras?: string | null;
+              deckHint?: string | null;
+            };
             showWhatsApp?: boolean | null;
             /**
              * Leave anything empty to keep the design’s default.
@@ -626,6 +589,10 @@ export interface Page {
             roles?: string[] | null;
             showAvailability?: boolean | null;
             showSocials?: boolean | null;
+            /**
+             * Shown when Site settings has a booking link.
+             */
+            bookLabel?: string | null;
             /**
              * The wording on the enquiry form. Leave anything empty to keep the default shown in grey.
              */
@@ -1602,6 +1569,14 @@ export interface Post {
    * Defaults to the title.
    */
   metaTitle?: string | null;
+  /**
+   * Defaults to the excerpt.
+   */
+  metaDescription?: string | null;
+  /**
+   * Shown when the link is shared (1200×630). Defaults to the cover.
+   */
+  ogImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1869,13 +1844,7 @@ export interface PagesSelect<T extends boolean = true> {
               intro?: T;
               expertise?: T;
               servicesHeading?: T;
-              services?:
-                | T
-                | {
-                    title?: T;
-                    description?: T;
-                    id?: T;
-                  };
+              services?: T;
               cta?:
                 | T
                 | {
@@ -1986,22 +1955,14 @@ export interface PagesSelect<T extends boolean = true> {
               ctaLabel?: T;
               pageLinkLabel?: T;
               services?: T;
-              items?:
+              extras?: T;
+              labels?:
                 | T
                 | {
-                    title?: T;
-                    description?: T;
-                    deliverables?: T;
-                    priceFrom?: T;
-                    currency?: T;
-                    unit?: T;
-                    image?: T;
-                    imageCaption?: T;
                     featured?: T;
-                    starter?: T;
-                    id?: T;
+                    extras?: T;
+                    deckHint?: T;
                   };
-              extras?: T;
               showWhatsApp?: T;
               style?:
                 | T
@@ -2067,6 +2028,7 @@ export interface PagesSelect<T extends boolean = true> {
               roles?: T;
               showAvailability?: T;
               showSocials?: T;
+              bookLabel?: T;
               form?:
                 | T
                 | {
@@ -2713,6 +2675,8 @@ export interface PostsSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   metaTitle?: T;
+  metaDescription?: T;
+  ogImage?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -2865,11 +2829,11 @@ export interface Header {
 export interface Footer {
   id: number;
   /**
-   * Defaults to the studio name.
+   * Leave empty to use Site settings → Name.
    */
   title?: string | null;
   /**
-   * Defaults to your role and location.
+   * Leave empty to use Site settings → Tagline.
    */
   tagline?: string | null;
   showAvailability?: boolean | null;

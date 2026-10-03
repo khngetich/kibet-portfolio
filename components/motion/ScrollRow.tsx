@@ -32,7 +32,8 @@ export function ScrollRow({ label, className = '', children }: { label: string; 
   };
   return (
     <div className={`scroll-row ${className}`}>
-      <ul ref={ref} className="scroll-row-track" role="region" aria-label={label} tabIndex={0}>{children}</ul>
+      {/* a named, focusable list: arrow keys scroll it, and it stays a list for screen readers */}
+      <ul ref={ref} className="scroll-row-track" aria-label={label} tabIndex={0}>{children}</ul>
       {!(edges.start && edges.end) && (
         <div className="scroll-row-nav">
           <button type="button" className="flow-btn" onClick={() => by(-1)} disabled={edges.start} aria-label="Previous"><Icon name="left" size={16} /></button>

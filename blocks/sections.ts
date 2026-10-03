@@ -1,4 +1,5 @@
 import type { Block, Field } from 'payload';
+import { linkTarget } from '../lib/validate';
 import { COPY, DEFAULT_PROCESS, DEFAULT_ROLES, DEFAULT_STATS } from '../lib/home-copy';
 
 /**
@@ -20,7 +21,7 @@ const link = (name: string, label: string, defaults: { label?: string; url?: str
   fields: [
     { type: 'row', fields: [
       { name: 'label', type: 'text', defaultValue: defaults.label, admin: { width: '40%' } },
-      { name: 'url', type: 'text', defaultValue: defaults.url, admin: { width: '60%', description: 'A page (/about), a section (/#contact) or a full URL.' } },
+      { name: 'url', type: 'text', defaultValue: defaults.url, validate: linkTarget, admin: { width: '60%', description: 'A page (/about), a section (/#contact) or a full URL.' } },
     ] },
     // Two button styles site-wide: Primary (a solid fill, colour picked for the background) and
     // Secondary (outline). The stored values predate that and are kept for existing content.
@@ -128,8 +129,8 @@ export const WorkShowcaseSection = section({
       { label: 'Carousel', value: 'carousel' },
     ] },
     { name: 'projects', type: 'relationship', relationTo: 'projects', hasMany: true, admin: { description: 'In order: the first is the large case study. Leave empty to use every featured project.' } },
-    { name: 'extraImages', label: 'Extra wall images', type: 'upload', relationTo: 'media', hasMany: true, admin: { description: 'Added to the project covers on the tilted wall.' } },
-    { name: 'showWall', label: 'Show the tilted wall above', type: 'checkbox', defaultValue: false },
+    { name: 'extraImages', label: 'Extra wall images', type: 'upload', relationTo: 'media', hasMany: true, admin: { description: 'Added to the project covers on the tilted wall.', condition: (_, s) => s?.layout === 'carousel' } },
+    { name: 'showWall', label: 'Show the tilted wall above', type: 'checkbox', defaultValue: false, admin: { condition: (_, s) => s?.layout === 'carousel' } },
     link('link', 'Link under the carousel', { label: COPY.workLinkLabel, url: '/work' }),
   ],
 });
@@ -180,16 +181,7 @@ export const AboutBannerSection = section({
     { name: 'intro', type: 'textarea', defaultValue: COPY.aboutIntro, admin: { description: 'Continues the greeting, e.g. “a Senior Designer specialising in”. The list below finishes it.' } },
     { name: 'expertise', type: 'text', hasMany: true, admin: { description: 'Short points, one per line. Type one and press Enter.' } },
     { name: 'servicesHeading', type: 'text', defaultValue: COPY.aboutServicesHeading },
-    {
-      name: 'services',
-      type: 'array',
-      maxRows: 6,
-      admin: { initCollapsed: true, description: 'Each one also appears in the contact form’s “What do you need?” list.' },
-      fields: [
-        { name: 'title', type: 'text', required: true },
-        { name: 'description', type: 'textarea' },
-      ],
-    },
+    { name: 'services', label: 'Services to show', type: 'relationship', relationTo: 'services', hasMany: true, maxRows: 6, admin: { description: 'Red banner layout: pick from Content → Services; each links to its own page. Leave empty to list every published service.' } },
     link('cta', 'Main button', { label: COPY.aboutCta, url: '/#contact' }),
     {
       name: 'stats',
@@ -253,7 +245,7 @@ export const ProcessSection = section({
         { name: 'duration', label: 'Timeline', type: 'text', admin: { description: 'How long this phase usually takes, e.g. “2–3 days”. Shown beside the step’s title (timeline layout).' } },
         { name: 'description', type: 'textarea' },
         { name: 'points', type: 'text', hasMany: true },
-        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Stacking-cards layout only. Leave empty to use a project cover.' } },
+        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Leave empty to use a project cover.', condition: (data, _, { blockData }) => (blockData as { layout?: string } | undefined)?.layout === 'stack' } },
       ],
     },
   ],
@@ -275,29 +267,20 @@ export const ServicesSection = section({
     { name: 'ctaLabel', label: 'Card button', type: 'text', defaultValue: 'Inquire for this service', admin: { description: 'The button inside an opened card.' } },
     { name: 'pageLinkLabel', label: 'Card link', type: 'text', defaultValue: 'See the service', admin: { description: 'The link on each card to that service’s own page.' } },
     { name: 'services', label: 'Services to show', type: 'relationship', relationTo: 'services', hasMany: true, admin: { description: 'Pick from Content → Services (each has its own page). Leave empty to show every published service.' } },
+    { name: 'extras', label: 'A little extra', type: 'text', hasMany: true, admin: { description: 'Small add-ons shown as chips under the cards, e.g. “Logo animation”.' } },
     {
-      name: 'items',
-      label: 'Services (older list)',
-      type: 'array',
-      admin: { initCollapsed: true, description: 'Kept for older pages. Used only when there are no published services in Content → Services.' },
+      name: 'labels',
+      label: 'Small wording',
+      type: 'group',
+      admin: { description: 'Leave anything empty to keep the default shown in grey.' },
       fields: [
-        { name: 'title', type: 'text', required: true },
-        { name: 'description', type: 'textarea', admin: { description: 'One line, shown on the card.' } },
-        { name: 'deliverables', type: 'text', hasMany: true, admin: { description: 'The bullet points shown when the card is opened.' } },
         { type: 'row', fields: [
-          { name: 'priceFrom', type: 'number', admin: { width: '33%', description: 'Leave empty to hide the price' } },
-          { name: 'currency', type: 'select', defaultValue: 'KES', options: ['KES', 'USD'], admin: { width: '33%' } },
-          { name: 'unit', type: 'text', admin: { width: '33%', placeholder: '/month' } },
-        ] },
-        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'The picture at the top of the card, ideally real work for this service. Leave empty to use a project cover.' } },
-        { name: 'imageCaption', type: 'text', admin: { description: 'Under the picture, e.g. “Triad Brands / Brand identity”.' } },
-        { type: 'row', fields: [
-          { name: 'featured', label: 'Featured service', type: 'checkbox', admin: { width: '50%', description: 'Shown inverted (dark), with a “Featured” label.' } },
-          { name: 'starter', label: 'A good first project', type: 'checkbox', admin: { width: '50%', description: 'Marks a small, low-risk way to start working together.' } },
+          { name: 'featured', label: 'Featured flag', type: 'text', admin: { width: '33%', placeholder: 'Featured service' } },
+          { name: 'extras', label: 'Extras heading', type: 'text', admin: { width: '33%', placeholder: 'A little extra' } },
+          { name: 'deckHint', label: 'Deck hint', type: 'text', admin: { width: '33%', placeholder: 'Pick a card to see what’s included.', condition: (_, s) => s?.layout !== 'cards' } },
         ] },
       ],
     },
-    { name: 'extras', label: 'A little extra', type: 'text', hasMany: true, admin: { description: 'Small add-ons shown as chips under the cards, e.g. “Logo animation”.' } },
     { name: 'showWhatsApp', label: 'Show “Or chat on WhatsApp” under each card', type: 'checkbox', defaultValue: true },
   ],
 });
@@ -345,6 +328,7 @@ export const ContactSection = section({
     { name: 'roles', label: 'Who it’s for', type: 'text', hasMany: true, admin: { description: 'Shown as tags, e.g. “startup founder”. Type one and press Enter.' } },
     { name: 'showAvailability', label: 'Show availability (from Site settings)', type: 'checkbox', defaultValue: true },
     { name: 'showSocials', label: 'Show social links (from Site settings)', type: 'checkbox', defaultValue: true },
+    { name: 'bookLabel', label: 'Booking button', type: 'text', admin: { placeholder: 'Book a 15-minute call', description: 'Shown when Site settings has a booking link.' } },
     {
       name: 'form',
       label: 'Form',

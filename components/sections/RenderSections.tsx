@@ -30,6 +30,8 @@ import { AboutEditorial } from '@/components/motion/AboutEditorial';
 import { AboutPortrait } from '@/components/motion/AboutPortrait';
 import { GrowMedia } from '@/components/motion/GrowMedia';
 import { ServiceLink } from '@/components/motion/ServiceLink';
+import { SmartLink } from '@/components/SmartLink';
+import { SOCIAL_LABEL, socialIcon } from '@/lib/socials';
 import { ResumeSection } from '@/components/sections/Resume';
 
 /**
@@ -84,13 +86,11 @@ const projectsOf = (rel: (number | Project)[] | null | undefined): Card[] =>
 /** A section is named by its visible heading, or by a hidden label when the heading was emptied. */
 const labelled = (heading: string, hid: string, fallback: string) => (heading ? { 'aria-labelledby': hid } : { 'aria-label': fallback });
 
-/** A Services section's cards: the services picked in it, else every published service, else its older inline list. */
+/** A Services section's cards: the services picked in it, else every published service (Content → Services). */
 type SvcItem = Omit<ServiceCard, 'id' | 'slug'> & { id?: string | number | null; slug?: string | null };
 function serviceList(s: Of<'services'>, all: ServiceCard[]): SvcItem[] {
   const picked = (s.services ?? []).filter((x): x is Exclude<typeof x, number> => typeof x === 'object' && !!x && x._status !== 'draft');
-  if (picked.length) return picked;
-  if (all.length) return all;
-  return (s.items ?? []).map((x) => ({ ...x, slug: null }));
+  return picked.length ? picked : all;
 }
 
 const linkOf = (l: Link, fallback: { label: string; url: string }) => ({ label: text(l?.label, fallback.label), url: text(l?.url, fallback.url), variant: l?.variant ?? null });
@@ -117,12 +117,11 @@ export async function RenderSections({ sections, studio = false, title }: { sect
     all,
     featured,
     covers: all.map((p) => asMedia(p.cover)).filter((m): m is Media => !!m),
-    // the contact form's "What do you need?" options: services listed anywhere on the page
-    // (the Services section's list when it's on the page, otherwise the About section's)
+    // the contact form's "What do you need?" options: the Services section's list when it's on
+    // the page, otherwise every published service (the About banner picks from the same ones)
     serviceTitles: (() => {
       const shown = visible.flatMap(({ s }) => (!s.hidden && s.blockType === 'services' ? serviceList(s, services).map((i) => i.title) : []));
-      const about = visible.flatMap(({ s }) => (!s.hidden && s.blockType === 'aboutBanner' ? ((s as { services?: { title: string }[] }).services ?? []).map((i) => i.title) : []));
-      return [...new Set(shown.length ? shown : about.length ? about : services.map((x) => x.title))];
+      return [...new Set(shown.length ? shown : services.map((x) => x.title))];
     })(),
     whatsapp: site.phone && site.whatsapp ? `https://wa.me/${digits(site.phone)}` : null,
     cta: { label: text(header.quoteButton?.label, 'Start a project'), url: text(header.quoteButton?.url, '/#contact') },
@@ -146,7 +145,7 @@ export async function RenderSections({ sections, studio = false, title }: { sect
         const id = s.anchor || undefined;
         const node = (() => {
           switch (s.blockType) {
-            case 'hero': return <HeroSection s={s} ctx={ctx} id={id} hid={hid} />;
+            case 'hero': return <HeroSection s={s} ctx={ctx} id={id} hid={hid} first={i === 0} />;
             case 'workShowcase': return <WorkShowcaseSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'aboutBanner': return <AboutBannerSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'audience': return <RoleWheel id={id} headingId={hid} heading={text(s.heading, COPY.rolesHeading)} lead={text(s.lead, COPY.rolesLead)} roles={orDefault(s.roles, DEFAULT_ROLES)} />;
@@ -186,7 +185,9 @@ export async function RenderSections({ sections, studio = false, title }: { sect
 
 type P<T extends Section['blockType']> = { s: Of<T>; ctx: Ctx; id?: string; hid: string; chapter?: number };
 
-function HeroSection({ s, ctx, id, hid }: P<'hero'>) {
+function HeroSection({ s, ctx, id, hid, first = true }: P<'hero'> & { first?: boolean }) {
+  // the page's h1 only when the hero opens the page; otherwise the page already has one
+  const Title = first ? 'h1' : 'h2';
   const clients = s.clients ?? [];
   const cards = projectsOf(s.projects);
   const trusted = s.trustedText == null ? COPY.trustedText : s.trustedText.trim();
@@ -196,7 +197,7 @@ function HeroSection({ s, ctx, id, hid }: P<'hero'>) {
       <div className="hero-glow" aria-hidden="true" />
       <div className="wrap hero-inner">
         {!!clients.length && trusted && <p className="hero-proof intro">{trusted.replace('{count}', String(clients.length))}</p>}
-        <h1 className="hero-title" id={hid}><LivingTitle text={s.headline} /></h1>
+        <Title className="hero-title" id={hid}><LivingTitle text={s.headline} /></Title>
         {/* stickers: what you do and where you are, straight from Site settings (availability
             already has its own floating chip, so it isn't repeated here) */}
         {(ctx.site.role || ctx.site.location) && (
@@ -209,8 +210,12 @@ function HeroSection({ s, ctx, id, hid }: P<'hero'>) {
         <div className="intro" style={{ '--d': '.4s' } as React.CSSProperties}>
           <div className="hero-cta">
             {s.ctaText && <span>{s.ctaText}</span>}
-            <a className={`${btn(button.variant, 'btn-light')} btn-sm`} href={button.url}>{button.label}</a>
+            <SmartLink className={`${btn(button.variant, 'btn-light')} btn-sm`} href={button.url}>{button.label}</SmartLink>
           </div>
+        </div>
+        {/* the work comes straight after the pitch, so it's on the first screen */}
+        <div className="hero-work">
+          <HeroCards projects={(cards.length ? cards : ctx.featured).slice(0, 3)} />
         </div>
         {!!clients.length && (
           <div className="partners intro" style={{ '--d': '.5s', '--intro-y': '0px' } as React.CSSProperties}>
@@ -234,9 +239,6 @@ function HeroSection({ s, ctx, id, hid }: P<'hero'>) {
           </div>
           </div>
         )}
-      </div>
-      <div className="wrap">
-        <HeroCards projects={(cards.length ? cards : ctx.featured).slice(0, 3)} />
       </div>
     </section>
   );
@@ -285,6 +287,8 @@ function AboutBannerSection({ s, ctx, id, hid, chapter }: P<'aboutBanner'>) {
   const link = s.link?.label && s.link?.url ? { label: s.link.label, url: s.link.url } : null;
   const cta = s.cta?.label && s.cta?.url ? { label: s.cta.label, url: s.cta.url, className: btn(s.cta.variant, 'btn-light') } : null;
   const tabs = (s.tabs ?? []).map((t) => ({ label: t.label, heading: t.heading, text: t.text ?? null, rows: (t.rows ?? []).map((r) => ({ value: r.value, label: r.label })) }));
+  // the banner's services: the picked ones (published only), or every published one when none are picked
+  const picked = (s.services ?? []).filter((x): x is Exclude<typeof x, number> => typeof x === 'object' && !!x && x._status !== 'draft');
   if (s.layout === 'portrait') {
     // the site tagline rides along as the last sticker, so it shows up here as on the hero
     const tagline = ctx.site.tagline?.trim();
@@ -338,7 +342,7 @@ function AboutBannerSection({ s, ctx, id, hid, chapter }: P<'aboutBanner'>) {
       intro={s.intro ?? ''}
       expertise={s.expertise ?? []}
       servicesHeading={copy(s.servicesHeading, COPY.aboutServicesHeading)}
-      services={(s.services ?? []).map((x) => ({ title: x.title, description: x.description ?? null }))}
+      services={(picked.length ? picked : ctx.services).map((x) => ({ title: x.title, description: x.description ?? null, slug: x.slug ?? null }))}
       stats={s.stats ?? []}
       cta={cta}
       link={link}
@@ -431,7 +435,7 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
             <Chapter n={chapter} label={s.eyebrow} />
             {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
             {s.intro && <p className="lede">{s.intro}</p>}
-            <p className="deck-hint">Pick a card to see what’s included.</p>
+            <p className="deck-hint">{text(s.labels?.deckHint, 'Pick a card to see what’s included.')}</p>
             <Link className="btn btn-outline" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
           </Reveal>
           <ServiceDeck services={items.map((x, i) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, image: asMedia(x.image) ?? ctx.covers[i % Math.max(ctx.covers.length, 1)] ?? null }))} ctaLabel={text(s.ctaLabel, 'Inquire for this service')} pageLabel={text(s.pageLinkLabel, 'See the service')} />
@@ -453,13 +457,16 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
         </Reveal>
         <ul className="svc-grid">
           {items.map((item, i) => {
-            const image = asMedia(item.image) ?? ctx.covers[i % Math.max(ctx.covers.length, 1)];
+            // no cover of its own: a numbered tile, not another project's logo (which reads as a project)
+            const image = asMedia(item.image);
             return (
               <li key={item.id ?? i}>
                 <Reveal className={`svc-card${item.featured ? ' band-dark is-featured' : ''}`} delay={(i % 3) * 0.08}>
                   <figure className="svc-media">
-                    <span className="svc-img">{image && <Img media={image} sizes="(max-width: 760px) 90vw, 400px" />}</span>
-                    {item.featured && <span className="svc-flag">Featured service</span>}
+                    {image
+                      ? <span className="svc-img"><Img media={image} sizes="(max-width: 760px) 90vw, 400px" /></span>
+                      : <span className="svc-img is-blank" aria-hidden="true"><b>{String(i + 1).padStart(2, '0')}</b></span>}
+                    {item.featured && <span className="svc-flag">{text(s.labels?.featured, 'Featured service')}</span>}
                     {item.imageCaption && <figcaption>{item.imageCaption}</figcaption>}
                   </figure>
                   <div className="svc-body">
@@ -485,7 +492,7 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
         <div className="svc-foot">
           {!!extras.length && (
             <div className="svc-extras">
-              <p className="ed-kicker">A little extra</p>
+              <p className="ed-kicker">{text(s.labels?.extras, 'A little extra')}</p>
               <ul>{extras.map((x) => <li key={x}>{x}</li>)}</ul>
             </div>
           )}
@@ -565,14 +572,14 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
             {s.showAvailability !== false && site.availability && <p className="status"><span className="dot" aria-hidden="true" />{site.availability}</p>}
             {site.bookingUrl && (
               <a className="btn btn-light contact-book" href={site.bookingUrl} target="_blank" rel="noopener noreferrer">
-                <Icon name="calendar" size={18} /> Book a 15-minute call
+                <Icon name="calendar" size={18} /> {text(s.bookLabel, 'Book a 15-minute call')}
               </a>
             )}
             <ul className="contact-links">
               <li><a href={`mailto:${site.email}`}><Icon name="mail" size={18} /><span><small>Email</small>{site.email}</span><Icon name="arrow" size={15} /></a></li>
               {ctx.whatsapp && <li><a href={ctx.whatsapp} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={18} /><span><small>WhatsApp</small>{site.phone}</span><Icon name="arrow" size={15} /></a></li>}
               {socials.map((x) => (
-                <li key={x.id ?? x.url}><a href={x.url} target="_blank" rel="noopener noreferrer"><Icon name={x.platform as IconName} size={18} /><span><small>{SOCIAL[x.platform] ?? x.platform}</small>{handle(x.url)}</span><Icon name="arrow" size={15} /></a></li>
+                <li key={x.id ?? x.url}><a href={x.url} target="_blank" rel="noopener noreferrer"><Icon name={socialIcon(x.platform)} size={18} /><span><small>{SOCIAL_LABEL[x.platform] ?? x.platform}</small>{handle(x.url)}</span><Icon name="arrow" size={15} /></a></li>
               ))}
             </ul>
           </Reveal>
@@ -582,7 +589,6 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
     </section>
   );
 }
-const SOCIAL: Record<string, string> = { instagram: 'Instagram', behance: 'Behance', dribbble: 'Dribbble', linkedin: 'LinkedIn', x: 'X', facebook: 'Facebook', tiktok: 'TikTok' };
 /** "https://www.instagram.com/kapturedcreatives" → "@kapturedcreatives" */
 const handle = (url: string) => { try { const seg = new URL(url).pathname.split('/').filter(Boolean).pop(); return seg ? `@${seg.replace(/^@/, '')}` : new URL(url).hostname; } catch { return url; } };
 
@@ -694,7 +700,7 @@ function CtaSection({ s, ctx, id, hid }: P<'ctaBanner'>) {
           <div className="cta-glow" aria-hidden="true" />
           <h2 className="h-lg" id={hid}><Accent text={s.heading} /></h2>
           {s.text && <p className="lede">{s.text}</p>}
-          <a className={btn(button.variant, 'btn-light')} href={button.url}>{button.label} <Icon name="arrow" size={15} /></a>
+          <SmartLink className={btn(button.variant, 'btn-light')} href={button.url}>{button.label} <Icon name="arrow" size={15} /></SmartLink>
         </Reveal>
       </div>
     </section>
@@ -810,7 +816,7 @@ async function InsightsSection({ s, id, hid, chapter }: Omit<P<'insights'>, 'ctx
             <Chapter n={chapter} label={s.eyebrow} />
             {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
           </div>
-          <a className={btn(button.variant, 'btn-outline')} href={button.url}>{button.label} <Icon name="arrow" size={15} /></a>
+          <SmartLink className={btn(button.variant, 'btn-outline')} href={button.url}>{button.label} <Icon name="arrow" size={15} /></SmartLink>
         </Reveal>
         <ul className="post-grid">
           {posts.map((p, i) => <li key={p.id}><Reveal delay={i * 0.06}><PostCard post={p} /></Reveal></li>)}

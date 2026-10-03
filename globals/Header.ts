@@ -1,11 +1,12 @@
 import type { Field, GlobalConfig } from 'payload';
 import { anyone, authenticated } from '../access';
 import { revalidateGlobal } from '../hooks/revalidate';
+import { linkTarget } from '../lib/validate';
 
 export const linkFields: Field[] = [
   { type: 'row', fields: [
     { name: 'label', type: 'text', required: true, admin: { width: '40%' } },
-    { name: 'url', type: 'text', required: true, admin: { width: '60%', description: 'A page (/about), a section (/#work) or a full URL.' } },
+    { name: 'url', type: 'text', required: true, validate: linkTarget, admin: { width: '60%', description: 'A page (/about), a section (/#work) or a full URL.' } },
   ] },
 ];
 

@@ -18,7 +18,7 @@ export function CaseStudies({ projects }: { projects: ProjectCard[] }) {
   const more = rest.slice(FILES);
   return (
     <div className="ed-work">
-      <Reveal y={24}><ProjectFolder project={lead} size="lg" sizes="(max-width: 900px) 94vw, 1200px" preload /></Reveal>
+      <Reveal y={24}><ProjectFolder project={lead} size="lg" sizes="(max-width: 900px) 94vw, 1200px" /></Reveal>
       {!!files.length && (
         <ul className="ed-grid">
           {files.map((p, i) => (

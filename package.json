@@ -11,23 +11,28 @@
     "seed-pages": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/seed-pages.ts",
     "ci": "payload migrate && npm run build",
     "lint": "eslint .",
-    "restructure-home": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/restructure-home.ts"
+    "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
+    "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck",
+    "backup": "bash scripts/backup.sh",
+    "fix-content": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/fix-content.ts"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "^3.90.1",
-    "@payloadcms/live-preview-react": "^3.90.1",
-    "@payloadcms/next": "^3.90.1",
-    "@payloadcms/plugin-seo": "^3.90.1",
-    "@payloadcms/richtext-lexical": "^3.90.1",
-    "@payloadcms/storage-s3": "^3.90.1",
-    "@payloadcms/ui": "^3.90.1",
-    "@supabase/ssr": "^0.12.7",
-    "@supabase/supabase-js": "^2.117.2",
+    "@payloadcms/db-postgres": "3.90.1",
+    "@payloadcms/email-resend": "3.90.1",
+    "@payloadcms/live-preview-react": "3.90.1",
+    "@payloadcms/next": "3.90.1",
+    "@payloadcms/plugin-seo": "3.90.1",
+    "@payloadcms/richtext-lexical": "3.90.1",
+    "@payloadcms/storage-s3": "3.90.1",
+    "@payloadcms/ui": "3.90.1",
     "geist": "^1.7.2",
     "graphql": "^16.14.2",
     "motion": "^12.43.0",
     "next": "^16.3.6",
-    "payload": "^3.90.1",
+    "payload": "3.90.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "sharp": "^0.35.4"
@@ -47,5 +52,12 @@
     "esbuild@0.28.2": true,
     "esbuild@0.18.20": true
   },
-  "type": "module"
+  "type": "module",
+  "overrides": {
+    "undici": "^7.30.0",
+    "dompurify": "^3.4.13"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
 }

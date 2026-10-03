@@ -5,6 +5,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import { s3Storage } from '@payloadcms/storage-s3';
 import { seoPlugin } from '@payloadcms/plugin-seo';
+import { resendAdapter } from '@payloadcms/email-resend';
 import sharp from 'sharp';
 
 import { Users } from './collections/Users';
@@ -29,6 +30,8 @@ const useSupabaseStorage = Boolean(process.env.S3_BUCKET && process.env.S3_ENDPO
 // the browser asks for a signed URL and sends the file straight to Supabase (admin and Studio).
 // Opt-in (S3_CLIENT_UPLOADS=true) because it needs the bucket to accept browser PUTs.
 export const directUploads = useSupabaseStorage && process.env.S3_CLIENT_UPLOADS === 'true';
+
+const missing = (name: string): never => { throw new Error(`${name} is not set. Add it to the environment (see .env.example).`); };
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000',
@@ -56,10 +59,11 @@ export default buildConfig({
         let target = '/';
         if (collectionConfig?.slug === 'projects') target = `/work/${data?.slug || ''}`;
         else if (collectionConfig?.slug === 'services') target = `/services/${data?.slug || ''}`;
+        else if (collectionConfig?.slug === 'posts') target = `/insights/${data?.slug || ''}`;
         else if (collectionConfig?.slug === 'pages') target = pagePath(data?.slug);
         return `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/preview?path=${encodeURIComponent(target)}`;
       },
-      collections: ['pages', 'projects', 'services'],
+      collections: ['pages', 'projects', 'services', 'posts'],
       globals: ['header', 'footer', 'theme', 'site'],
       breakpoints: [
         { label: 'Mobile', name: 'mobile', width: 390, height: 844 },
@@ -70,7 +74,13 @@ export default buildConfig({
   collections: [Pages, Projects, Services, Posts, Media, Inquiries, Users],
   globals: [Header, Footer, Theme, Site],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  // signs logins and preview links: never run production without it
+  secret: process.env.PAYLOAD_SECRET || (process.env.NODE_ENV === 'production' ? missing('PAYLOAD_SECRET') : 'local-development-only'),
+  // Email (new-enquiry alerts, password resets) goes through Resend once RESEND_API_KEY is set;
+  // until then Payload only logs emails to the console. EMAIL_FROM must be on a domain verified in Resend.
+  email: process.env.RESEND_API_KEY
+    ? resendAdapter({ apiKey: process.env.RESEND_API_KEY, defaultFromAddress: process.env.EMAIL_FROM || 'onboarding@resend.dev', defaultFromName: process.env.EMAIL_FROM_NAME || 'Portfolio' })
+    : undefined,
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   graphQL: { disable: true },
   db: postgresAdapter({

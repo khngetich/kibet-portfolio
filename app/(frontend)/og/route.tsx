@@ -2,11 +2,14 @@ import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { getSite } from '@/lib/cms';
+import { verifyOgCard } from '@/lib/seo';
 
 /**
  * Share card for any page that has no image of its own and no site default: the page title set
  * large in the studio's type, on the site's black, with its colour bar. Used by the metadata
- * helpers as /og?title=…&kicker=…, so links shared on WhatsApp, LinkedIn or X always preview.
+ * helpers as /og?title=…&kicker=…&s=…, so links shared on WhatsApp, LinkedIn or X always preview.
+ * The text is signed (lib/seo.ts ogCard); an unsigned or altered request gets the default card,
+ * so nobody can put their own words under the brand.
  */
 
 const fonts = (async () => {
@@ -28,8 +31,9 @@ const BAR = ['#00AEEF', '#EC008C', '#FFF200', '#F5F5F4', '#7A7A7A', '#E8352B'];
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams;
   const site = await getSite();
-  const title = (q.get('title') || site.role || site.name).slice(0, 90);
-  const kicker = (q.get('kicker') || site.studio || '').slice(0, 40);
+  const signed = verifyOgCard(q.get('title') ?? '', q.get('kicker') ?? '', q.get('s'));
+  const title = ((signed && q.get('title')) || site.role || site.name).slice(0, 90);
+  const kicker = ((signed && q.get('kicker')) || site.studio || '').slice(0, 40);
   const host = (() => { try { return new URL(process.env.NEXT_PUBLIC_SERVER_URL || '').host; } catch { return ''; } })();
 
   return new ImageResponse(

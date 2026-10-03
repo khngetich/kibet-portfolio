@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotionConfig } from 'motion/react';
+import { AnimatePresence, m as motion, useReducedMotionConfig } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from './Icon';
 import { ThemeToggle } from './ThemeToggle';
@@ -26,6 +26,7 @@ export function Header({ name, menu, quote, availability }: { name: string; menu
   const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const menuBtn = useRef<HTMLButtonElement>(null);
+  const sheet = useRef<HTMLUListElement>(null);
 
   // On the page itself, "/#work" becomes "#work" so it scrolls instead of reloading.
   const href = (url: string) => (pathname === '/' && url.startsWith('/#') ? url.slice(1) : url);
@@ -55,6 +56,8 @@ export function Header({ name, menu, quote, availability }: { name: string; menu
 
   useEffect(() => {
     if (!open) return;
+    // opening the menu puts focus on its first link
+    sheet.current?.querySelector('a')?.focus();
     // Escape closes the menu and puts focus back on the button that opened it.
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); menuBtn.current?.focus(); } };
     document.addEventListener('keydown', onKey);
@@ -69,12 +72,8 @@ export function Header({ name, menu, quote, availability }: { name: string; menu
 
   return (
     <>
-      <motion.header
-        className="site-header"
-        initial={reduce ? false : { y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 0.3, ease: EASE }}
-      >
+      {/* no entrance animation: the header is part of the first paint, not something to wait for */}
+      <header className="site-header">
         <Link className="brand" href="/" aria-label={`${name}, home`}>{name}<span className="brand-dot" aria-hidden="true">.</span></Link>
 
         <nav className="header-nav" aria-label="Primary">
@@ -107,21 +106,24 @@ export function Header({ name, menu, quote, availability }: { name: string; menu
 
         <AnimatePresence>
           {open && (
-            <motion.ul
+            <motion.nav
               id="menu-sheet"
               className="menu-sheet"
-              initial={{ opacity: 0, y: -12, scale: 0.97 }}
+              aria-label="Menu"
+              initial={reduce ? false : { opacity: 0, y: -12, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -12, scale: 0.97 }}
               transition={{ duration: 0.25, ease: EASE }}
             >
-              {menu.map((l) => (
-                <li key={l.url + l.label}><Link href={href(l.url)} onClick={() => setOpen(false)} aria-current={isCurrent(l) ? 'page' : undefined}>{l.label}</Link></li>
-              ))}
-            </motion.ul>
+              <ul ref={sheet}>
+                {menu.map((l) => (
+                  <li key={l.url + l.label}><Link href={href(l.url)} onClick={() => setOpen(false)} aria-current={isCurrent(l) ? 'page' : undefined}>{l.label}</Link></li>
+                ))}
+              </ul>
+            </motion.nav>
           )}
         </AnimatePresence>
-      </motion.header>
+      </header>
 
       {availability && (
         <motion.p

@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, useMotionValueEvent, useReducedMotionConfig, useScroll, useTransform } from 'motion/react';
+import { useStill } from './useStill';
+import { m as motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import { useRef, useState } from 'react';
 
 /**
@@ -9,7 +10,7 @@ import { useRef, useState } from 'react';
  */
 export function RoleWheel({ heading, lead, roles, id, headingId }: { heading: string; lead: string; roles: string[]; id?: string; headingId: string }) {
   const ref = useRef<HTMLElement>(null);
-  const reduce = useReducedMotionConfig();
+  const reduce = useStill();
   const [active, setActive] = useState(0);
   const last = roles.length - 1;
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
@@ -33,9 +34,11 @@ export function RoleWheel({ heading, lead, roles, id, headingId }: { heading: st
             <ul className="roles-list roles-static">{roles.map((r) => <li key={r}>{r}</li>)}</ul>
           ) : (
             <div className="roles-window">
-              <motion.ul className="roles-list" style={{ y }}>
+              {/* the full list for screen readers; the turning wheel below is visual only */}
+              <ul className="sr-only">{roles.map((r) => <li key={r}>{r}</li>)}</ul>
+              <motion.ul className="roles-list" style={{ y }} aria-hidden="true">
                 {roles.map((r, i) => (
-                  <li key={r} className={i === active ? 'is-active' : undefined} style={{ opacity: Math.max(0.12, 1 - Math.abs(i - active) * 0.32) }} aria-current={i === active ? 'true' : undefined}>
+                  <li key={r} className={i === active ? 'is-active' : undefined} style={{ opacity: Math.max(0.12, 1 - Math.abs(i - active) * 0.32) }}>
                     {r}
                   </li>
                 ))}

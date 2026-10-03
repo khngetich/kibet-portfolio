@@ -1,3 +1,4 @@
+import { permanentRedirect } from 'next/navigation';
 import { getPageSlugs } from '@/lib/cms';
 import { PageView, pageMetadata } from '@/components/sections/PageView';
 
@@ -14,5 +15,8 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function Page({ params }: Props) {
-  return <PageView slug={(await params).slug} />;
+  const { slug } = await params;
+  // the homepage has its own address; /home shouldn't serve it a second time
+  if (slug === 'home') permanentRedirect('/');
+  return <PageView slug={slug} />;
 }

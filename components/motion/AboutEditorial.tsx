@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AnimatePresence, animate, motion, useInView, useReducedMotionConfig } from 'motion/react';
+import { AnimatePresence, animate, m as motion, useInView, useReducedMotionConfig } from 'motion/react';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Img } from '@/components/Img';
 import { Icon } from '@/components/Icon';

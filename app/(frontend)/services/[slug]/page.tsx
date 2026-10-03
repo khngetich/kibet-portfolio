@@ -6,6 +6,8 @@ import { digits, price } from '@/lib/format';
 import { Img } from '@/components/Img';
 import { Icon } from '@/components/Icon';
 import { ProjectFolder } from '@/components/ProjectFolder';
+import { JsonLd } from '@/components/JsonLd';
+import { breadcrumbLd, canonical, ogCard, pageTitle, serviceLd } from '@/lib/seo';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -18,10 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!service) return {};
   const image = asMedia(service.image);
   const description = service.metaDescription || service.description || undefined;
+  const title = service.metaTitle || service.title;
   return {
-    title: service.metaTitle || service.title,
+    title: pageTitle(title, (await getSite()).name),
     description,
-    openGraph: { title: service.metaTitle || service.title, description, images: image?.url ? [{ url: image.url, width: image.width ?? undefined, height: image.height ?? undefined, alt: image.alt }] : undefined },
+    alternates: { canonical: canonical(`/services/${service.slug}`) },
+    openGraph: { title, description, images: [image?.url ? { url: image.url, width: image.width ?? undefined, height: image.height ?? undefined, alt: image.alt } : { url: ogCard(title, 'Service'), width: 1200, height: 630, alt: title }] },
   };
 }
 
@@ -48,6 +52,7 @@ export default async function ServicePage({ params }: Props) {
 
   return (
     <article className="svp">
+      <JsonLd data={[serviceLd(service, site.name), breadcrumbLd([{ name: 'Services', path: '/#services' }, { name: service.title, path: `/services/${service.slug}` }])]} />
       <header className="wrap svp-head">
         <Link className="case-back" href="/#services"><Icon name="left" size={14} /> All services</Link>
         <div className="case-title-row">

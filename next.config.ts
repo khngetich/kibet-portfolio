@@ -10,8 +10,40 @@ const storage = process.env.S3_PUBLIC_URL ? new URL(process.env.S3_PUBLIC_URL) :
 // Payload returns absolute upload URLs on the site's own origin when files are stored locally.
 const self = new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000');
 
+// Content sources the pages actually use: Supabase Storage for media, YouTube/Vimeo embeds in the
+// viewer, Cloudflare Turnstile on the contact form. Shipped report-only first: the browser logs what
+// it would block without blocking anything; switch the header name to enforce once the logs are quiet.
+const csp = [
+  "default-src 'self'",
+  // Next streams page data in inline scripts, and the theme boot script runs before paint
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob:${storage ? ` ${storage.origin}` : ''} https://i.ytimg.com https://i.vimeocdn.com`,
+  `media-src 'self' blob:${storage ? ` ${storage.origin}` : ''}`,
+  "font-src 'self' data:",
+  `connect-src 'self'${process.env.S3_ENDPOINT ? ` ${new URL(process.env.S3_ENDPOINT).origin}` : ''} https://challenges.cloudflare.com`,
+  'frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://challenges.cloudflare.com',
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+].join('; ');
+
+const securityHeaders = [
+  // nothing outside this site may frame it (the Studio canvas and live preview are same-origin)
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()' },
+  { key: 'Content-Security-Policy-Report-Only', value: csp },
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
   // The Studio uploads images and videos through server actions (default cap is 1MB).
   experimental: { serverActions: { bodySizeLimit: '50mb' } },
   images: {

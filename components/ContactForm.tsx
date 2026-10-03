@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Script from 'next/script';
 import { useActionState, useEffect, useId, useRef, useState } from 'react';
 import { sendEnquiry, type ContactState } from '@/app/(frontend)/actions';
 import { SERVICE_EVENT } from './motion/ServiceLink';
@@ -9,10 +10,14 @@ import { SERVICE_EVENT } from './motion/ServiceLink';
  * The enquiry form, kept short: what you need (optional chips), name, email and a few lines.
  * Its wording comes from the Contact section (Pages → Contact form → Form). A service card's
  * "Start a project" button, or a service page's (via ?service=), picks its service for you.
- * The honeypot and rate limits live in the server action; a server error focuses its field.
+ * The honeypot, Turnstile check and rate limits live in the server action; an error (from the
+ * browser check or the server) marks and focuses its field.
  */
 
 const ERR = 'contact-error';
+/** Cloudflare Turnstile's public key; the widget only appears once it's set. */
+const TURNSTILE = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+type Field = 'name' | 'email' | 'message';
 export type FormCopy = { serviceLabel?: string | null; messagePlaceholder?: string | null; submitLabel?: string | null; successText?: string | null; privacyNote?: string | null; privacyUrl?: string | null };
 
 export function ContactForm({ services, bookingUrl, chatUrl, copy = {} }: { services: string[]; bookingUrl?: string | null; chatUrl?: string | null; copy?: FormCopy }) {
@@ -20,7 +25,7 @@ export function ContactForm({ services, bookingUrl, chatUrl, copy = {} }: { serv
   const base = useId();
   const v = state?.values;
   const [service, setService] = useState(v?.service ?? '');
-  const [hint, setHint] = useState<string | null>(null);
+  const [hint, setHint] = useState<{ field: Field; text: string } | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const done = useRef<HTMLParagraphElement>(null);
   const quick = chatUrl || bookingUrl;
@@ -36,6 +41,8 @@ export function ContactForm({ services, bookingUrl, chatUrl, copy = {} }: { serv
   useEffect(() => {
     if (state?.ok) done.current?.focus();
     else if (state?.field) (form.current?.elements.namedItem(state.field) as HTMLElement | null)?.focus();
+    // a Turnstile token works once: after a failed send, get a fresh one
+    if (state && !state.ok) (window as { turnstile?: { reset: () => void } }).turnstile?.reset();
   }, [state]);
 
   if (state?.ok) {
@@ -48,11 +55,13 @@ export function ContactForm({ services, bookingUrl, chatUrl, copy = {} }: { serv
     );
   }
 
-  const bad = (n: 'name' | 'email' | 'message') => (state?.field === n ? { 'aria-invalid': true, 'aria-describedby': ERR } : {});
-  const check = (fd: FormData) => {
-    if (!String(fd.get('name') ?? '').trim()) return ['name', 'Please add your name.'];
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(fd.get('email') ?? '').trim())) return ['email', 'That email address doesn’t look right.'];
-    if (!String(fd.get('message') ?? '').trim()) return ['message', 'Add a few lines about the project.'];
+  // the field to fix: from the browser check first, else from the server's reply
+  const wrong = hint?.field ?? state?.field;
+  const bad = (n: Field) => (wrong === n ? { 'aria-invalid': true, 'aria-describedby': ERR } : {});
+  const check = (fd: FormData): { field: Field; text: string } | null => {
+    if (!String(fd.get('name') ?? '').trim()) return { field: 'name', text: 'Please add your name.' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(fd.get('email') ?? '').trim())) return { field: 'email', text: 'That email address doesn’t look right.' };
+    if (!String(fd.get('message') ?? '').trim()) return { field: 'message', text: 'Add a few lines about the project.' };
     return null;
   };
 
@@ -65,8 +74,8 @@ export function ContactForm({ services, bookingUrl, chatUrl, copy = {} }: { serv
       aria-describedby={state?.error || hint ? ERR : undefined}
       onSubmit={(e) => {
         const err = check(new FormData(e.currentTarget));
-        setHint(err?.[1] ?? null);
-        if (err) { e.preventDefault(); (e.currentTarget.elements.namedItem(err[0]) as HTMLElement | null)?.focus(); }
+        setHint(err);
+        if (err) { e.preventDefault(); (e.currentTarget.elements.namedItem(err.field) as HTMLElement | null)?.focus(); }
       }}
     >
       <input type="hidden" name="service" value={service} />
@@ -92,7 +101,13 @@ export function ContactForm({ services, bookingUrl, chatUrl, copy = {} }: { serv
         placeholder={copy.messagePlaceholder || 'What is it, who is it for, and when do you need it?'} />
 
       <label className="hp" aria-hidden="true">Company<input name="company" tabIndex={-1} autoComplete="off" /></label>
-      {(hint || state?.error) && <p className="form-error" id={ERR} role="alert">{hint ?? state?.error}</p>}
+      {TURNSTILE && (
+        <>
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="lazyOnload" />
+          <div className="cf-turnstile" data-sitekey={TURNSTILE} data-theme="auto" data-size="flexible" />
+        </>
+      )}
+      {(hint || state?.error) && <p className="form-error" id={ERR} role="alert">{hint?.text ?? state?.error}</p>}
 
       <div className="brief-nav">
         <button className="btn btn-dark" type="submit" disabled={pending}>{pending ? 'Sending…' : copy.submitLabel || 'Send message'}</button>

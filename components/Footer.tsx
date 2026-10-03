@@ -1,15 +1,13 @@
 import Link from 'next/link';
+import { Fragment } from 'react';
 import type { Footer as FooterData, Site } from '@/payload-types';
-import { Icon, type IconName } from './Icon';
+import { Icon } from './Icon';
+import { SOCIAL_LABEL, socialIcon } from '@/lib/socials';
 import { Accent } from './Accent';
+import { SmartLink } from './SmartLink';
+import { Year } from './Year';
+import { FooterWatch } from './FooterWatch';
 
-const SOCIAL: Record<string, string> = { instagram: 'Instagram', behance: 'Behance', dribbble: 'Dribbble', linkedin: 'LinkedIn', x: 'X', facebook: 'Facebook', tiktok: 'TikTok' };
-const isExternal = (url: string) => /^(https?:|mailto:|tel:)/.test(url);
-function A({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
-  return isExternal(href)
-    ? <a className={className} href={href} {...(/^https?:/.test(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{children}</a>
-    : <Link className={className} href={href}>{children}</Link>;
-}
 
 /**
  * The footer on every page, kept short: a dark call-to-action band, then one row with the name,
@@ -20,7 +18,8 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
   const first = site.name.split(/\s+/)[0];
   const brand = footer.title || site.name;
   const cta = footer.cta ?? {};
-  const copyright = (footer.copyright || '© {year} {name}. All rights reserved.').replace('{year}', String(new Date().getFullYear())).replace('{name}', first);
+  // {year} becomes the live year (components/Year.tsx); {name} the first name
+  const copyright = (footer.copyright || '© {year} {name}. All rights reserved.').replace('{name}', first).split('{year}');
   const socials = footer.showSocials !== false ? (site.socials ?? []).filter((s) => s.url) : [];
   const statement = footer.tagline || site.tagline || `${site.role}${site.location ? ` · ${site.location}` : ''}`;
 
@@ -32,7 +31,7 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
           <div className="wrap fx-cta-inner">
             <p className="fx-cta-title"><Accent text={cta.heading} /></p>
             {cta.text && <p className="fx-cta-text">{cta.text}</p>}
-            {cta.buttonLabel && cta.buttonUrl && <A className="fx-cta-btn" href={cta.buttonUrl}>{cta.buttonLabel} <Icon name="arrow" size={16} /></A>}
+            {cta.buttonLabel && cta.buttonUrl && <SmartLink className="fx-cta-btn" href={cta.buttonUrl}>{cta.buttonLabel} <Icon name="arrow" size={16} /></SmartLink>}
           </div>
         </div>
       )}
@@ -47,15 +46,16 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
           {!!socials.length && (
             <ul className="fx-socials" aria-label="Social profiles">
               {socials.map((s) => (
-                <li key={s.id ?? s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL[s.platform] ?? s.platform}><Icon name={s.platform as IconName} size={18} /></a></li>
+                <li key={s.id ?? s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABEL[s.platform] ?? s.platform}><Icon name={socialIcon(s.platform)} size={18} /></a></li>
               ))}
             </ul>
           )}
         </div>
         <div className="fx-bottom">
-          <p>{copyright}{footer.note ? <span className="fx-note"> {footer.note}</span> : null}</p>
+          <FooterWatch />
+          <p>{copyright.map((part, i) => <Fragment key={i}>{i > 0 && <Year />}{part}</Fragment>)}{footer.note ? <span className="fx-note"> {footer.note}</span> : null}</p>
           {!!footer.legal?.length && (
-            <nav aria-label="Policies"><ul className="fx-legal">{footer.legal.map((l) => <li key={l.id ?? l.url}><A className="fx-link" href={l.url}>{l.label}</A></li>)}</ul></nav>
+            <nav aria-label="Policies"><ul className="fx-legal">{footer.legal.map((l) => <li key={l.id ?? l.url}><SmartLink className="fx-link" href={l.url}>{l.label}</SmartLink></li>)}</ul></nav>
           )}
         </div>
       </div>

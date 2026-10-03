@@ -2,6 +2,7 @@ import { slugField, type CollectionConfig } from 'payload';
 import { authenticated, publishedOrAuthenticated } from '../access';
 import { caseStudyBlocks } from '../blocks';
 import { revalidateCollection, revalidateOnDelete } from '../hooks/revalidate';
+import { hexColour, webURL, yearText } from '../lib/validate';
 
 export const DISCIPLINES = [
   { label: 'Social media', value: 'social' },
@@ -22,6 +23,7 @@ export const Projects: CollectionConfig = {
     group: 'Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'client', 'disciplines', 'year', 'featured', '_status'],
+    listSearchableFields: ['title', 'client', 'summary'],
     description: 'Drag rows to set the order projects appear on the site.',
     components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'projects', label: '+ New project', hint: 'Add the project in a pop-up; it stays open so you can carry on with the case study.' } }] },
   },
@@ -86,14 +88,14 @@ export const Projects: CollectionConfig = {
     slugField({ useAsSlug: 'title', position: 'sidebar' }),
     { name: 'featured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar', description: 'Show on the homepage' } },
     { name: 'client', type: 'text', required: true, admin: { position: 'sidebar' } },
-    { name: 'year', type: 'text', required: true, admin: { position: 'sidebar' } },
+    { name: 'year', type: 'text', required: true, validate: yearText, admin: { position: 'sidebar', placeholder: '2025' } },
     { name: 'disciplines', type: 'select', hasMany: true, required: true, options: DISCIPLINES, admin: { position: 'sidebar' } },
     { name: 'role', type: 'text', hasMany: true, admin: { position: 'sidebar', description: 'e.g. Art direction, Layout system' } },
-    { name: 'liveUrl', label: 'Live link', type: 'text', admin: { position: 'sidebar', description: 'The live website, a YouTube/Vimeo video, or a public post. Shows a preview button on the case study.' } },
+    { name: 'liveUrl', label: 'Live link', type: 'text', validate: webURL, admin: { position: 'sidebar', description: 'The live website, a YouTube/Vimeo video, or a public post. Shows a preview button on the case study.' } },
     { name: 'liveType', label: 'Live link is a…', type: 'select', defaultValue: 'website', options: [
       { label: 'Website', value: 'website' }, { label: 'Video', value: 'video' }, { label: 'Social post', value: 'post' },
     ], admin: { position: 'sidebar', condition: (d) => !!d?.liveUrl } },
-    { name: 'accent', type: 'text', admin: { position: 'sidebar', description: 'Leave empty and the card, its glow and the case study take their colour from the cover. Set a hex (e.g. #F5C400) to use a brand colour instead.' } },
+    { name: 'accent', type: 'text', validate: hexColour, admin: { position: 'sidebar', description: 'Leave empty and the card, its glow and the case study take their colour from the cover. Set a hex (e.g. #F5C400) to use a brand colour instead.' } },
     { name: 'note', type: 'textarea', admin: { position: 'sidebar', description: 'Small print shown at the end (NDA, placeholder images, etc.)' } },
     {
       name: 'stats',

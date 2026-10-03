@@ -17,7 +17,9 @@ import { Icon } from './Icon';
  * Colour adaptation: the panel, tab, rim and glow take the cover's own colours (lib/palette.ts),
  * so each file looks like it belongs to its work.
  */
-export function ProjectFolder({ project: p, size = 'md', sizes, preload }: { project: ProjectCard; size?: 'md' | 'lg'; sizes: string; preload?: boolean }) {
+export function ProjectFolder({ project: p, size = 'md', sizes, preload, level = 3 }: { project: ProjectCard; size?: 'md' | 'lg'; sizes: string; preload?: boolean; level?: 2 | 3 }) {
+  // the project's name is a heading, so screen-reader heading navigation lists every project
+  const Name = `h${level}` as 'h2' | 'h3';
   // the tab holds one category; everything else goes on the discipline line under it
   const category = disciplineList(p.disciplines?.slice(0, 1)) || 'Case study';
   const tagline = taglineOf(p, category);
@@ -26,10 +28,10 @@ export function ProjectFolder({ project: p, size = 'md', sizes, preload }: { pro
   return (
     <Link href={`/work/${p.slug}`} className={`pcard pcard-${size}`} style={paletteVars(p.palette)} transitionTypes={['case-open']} aria-label={`${p.title}: ${category}${p.client && p.client !== p.title ? `, for ${p.client}` : ''}. View the case study`}>
       <ViewTransition name={`case-cover-${p.slug}`} share="case-cover" default="none">
-        <span className="pcard-banner">
+        <div className="pcard-banner">
           <Img media={p.cover} sizes={sizes} preload={preload} />
-          <span className="pcard-name">{p.title}</span>
-        </span>
+          <Name className="pcard-name">{p.title}</Name>
+        </div>
       </ViewTransition>
       <ViewTransition name={`case-sheet-${p.slug}`} share="case-sheet" default="none">
         <span className="pcard-body">

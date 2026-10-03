@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { m as motion, useScroll, useTransform } from 'motion/react';
 import { useRef, type ReactNode } from 'react';
 import { Img } from '@/components/Img';
 import { Icon } from '@/components/Icon';
@@ -9,7 +9,7 @@ import { EASE } from './Reveal';
 import { ServiceLink } from './ServiceLink';
 
 type Stat = { value: string; label: string };
-type Service = { title: string; description?: string | null };
+type Service = { title: string; description?: string | null; slug?: string | null };
 
 /**
  * About & services on the red backdrop. The cut-out portrait stands in the middle; the intro
@@ -65,10 +65,17 @@ export function AboutBanner(props: {
               <ul>
                 {services.map((s) => (
                   <li key={s.title}>
-                    <ServiceLink className="about-service" service={s.title}>
-                      <span><b>{s.title}</b>{s.description && <small>{s.description}</small>}</span>
-                      <Icon name="arrow" size={16} />
-                    </ServiceLink>
+                    {s.slug ? (
+                      <Link className="about-service" href={`/services/${s.slug}`}>
+                        <span><b>{s.title}</b>{s.description && <small>{s.description}</small>}</span>
+                        <Icon name="arrow" size={16} />
+                      </Link>
+                    ) : (
+                      <ServiceLink className="about-service" service={s.title}>
+                        <span><b>{s.title}</b>{s.description && <small>{s.description}</small>}</span>
+                        <Icon name="arrow" size={16} />
+                      </ServiceLink>
+                    )}
                   </li>
                 ))}
               </ul>

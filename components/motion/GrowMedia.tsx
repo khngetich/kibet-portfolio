@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotionConfig, useScroll, useTransform } from 'motion/react';
+import { m as motion, useReducedMotionConfig, useScroll, useTransform } from 'motion/react';
 import { useRef } from 'react';
 import { Img } from '@/components/Img';
 

@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload';
 import { authenticated } from '../access';
+import { notifyInquiry } from '../hooks/notifyInquiry';
 
 /** Messages sent through the contact form. Created server-side only (see app/(frontend)/actions.ts). */
 export const Inquiries: CollectionConfig = {
@@ -9,8 +10,10 @@ export const Inquiries: CollectionConfig = {
     group: 'Inbox',
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'service', 'status', 'createdAt'],
+    listSearchableFields: ['name', 'email', 'message'],
   },
   access: { read: authenticated, create: () => false, update: authenticated, delete: authenticated },
+  hooks: { afterChange: [notifyInquiry] },
   fields: [
     { type: 'row', fields: [
       { name: 'name', type: 'text', required: true, admin: { width: '50%', components: { Cell: '/components/admin/Crud#ModalCell' } } },

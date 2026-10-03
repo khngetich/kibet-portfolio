@@ -52,7 +52,8 @@ export const Media: CollectionConfig = {
   },
   upload: {
     staticDir: path.resolve(dirname, '../media'),
-    mimeTypes: ['image/*', 'video/mp4', 'video/webm', 'application/pdf'],
+    // raster images only (no SVG: direct-to-storage uploads skip the server's SVG sanitising)
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif', 'video/mp4', 'video/webm', 'application/pdf'],
     focalPoint: true,
     crop: true,
     // Keep originals at a sensible size; next/image generates the per-screen versions.

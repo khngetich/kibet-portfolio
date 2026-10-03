@@ -132,7 +132,9 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     for (const page of pages) {
       for (const section of page.sections ?? []) {
         if (section.blockType !== 'services') continue
-        for (const item of section.items ?? []) {
+        // `items` was the Services section's inline list (removed from the schema in a later migration)
+        type Item = { title?: string | null; description?: string | null; deliverables?: string[] | null; priceFrom?: number | null; currency?: 'KES' | 'USD' | null; unit?: string | null; image?: number | { id: number } | null; imageCaption?: string | null; featured?: boolean | null; starter?: boolean | null }
+        for (const item of ((section as { items?: Item[] }).items ?? [])) {
           if (!item.title || seen.has(item.title)) continue
           seen.add(item.title)
           await payload.create({

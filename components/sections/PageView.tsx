@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { asMedia, getPage, getSite, isStudioCanvas } from '@/lib/cms';
+import { canonical, ogCard, pageTitle } from '@/lib/seo';
+import { pagePath } from '@/collections/Pages';
 import { RenderSections } from './RenderSections';
 
 /** Search/share metadata for a page, from its Page settings tab, falling back to Site settings. */
@@ -11,10 +13,11 @@ export async function pageMetadata(slug: string): Promise<Metadata> {
   const description = page.meta?.description || site.metaDescription || undefined;
   const image = asMedia(page.meta?.image) ?? asMedia(site.ogImage);
   // no image anywhere: a generated card with the page's title, so shared links still preview
-  const card = `/og?${new URLSearchParams({ title: title || site.role || site.name, kicker: slug === 'home' ? (site.studio || '') : page.title })}`;
+  const card = ogCard(title || site.role || site.name, slug === 'home' ? (site.studio || '') : page.title);
   return {
-    ...(title ? { title: slug === 'home' ? { absolute: title } : title } : {}),
+    ...(title ? { title: slug === 'home' ? { absolute: title } : pageTitle(title, site.name) } : {}),
     description,
+    alternates: { canonical: canonical(pagePath(slug)) },
     openGraph: { images: [image?.url ? { url: image.url, width: image.width ?? undefined, height: image.height ?? undefined } : { url: card, width: 1200, height: 630, alt: title || site.name }] },
   };
 }

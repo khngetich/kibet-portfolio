@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotionConfig, useScroll, useTransform, type MotionValue } from 'motion/react';
+import { m as motion, useReducedMotionConfig, useScroll, useTransform, type MotionValue } from 'motion/react';
 import { useRef } from 'react';
 import { Img } from '@/components/Img';
 import type { Media } from '@/payload-types';

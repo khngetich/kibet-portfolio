@@ -14,6 +14,7 @@ export const Posts: CollectionConfig = {
     group: 'Content',
     useAsTitle: 'title',
     defaultColumns: ['title', 'publishedAt', 'tags', '_status'],
+    listSearchableFields: ['title', 'excerpt'],
     description: 'Short articles and design notes. They appear at /insights and in the Insights section.',
     components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'posts', label: '+ New insight', hint: 'Write a short design note; publish it when it’s ready.' } }] },
   },
@@ -29,5 +30,7 @@ export const Posts: CollectionConfig = {
     { name: 'tags', type: 'text', hasMany: true, admin: { position: 'sidebar', description: 'e.g. Branding, Process' } },
     slugField({ useAsSlug: 'title', position: 'sidebar' }),
     { name: 'metaTitle', label: 'Search title', type: 'text', admin: { position: 'sidebar', description: 'Defaults to the title.' } },
+    { name: 'metaDescription', label: 'Search description', type: 'textarea', admin: { position: 'sidebar', description: 'Defaults to the excerpt.' } },
+    { name: 'ogImage', label: 'Share image', type: 'upload', relationTo: 'media', admin: { position: 'sidebar', description: 'Shown when the link is shared (1200×630). Defaults to the cover.' } },
   ],
 };

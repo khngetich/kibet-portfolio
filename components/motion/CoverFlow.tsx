@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useInView, useReducedMotionConfig } from 'motion/react';
+import { m as motion, useInView, useReducedMotionConfig } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ProjectCard } from '@/lib/cms';
 import { disciplineList } from '@/lib/format';

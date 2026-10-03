@@ -1,5 +1,4 @@
 import { APIError, type Access, type CollectionBeforeChangeHook, type CollectionBeforeDeleteHook, type CollectionConfig, type FieldAccess } from 'payload';
-import { authenticated } from '../access';
 
 /**
  * People who can sign in. Admins manage accounts; editors edit content and can change only
@@ -42,9 +41,14 @@ export const Users: CollectionConfig = {
     defaultColumns: ['name', 'email', 'role', 'updatedAt'],
     components: { beforeListTable: [{ path: '/components/admin/Crud#ListQuickCreate', clientProps: { collection: 'users', label: '+ Add editor', hint: 'People who can sign in to this CMS.' } }] },
   },
-  auth: { tokenExpiration: 60 * 60 * 24 * 7 },
+  auth: {
+    tokenExpiration: 60 * 60 * 24 * 7,
+    // the sign-in cookie only travels over HTTPS in production, and never on cross-site requests
+    cookies: { secure: process.env.NODE_ENV === 'production', sameSite: 'Lax' },
+  },
   access: {
-    read: authenticated,
+    // editors see only their own account; admins see everyone (keeps email addresses private)
+    read: adminOrSelf,
     create: adminOnly,
     update: adminOrSelf,
     delete: adminOnly,

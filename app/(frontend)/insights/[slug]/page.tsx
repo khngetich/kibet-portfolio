@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { RichText } from '@payloadcms/richtext-lexical/react';
-import { asMedia, getPost, getPosts, getPostSlugs } from '@/lib/cms';
+import { asMedia, getPost, getPosts, getPostSlugs, getSite } from '@/lib/cms';
+import { articleLd, breadcrumbLd, canonical, ogCard, pageTitle } from '@/lib/seo';
+import { JsonLd } from '@/components/JsonLd';
 import { Img } from '@/components/Img';
 import { Icon } from '@/components/Icon';
 import { PostCard, postDate } from '@/components/PostCard';
@@ -16,11 +18,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPost((await params).slug);
   if (!post) return {};
-  const og = asMedia(post.cover);
+  const og = asMedia(post.ogImage) ?? asMedia(post.cover);
+  const title = post.metaTitle || post.title;
+  const description = post.metaDescription || post.excerpt;
   return {
-    title: post.metaTitle || post.title,
-    description: post.excerpt,
-    openGraph: { type: 'article', title: post.metaTitle || post.title, description: post.excerpt, publishedTime: post.publishedAt ?? undefined, images: og?.url ? [{ url: og.url, width: og.width ?? undefined, height: og.height ?? undefined, alt: og.alt }] : undefined },
+    title: pageTitle(title, (await getSite()).name),
+    description,
+    alternates: { canonical: canonical(`/insights/${post.slug}`) },
+    openGraph: { type: 'article', title, description, publishedTime: post.publishedAt ?? undefined, images: [og?.url ? { url: og.url, width: og.width ?? undefined, height: og.height ?? undefined, alt: og.alt } : { url: ogCard(title, 'Insights'), width: 1200, height: 630, alt: title }] },
   };
 }
 
@@ -29,10 +34,12 @@ export default async function InsightPage({ params }: Props) {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
-  const more = (await getPosts(4)).filter((p) => p.slug !== slug).slice(0, 2);
+  const [recent, site] = await Promise.all([getPosts(4), getSite()]);
+  const more = recent.filter((p) => p.slug !== slug).slice(0, 2);
 
   return (
     <article className="post dark">
+      <JsonLd data={[articleLd({ ...post, image: asMedia(post.cover)?.url }, site.name), breadcrumbLd([{ name: 'Insights', path: '/insights' }, { name: post.title, path: `/insights/${post.slug}` }])]} />
       <div className="wrap post-wrap">
         <Link className="post-back" href="/insights"><Icon name="left" size={14} /> All insights</Link>
         <header className="post-head">

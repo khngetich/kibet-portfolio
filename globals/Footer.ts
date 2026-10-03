@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload';
 import { anyone, authenticated } from '../access';
 import { revalidateGlobal } from '../hooks/revalidate';
 import { linkFields } from './Header';
+import { linkTarget } from '../lib/validate';
 
 /** The footer on every page: a call-to-action band, the name and socials, the copyright and policy links. Saving publishes immediately; earlier versions stay in History. */
 export const Footer: GlobalConfig = {
@@ -15,8 +16,8 @@ export const Footer: GlobalConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'title', type: 'text', admin: { width: '40%', description: 'Defaults to the studio name.' } },
-        { name: 'tagline', type: 'text', admin: { width: '60%', description: 'Defaults to your role and location.' } },
+        { name: 'title', label: 'Name (override)', type: 'text', admin: { width: '40%', description: 'Leave empty to use Site settings → Name.' } },
+        { name: 'tagline', label: 'Tagline (override)', type: 'text', admin: { width: '60%', description: 'Leave empty to use Site settings → Tagline.' } },
       ],
     },
     { type: 'row', fields: [
@@ -34,7 +35,7 @@ export const Footer: GlobalConfig = {
         { name: 'text', type: 'textarea', defaultValue: 'Let’s partner to create high-impact graphics and social media campaigns that drive growth.' },
         { type: 'row', fields: [
           { name: 'buttonLabel', type: 'text', defaultValue: 'Book a Strategy Call', admin: { width: '40%' } },
-          { name: 'buttonUrl', type: 'text', defaultValue: '/#contact', admin: { width: '60%', description: 'A page, a section (/#contact), a booking link or mailto:' } },
+          { name: 'buttonUrl', type: 'text', defaultValue: '/#contact', validate: linkTarget, admin: { width: '60%', description: 'A page, a section (/#contact), a booking link or mailto:' } },
         ] },
       ],
     },

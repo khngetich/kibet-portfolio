@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useReducedMotionConfig, useScroll, useTransform, type MotionValue } from 'motion/react';
+import { m as motion, useReducedMotionConfig, useScroll, useTransform, type MotionValue } from 'motion/react';
 import { useRef } from 'react';
 import { Img } from '@/components/Img';
 
