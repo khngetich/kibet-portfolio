@@ -163,6 +163,8 @@ export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs
     <section ref={ref} className={`about-ed${seen ? ' is-seen' : ''}`} id={id} aria-labelledby={headingId}>
       <p className="about-ed-watermark" aria-hidden="true">{watermark}</p>
       <div className="wrap about-ed-grid">
+        {/* the label gets its own row, so the print's top edge lines up with the folder tabs */}
+        {chapter && <div className="about-ed-label">{chapter}</div>}
         <figure className="about-proof">
           <ProofPrint photo={photo} name={name} />
           <figcaption className="about-proof-caption">
@@ -171,7 +173,6 @@ export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs
           </figcaption>
         </figure>
         <div className="about-ed-right">
-          {chapter}
           <AboutFolder tabs={tabs} seen={seen} link={link} headingId={headingId} />
         </div>
       </div>
