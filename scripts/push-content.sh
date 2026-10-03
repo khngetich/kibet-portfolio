@@ -10,6 +10,8 @@
 #
 # The target should be empty (a new project). The local database is only read, never changed.
 set -euo pipefail
+# the dump holds every user and enquiry: temp files are private, and removed however the script ends
+umask 077
 
 SOURCE_URL="${SOURCE_URL:-postgres://$(whoami)@localhost:5432/portfolio}"
 if [[ -z "${TARGET_URL:-}" ]]; then
@@ -31,7 +33,8 @@ if [[ "$TARGET_URL" == *"[YOUR-PASSWORD]"* ]]; then
 fi
 cd "$(dirname "$0")/.."
 
-dump="$(mktemp -t cms-content).sql"
+dump="$(mktemp -t cms-content.XXXXXX)"
+trap 'rm -f "${dump:-}" "${load:-}"' EXIT
 
 echo "1/3  Dumping content from the local database…"
 pg_dump "$SOURCE_URL" --data-only --no-owner --no-privileges \
@@ -43,8 +46,7 @@ DATABASE_URL="$TARGET_URL" npx cross-env NODE_OPTIONS=--no-deprecation payload m
 
 counts="select 'pages ' || count(*) from pages union all select 'projects ' || count(*) from projects union all select 'media ' || count(*) from media union all select 'users ' || count(*) from users"
 existing=$(psql "$TARGET_URL" -Atc "select (select count(*) from pages) + (select count(*) from projects) + (select count(*) from media) + (select count(*) from users)")
-load="$(mktemp -t cms-load).sql"
-trap 'rm -f "$dump" "$load"' EXIT
+load="$(mktemp -t cms-load.XXXXXX)"
 if [[ "$existing" -gt 0 ]]; then
   echo "The target already has content:"
   psql "$TARGET_URL" -At -c "$counts" | sed 's/^/   /'

@@ -2,7 +2,7 @@
 // Reads S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY from the
 // environment (scripts/backup.sh sets them; nothing is stored).
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, resolve, sep } from 'node:path';
 import { GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 
 const { S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, BACKUP_MEDIA_DIR } = process.env;
@@ -17,7 +17,10 @@ do {
     if (!Key || Key.endsWith('/')) continue;
     try {
       const obj = await s3.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key }));
-      const file = join(BACKUP_MEDIA_DIR, Key);
+      // never write outside the backup folder, whatever the object is called ("../" in a key)
+      const root = resolve(BACKUP_MEDIA_DIR);
+      const file = resolve(root, Key);
+      if (!file.startsWith(root + sep)) { failed++; console.error(`   ✗ skipped unsafe name: ${JSON.stringify(Key)}`); continue; }
       await mkdir(dirname(file), { recursive: true });
       await writeFile(file, Buffer.from(await obj.Body.transformToByteArray()));
       count++;

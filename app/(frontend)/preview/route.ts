@@ -14,9 +14,11 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const path = url.searchParams.get('path') || '/';
   // Only same-site paths (open-redirect guard): resolve against this origin and refuse anything
-  // that lands elsewhere, which also catches "//evil.com" and "/\\evil.com".
+  // that lands elsewhere ("//evil.com", "/\\evil.com"). The check is on the RESOLVED path, because
+  // dot segments normalise away: "/.//evil.com" resolves to the path "//evil.com", which a browser
+  // reads as another site, so leading slashes collapse to one.
   const resolved = /^\/(?![/\\])/.test(path) ? new URL(path, url.origin) : null;
-  const target = resolved && resolved.origin === url.origin ? `${resolved.pathname}${resolved.search}${resolved.hash}` : '/';
+  const target = resolved && resolved.origin === url.origin ? `/${resolved.pathname.replace(/^[/\\]+/, '')}${resolved.search}${resolved.hash}` : '/';
 
   const payload = await getPayload({ config });
   const { user } = await payload.auth({ headers: await headers() });
