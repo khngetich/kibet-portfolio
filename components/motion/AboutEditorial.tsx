@@ -18,15 +18,19 @@ function CountUp({ value, run }: { value: string; run: boolean }) {
   const decimals = m && m[2].includes('.') ? m[2].split('.')[1].length : 0;
   const pad = m && !decimals && m[2].startsWith('0') ? m[2].length : 0; // "04" keeps its leading zero
   const fmt = (v: number) => (m ? `${m[1]}${v.toFixed(decimals).padStart(pad, '0')}${m[3]}` : value);
+  // The markup always holds the real value (server render, first client render, no-JS, search
+  // engines and link previews all see it). Only after hydration, and only with motion allowed,
+  // does the effect swap the text to 0 while the figure waits out of view, then count up on entry.
   useEffect(() => {
-    if (!m || !ref.current || !run || reduce) return;
     const el = ref.current;
-    const c = animate(0, target, { duration: 1.6, ease: [0.2, 0, 0, 1], onUpdate: (v) => { el.textContent = fmt(v); } });
+    if (!m || !el) return;
+    if (reduce) { el.textContent = value; return; }
+    if (!run) { el.textContent = fmt(0); return; }
+    const c = animate(0, target, { duration: 1.6, ease: [0.2, 0, 0, 1], onUpdate: (v) => { el.textContent = fmt(v); }, onComplete: () => { el.textContent = value; } });
     return () => c.stop();
-  }, [run, target]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [run, target, reduce]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!m) return <>{value}</>;
-  // renders the final value for no-JS / reduced motion; the effect counts up from 0 on entry
-  return <span ref={ref}>{run || reduce ? value : fmt(0)}</span>;
+  return <span ref={ref}>{value}</span>;
 }
 
 /**
