@@ -42,7 +42,8 @@ export function AboutPortrait({ id, headingId, chapter, heading, intro, photo, m
         <div className="about-ed-right">
           {chapter}
           <h2 className="h-xl about-pt-heading" id={headingId}>{heading}</h2>
-          {intro && <p className="lede">{intro}</p>}
+          {/* the intro is written to follow "Hi, I'm Name," (the banner layout); here it stands alone */}
+          {intro && <p className="lede">{intro.charAt(0).toUpperCase() + intro.slice(1)}</p>}
           {link && <Link className="link-under" href={link.url}>{link.label} <Icon name="arrow" size={14} /></Link>}
           {!!tabs.length && <AboutFolder tabs={tabs} seen={seen} />}
         </div>

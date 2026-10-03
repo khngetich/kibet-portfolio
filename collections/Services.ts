@@ -41,8 +41,8 @@ export const Services: CollectionConfig = {
             { name: 'imageCaption', label: 'Cover caption', type: 'text', admin: { description: 'Under the cover, e.g. “Triad Brands / Brand identity”.' } },
             { name: 'deliverables', label: 'What you get', type: 'text', hasMany: true, admin: { description: 'The bullet points on the card and the page. Type one and press Enter.' } },
             { type: 'row', fields: [
-              { name: 'featured', label: 'Featured service', type: 'checkbox', admin: { width: '50%', description: 'Shown inverted (dark), with a “Featured” label.' } },
-              { name: 'starter', label: 'A good first project', type: 'checkbox', admin: { width: '50%', description: 'Marks a small, low-risk way to start working together.' } },
+              { name: 'featured', label: 'Featured service', type: 'checkbox', defaultValue: false, admin: { width: '50%', description: 'Shown inverted (dark), with a “Featured” label.' } },
+              { name: 'starter', label: 'A good first project', type: 'checkbox', defaultValue: false, admin: { width: '50%', description: 'Marks a small, low-risk way to start working together.' } },
             ] },
           ],
         },

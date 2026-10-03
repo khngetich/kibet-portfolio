@@ -15,6 +15,7 @@ import * as migration_20261003_103258_editorial_redesign from './20261003_103258
 import * as migration_20261003_111048_services_policies_simple_footer from './20261003_111048_services_policies_simple_footer';
 import * as migration_20261003_111200_seed_services_policies from './20261003_111200_seed_services_policies';
 import * as migration_20261003_151213_orange_accent from './20261003_151213_orange_accent';
+import * as migration_20261003_152920_service_flag_defaults from './20261003_152920_service_flag_defaults';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20261003_151213_orange_accent.up,
     down: migration_20261003_151213_orange_accent.down,
-    name: '20261003_151213_orange_accent'
+    name: '20261003_151213_orange_accent',
+  },
+  {
+    up: migration_20261003_152920_service_flag_defaults.up,
+    down: migration_20261003_152920_service_flag_defaults.down,
+    name: '20261003_152920_service_flag_defaults'
   },
 ];
