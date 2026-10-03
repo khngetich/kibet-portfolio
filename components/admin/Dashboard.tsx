@@ -217,12 +217,12 @@ async function TasksCard({ payload, admin }: { payload: Payload; admin: string }
       label: livePosts ? 'Publish an insight' : draftPost ? `Finish and publish ${draftPost.title}` : 'Write your first insight',
       detail: livePosts ? `${plural(livePosts, 'insight')} live at /insights` : draftPost ? 'A draft is waiting; /insights stays empty until one is live' : 'A short design note shows how you think. It appears at /insights.',
     },
-    // a service without a cover borrows a project cover on its card and has no picture on its page
+    // a service without a cover shows only a number on its card and has no picture on its page
     ...(services.length ? [{
       key: 'service-covers', priority: 'medium' as const, done: noCover.length === 0,
       ...(noCover[0] ? { href: `${admin}/collections/services/${noCover[0].id}`, doc: { collection: 'services', id: noCover[0].id } } : { href: `${admin}/collections/services` }),
       label: noCover.length ? `Add covers to ${plural(noCover.length, 'service')}` : 'Service covers',
-      detail: noCover.length ? `${noCover.map((x) => x.title).join(', ')} · their cards borrow a project cover` : 'Every service has its own cover',
+      detail: noCover.length ? `${noCover.map((x) => x.title).join(', ')} · their cards show only a number` : 'Every service has its own cover',
     }] : []),
     {
       key: 'titles', priority: 'medium', done: noTitle.length === 0, ...firstOf(noTitle),

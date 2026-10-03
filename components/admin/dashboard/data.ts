@@ -104,7 +104,7 @@ export const getPostsStatus = cache(async (payload: Payload) => {
   }));
 });
 
-/** Services in site order, with whether each has its own cover (the card borrows a project cover otherwise). */
+/** Services in site order, with whether each has its own cover (the card shows only its number otherwise). */
 export const getServicesCovers = cache(async (payload: Payload) => {
   const res = await payload.find({ collection: 'services', draft: true, depth: 0, limit: 100, pagination: false, sort: '_order', select: { title: true, image: true } });
   return res.docs.map((d) => ({ id: d.id, title: d.title || 'Untitled service', cover: !!d.image }));

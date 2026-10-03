@@ -37,7 +37,7 @@ export const Services: CollectionConfig = {
               { name: 'currency', type: 'select', defaultValue: 'KES', options: ['KES', 'USD'], admin: { width: '33%' } },
               { name: 'unit', type: 'text', admin: { width: '33%', placeholder: '/month' } },
             ] },
-            { name: 'image', label: 'Cover image', type: 'upload', relationTo: 'media', admin: { description: 'The picture on the service card, under the title on its page, and when the page is shared. Use real work for this service. If empty, the card borrows a project cover and the page shows no picture.' } },
+            { name: 'image', label: 'Cover image', type: 'upload', relationTo: 'media', admin: { description: 'The picture on the service card, under the title on its page, and when the page is shared. Use real work for this service. If empty, the card shows its number instead and the page shows no picture.' } },
             { name: 'imageCaption', label: 'Cover caption', type: 'text', admin: { description: 'Under the cover, e.g. “Triad Brands / Brand identity”.' } },
             { name: 'deliverables', label: 'What you get', type: 'text', hasMany: true, admin: { description: 'The bullet points on the card and the page. Type one and press Enter.' } },
             { type: 'row', fields: [

@@ -438,7 +438,7 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
             <p className="deck-hint">{text(s.labels?.deckHint, 'Pick a card to see what’s included.')}</p>
             <Link className="btn btn-outline" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
           </Reveal>
-          <ServiceDeck services={items.map((x, i) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, image: asMedia(x.image) ?? ctx.covers[i % Math.max(ctx.covers.length, 1)] ?? null }))} ctaLabel={text(s.ctaLabel, 'Inquire for this service')} pageLabel={text(s.pageLinkLabel, 'See the service')} />
+          <ServiceDeck services={items.map((x) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, image: asMedia(x.image) ?? null }))} ctaLabel={text(s.ctaLabel, 'Inquire for this service')} pageLabel={text(s.pageLinkLabel, 'See the service')} />
         </div>
       </section>
     );

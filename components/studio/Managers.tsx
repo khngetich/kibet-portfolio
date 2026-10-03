@@ -227,7 +227,7 @@ type ServiceRef = { id: number; title: string; slug?: string | null; description
 
 /**
  * Services: one card per service in site order, showing its cover. A service without one is
- * flagged, because the site then borrows a project cover for its card. Each card opens a
+ * flagged, because its card then shows only a number. Each card opens a
  * pop-up editor with every service field, the cover first.
  */
 export function ServicesManager({ fields, onChanged }: { fields: SField[]; onChanged: () => void }) {
@@ -277,7 +277,7 @@ export function ServicesManager({ fields, onChanged }: { fields: SField[]; onCha
         <span className="st-spacer" />
         <button type="button" className="st-btn st-btn-primary" onClick={() => open(null)}><Icon name="plus" size={14} /> New service</button>
       </div>
-      {missing > 0 && <p className="st-note">Services without a cover borrow a project cover on their card, and their page shows no picture. Open one and add a cover from your own work for it.</p>}
+      {missing > 0 && <p className="st-note">Services without a cover show only a number on their card, and their page shows no picture. Open one and add a cover from your own work for it.</p>}
       {services && !services.length && <p className="st-empty-note">No services yet. Add what you offer: each one gets a card in the Services section and its own page.</p>}
       {!!services?.length && (
         <ul className="st-cards">
