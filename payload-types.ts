@@ -1460,7 +1460,7 @@ export interface Service {
   currency?: ('KES' | 'USD') | null;
   unit?: string | null;
   /**
-   * The picture on the service card, under the title on its page, and when the page is shared. Use real work for this service. If empty, the card borrows a project cover and the page shows no picture.
+   * The picture on the service card, under the title on its page, and when the page is shared. Use real work for this service. If empty, the card shows its number instead and the page shows no picture.
    */
   image?: (number | null) | Media;
   /**

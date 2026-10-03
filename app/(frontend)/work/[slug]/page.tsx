@@ -14,6 +14,7 @@ import { SampleGrid, ViewerButton, WatchButton } from '@/components/motion/Sampl
 import { embedURL, toItems } from '@/lib/media';
 import { getSite } from '@/lib/cms';
 import { breadcrumbLd, canonical, creativeWorkLd, ogCard, pageTitle } from '@/lib/seo';
+import { withProtocol } from '@/lib/validate';
 import { JsonLd } from '@/components/JsonLd';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -55,7 +56,8 @@ export default async function CaseStudy({ params }: Props) {
   const story = [['The brief', project.brief], ['The approach', project.approach], ['The outcome', project.outcome]].filter(([, v]) => v) as [string, string][];
   const hasDetails = details.length > 0 || !!project.timeline;
   // the live link: videos play in the viewer when they're YouTube/Vimeo, everything else opens in a new tab
-  const live = project.liveUrl ? { url: project.liveUrl, type: project.liveType ?? 'website', embed: project.liveType === 'video' ? embedURL(project.liveUrl) : null } : null;
+  // links saved before the field added https:// would otherwise resolve as a path on this site
+  const live = project.liveUrl ? { url: withProtocol(project.liveUrl), type: project.liveType ?? 'website', embed: project.liveType === 'video' ? embedURL(project.liveUrl) : null } : null;
   const liveLabel = live?.type === 'video' ? 'Watch the video' : live?.type === 'post' ? 'View the live post' : 'Visit the live website';
   const number = String((i < 0 ? 0 : i) + 1).padStart(2, '0');
 

@@ -2,7 +2,7 @@ import { slugField, type CollectionConfig } from 'payload';
 import { authenticated, publishedOrAuthenticated } from '../access';
 import { caseStudyBlocks } from '../blocks';
 import { revalidateCollection, revalidateOnDelete } from '../hooks/revalidate';
-import { hexColour, webURL, yearText } from '../lib/validate';
+import { hexColour, tidyURL, webURL, yearText } from '../lib/validate';
 
 export const DISCIPLINES = [
   { label: 'Social media', value: 'social' },
@@ -91,7 +91,7 @@ export const Projects: CollectionConfig = {
     { name: 'year', type: 'text', required: true, validate: yearText, admin: { position: 'sidebar', placeholder: '2025' } },
     { name: 'disciplines', type: 'select', hasMany: true, required: true, options: DISCIPLINES, admin: { position: 'sidebar' } },
     { name: 'role', type: 'text', hasMany: true, admin: { position: 'sidebar', description: 'e.g. Art direction, Layout system' } },
-    { name: 'liveUrl', label: 'Live link', type: 'text', validate: webURL, admin: { position: 'sidebar', description: 'The live website, a YouTube/Vimeo video, or a public post. Shows a preview button on the case study.' } },
+    { name: 'liveUrl', label: 'Live link', type: 'text', validate: webURL, hooks: { beforeValidate: [tidyURL] }, admin: { position: 'sidebar', description: 'The live website, a YouTube/Vimeo video, or a public post. Shows a preview button on the case study.' } },
     { name: 'liveType', label: 'Live link is a…', type: 'select', defaultValue: 'website', options: [
       { label: 'Website', value: 'website' }, { label: 'Video', value: 'video' }, { label: 'Social post', value: 'post' },
     ], admin: { position: 'sidebar', condition: (d) => !!d?.liveUrl } },

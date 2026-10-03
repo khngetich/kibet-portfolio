@@ -1,10 +1,10 @@
 /**
  * Content fixes from the October 2026 site review and design critique, applied through Payload
  * (so every change has a version in History). Shows what it would change; nothing is written
- * unless you pass --apply:
+ * unless APPLY=1 is set (`payload run` doesn't pass extra arguments through):
  *
- *   npm run fix-content              (preview)
- *   npm run fix-content -- --apply   (write)
+ *   npm run fix-content           (preview)
+ *   APPLY=1 npm run fix-content   (write)
  *
  * The homepage edits are saved as a DRAFT on top of the latest draft (the About wording fix is
  * already waiting there), so you review and publish them together. Everything else is a small,
@@ -14,7 +14,7 @@
 import { getPayload } from 'payload';
 import config from '@payload-config';
 
-const apply = process.argv.includes('--apply');
+const apply = process.env.APPLY === '1';
 const payload = await getPayload({ config });
 const log = (msg: string) => console.log(`${apply ? '✓' : '·'} ${msg}`);
 
@@ -82,5 +82,5 @@ if (homes[0]) {
   if (changed && apply) await payload.update({ collection: 'pages', id: home.id, data: { sections }, draft: true, depth: 0 });
 }
 
-console.log(apply ? '\nDone. Review the homepage draft in the CMS and publish it.' : '\nPreview only. Run with --apply to make these changes.');
+console.log(apply ? '\nDone. Review the homepage draft in the CMS and publish it.' : '\nPreview only. Run with APPLY=1 to make these changes.');
 process.exit(0);

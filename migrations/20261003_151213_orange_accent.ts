@@ -22,7 +22,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "_theme_v" ALTER COLUMN "version_button_dark_background" SET DEFAULT '#0A0A0A';`)
 
   // Styles: the original orange-red accent and black, on the dashboard's neutrals. Light and
-  // dark mode both stay; the previous values are in Styles → History.
+  // dark mode both stay; the previous values are in Styles → History. A new database already
+  // gets these as the column defaults above, so there's nothing to update there.
+  const { rows } = await db.execute(sql`select count(*)::int as n from theme`)
+  if (!(rows[0] as { n: number }).n) return
   await payload.updateGlobal({
     slug: 'theme',
     req,

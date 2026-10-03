@@ -5,6 +5,12 @@
 
 export const hexColour = (v: unknown) => !v || (typeof v === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v)) || 'Use a hex colour like #E8352B';
 
+/** "www.example.com" → "https://www.example.com"; anything with a scheme is left as it is. */
+export const withProtocol = (v: string) => (/^[a-z][a-z\d+.-]*:/i.test(v) || v.startsWith('/') ? v : `https://${v.replace(/^\/+/, '')}`);
+
+/** Field hook: tidies a web address before it's checked and saved (adds https://, trims spaces). */
+export const tidyURL = ({ value }: { value?: unknown }) => (typeof value === 'string' && value.trim() ? withProtocol(value.trim()) : value);
+
 /** A full web address. */
 export const webURL = (v: unknown) => !v || (typeof v === 'string' && /^https?:\/\/[^\s/]+\.[^\s]+$/.test(v)) || 'Use a full address starting with https://';
 

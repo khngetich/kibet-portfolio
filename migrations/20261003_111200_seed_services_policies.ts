@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 /**
  * Content for the October 2026 update (the schema came in 20261003_111048):
@@ -120,7 +120,14 @@ function policies(name: string, email?: string | null) {
   ]
 }
 
-export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+  // A brand-new database has no content to convert, and the Payload API here uses today's schema,
+  // which later migrations haven't created yet; starter content comes from `npm run seed-pages`.
+  const { rows } = await db.execute(sql`select count(*)::int as n from pages`)
+  if (!(rows[0] as { n: number }).n) {
+    payload.logger.info('Empty database: skipping the content step (run npm run seed-pages for starter content)')
+    return
+  }
   const context = { disableRevalidate: true }
   const site = await payload.findGlobal({ slug: 'site', depth: 0, req })
 

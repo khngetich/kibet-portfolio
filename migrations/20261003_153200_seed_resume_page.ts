@@ -1,4 +1,4 @@
-import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 /**
  * The /resume page (the schema came in 20261003_153100): one Résumé section filled from
@@ -132,7 +132,15 @@ const SECTION = {
   showLinkedIn: true,
 }
 
-export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+  // A brand-new database has no pages yet, and the Payload API here uses today's schema, which
+  // later migrations haven't created yet. Starter content comes from `npm run seed-pages`; the
+  // résumé can then be added as a page with a Résumé section.
+  const { rows } = await db.execute(sql`select count(*)::int as n from pages`)
+  if (!(rows[0] as { n: number }).n) {
+    payload.logger.info('Empty database: skipping the /resume page (run npm run seed-pages for starter content)')
+    return
+  }
   const { totalDocs } = await payload.count({ collection: 'pages', where: { slug: { equals: 'resume' } }, req })
   if (totalDocs) {
     payload.logger.info('Pages: /resume exists already, left as it is')
