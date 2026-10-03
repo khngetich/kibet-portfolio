@@ -817,7 +817,13 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 @media (prefers-reduced-motion: reduce) { .living .marker::after { animation: none; } }
 
 /* hero stickers: role and location from Site settings, as tilted badges */
-.hero-stickers { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 0; padding: 0; list-style: none; }
+.hero-stickers { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; max-width: 100%; margin: 20px 0 0; padding: 0; list-style: none; }
+/* phones: the stickers sit centred under the headline, a touch smaller and less tilted so they never crowd the edges */
+@media (max-width: 560px) {
+  .hero-stickers { gap: 8px; margin-top: 16px; }
+  .hero-stickers .sticker { padding: 6px 12px; font-size: .76rem; rotate: -1.5deg; }
+  .hero-stickers .sticker + .sticker { rotate: 1.5deg; }
+}
 .sticker { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 9999px; background: #FFFFFF; color: #0A0A0A; font-size: .82rem; font-weight: 600; line-height: 1.2; box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .06); rotate: -2.5deg; transition-property: rotate, translate; transition-duration: .3s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
 .sticker + .sticker { rotate: 2deg; }
 .sticker:hover { rotate: 0deg; translate: 0 -2px; }
@@ -997,7 +1003,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 
 /* more work: a light row of text links */
 .ed-more { display: flex; align-items: baseline; justify-content: space-between; gap: 16px 32px; flex-wrap: wrap; padding-top: clamp(24px, 3vw, 32px); border-top: 1px solid var(--line); }
-.ed-more ul { display: flex; flex-wrap: wrap; gap: 12px 28px; }
+.ed-more ul { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-left: auto; }
 
 @media (max-width: 760px) {
   .ed-grid, .grid-work { grid-template-columns: 1fr; }
@@ -1059,7 +1065,9 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 @media (prefers-reduced-motion: reduce) { .about-proof-layer, .about-mood, .about-mood-switch, .about-mood-switch i { transition: none; } }
 
 /* ── Services as products: real work on top, "What you get", extras (services → "cards") ── */
-.svc { padding-block: var(--section-y); }
+.svc { padding-block: var(--section-y) calc(var(--section-y) * .45); }
+/* the 3D deck and the contact section that follows share a background: one gap, not two stacked */
+.sec:has(> .services-deck) + .sec > .contact-section, .sec:has(> .svc) + .sec > .contact-section { padding-top: calc(var(--section-y) * .7); }
 .svc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 24px); }
 .svc-grid > li, .svc-grid > li > div { display: flex; height: 100%; }
 .svc-card { display: flex; flex-direction: column; width: 100%; padding: 10px; border-radius: var(--r-lg); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .3s var(--ease), transform .3s var(--ease); }
@@ -1170,3 +1178,11 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
   .svp-split, .svp-steps, .svp-faq { grid-template-columns: 1fr; }
   .svp-lead-img { aspect-ratio: 4 / 3; }
 }
+
+/* ── /services: every service as a product card ── */
+.svx { padding-block: calc(var(--header-h) + clamp(28px, 5vw, 64px)) var(--section-y); }
+.svx-head { max-width: 760px; margin-bottom: clamp(28px, 4vw, 48px); }
+.svx-head .h-xl { margin-top: 10px; }
+.svx-head .lede { margin-top: 16px; }
+.svx-foot { margin-top: clamp(28px, 4vw, 48px); }
+.svx-foot .lede { max-width: 48ch; }

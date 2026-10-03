@@ -52,9 +52,9 @@ export default async function ServicePage({ params }: Props) {
 
   return (
     <article className="svp">
-      <JsonLd data={[serviceLd(service, site.name), breadcrumbLd([{ name: 'Services', path: '/#services' }, { name: service.title, path: `/services/${service.slug}` }])]} />
+      <JsonLd data={[serviceLd(service, site.name), breadcrumbLd([{ name: 'Services', path: '/services' }, { name: service.title, path: `/services/${service.slug}` }])]} />
       <header className="wrap svp-head">
-        <Link className="case-back" href="/#services"><Icon name="left" size={14} /> All services</Link>
+        <Link className="case-back" href="/services"><Icon name="left" size={14} /> All services</Link>
         <div className="case-title-row">
           <div>
             <p className="eyebrow">Service {number}{service.starter ? ' · A good first project' : ''}</p>

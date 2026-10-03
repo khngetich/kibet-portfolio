@@ -9,7 +9,8 @@
  * The homepage edits are saved as a DRAFT on top of the latest draft (the About wording fix is
  * already waiting there), so you review and publish them together. Everything else is a small,
  * self-contained setting and is saved directly. Each change is skipped when the content no
- * longer matches what this script expects, so it never overwrites later edits.
+ * longer matches what this script expects, so it never overwrites later edits, and running it
+ * again is safe. Step 6 (the header menu) needs the deployed code to have /services.
  */
 import { getPayload } from 'payload';
 import config from '@payload-config';
@@ -80,6 +81,25 @@ if (homes[0]) {
     return next;
   });
   if (changed && apply) await payload.update({ collection: 'pages', id: home.id, data: { sections }, draft: true, depth: 0 });
+}
+
+// 6. Header menu: the inner pages instead of homepage anchors. Run this AFTER deploying the code
+//    that has /services (the live site 404s there until then).
+const OLD_MENU = '/#work,/#process,/#about,/#services';
+const head = await payload.findGlobal({ slug: 'header', depth: 0 });
+if ((head.menu ?? []).map((l) => l.url).join(',') === OLD_MENU) {
+  const resume = (await payload.count({ collection: 'pages', where: { and: [{ slug: { equals: 'resume' } }, { _status: { equals: 'published' } }] } })).totalDocs > 0;
+  const posts = (await payload.count({ collection: 'posts', where: { _status: { equals: 'published' } } })).totalDocs > 0;
+  const menu = [
+    { label: 'Work', url: '/work' },
+    { label: 'Services', url: '/services' },
+    { label: 'About', url: '/about' },
+    ...(resume ? [{ label: 'Résumé', url: '/resume' }] : []),
+    ...(posts ? [{ label: 'Insights', url: '/insights' }] : []),
+    { label: 'Contact', url: '/#contact' },
+  ];
+  log(`Header menu: ${OLD_MENU} → ${menu.map((l) => l.url).join(',')}`);
+  if (apply) await payload.updateGlobal({ slug: 'header', data: { menu } });
 }
 
 console.log(apply ? '\nDone. Review the homepage draft in the CMS and publish it.' : '\nPreview only. Run with APPLY=1 to make these changes.');

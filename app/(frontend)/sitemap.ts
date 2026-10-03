@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...pages.map((p) => ({ url: `${base}${pagePath(p.slug)}`, lastModified: at(p.updatedAt), priority: p.slug === 'home' ? 1 : 0.8 })),
     ...projects.map((p) => ({ url: `${base}/work/${p.slug}`, lastModified: at(p.updatedAt), priority: 0.7 })),
+    ...(services.length ? [{ url: `${base}/services`, lastModified: newest(services), priority: 0.8 }] : []),
     ...services.map((p) => ({ url: `${base}/services/${p.slug}`, lastModified: at(p.updatedAt), priority: 0.7 })),
     ...(posts.length ? [{ url: `${base}/insights`, lastModified: newest(posts), priority: 0.6 }] : []),
     ...posts.map((p) => ({ url: `${base}/insights/${p.slug}`, lastModified: at(p.updatedAt), priority: 0.5 })),

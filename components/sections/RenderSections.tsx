@@ -6,7 +6,7 @@ import { embedURL } from '@/lib/media';
 import { getPosts, getTools } from '@/lib/cms';
 import type { Header, Media, Page, Project, Site } from '@/payload-types';
 import { asMedia, getHeader, getProjects, getServices, getSite, type ProjectCard as Card, type ServiceCard } from '@/lib/cms';
-import { digits, price } from '@/lib/format';
+import { digits } from '@/lib/format';
 import { COPY, DEFAULT_PROCESS, DEFAULT_ROLES, copy, orDefault, text } from '@/lib/home-copy';
 import { Img } from '@/components/Img';
 import { Icon, type IconName } from '@/components/Icon';
@@ -29,9 +29,8 @@ import { AboutBanner } from '@/components/motion/AboutBanner';
 import { AboutEditorial } from '@/components/motion/AboutEditorial';
 import { AboutPortrait } from '@/components/motion/AboutPortrait';
 import { GrowMedia } from '@/components/motion/GrowMedia';
-import { ServiceLink } from '@/components/motion/ServiceLink';
 import { SmartLink } from '@/components/SmartLink';
-import { SOCIAL_LABEL, socialIcon } from '@/lib/socials';
+import { ServiceCardItem } from '@/components/ServiceCard';
 import { ResumeSection } from '@/components/sections/Resume';
 
 /**
@@ -456,38 +455,11 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
           </div>
         </Reveal>
         <ul className="svc-grid">
-          {items.map((item, i) => {
-            // no cover of its own: a numbered tile, not another project's logo (which reads as a project)
-            const image = asMedia(item.image);
-            return (
-              <li key={item.id ?? i}>
-                <Reveal className={`svc-card${item.featured ? ' band-dark is-featured' : ''}`} delay={(i % 3) * 0.08}>
-                  <figure className="svc-media">
-                    {image
-                      ? <span className="svc-img"><Img media={image} sizes="(max-width: 760px) 90vw, 400px" /></span>
-                      : <span className="svc-img is-blank" aria-hidden="true"><b>{String(i + 1).padStart(2, '0')}</b></span>}
-                    {item.featured && <span className="svc-flag">{text(s.labels?.featured, 'Featured service')}</span>}
-                    {item.imageCaption && <figcaption>{item.imageCaption}</figcaption>}
-                  </figure>
-                  <div className="svc-body">
-                    {item.starter && <p className="svc-starter"><Icon name="spark" size={12} /> A good first project</p>}
-                    <h3 className="svc-title">{item.title}</h3>
-                    {item.description && <p className="svc-desc">{item.description}</p>}
-                    {item.priceFrom != null && <p className="svc-price"><small>From</small> {price(item.priceFrom, item.currency)}<small>{item.unit}</small></p>}
-                    {!!item.deliverables?.length && (
-                      <div className="svc-get">
-                        <p className="ed-kicker">What you get</p>
-                        <ul>{item.deliverables.map((d) => <li key={d}>{d}</li>)}</ul>
-                      </div>
-                    )}
-                    {item.slug
-                      ? <Link className="link-under svc-cta" href={`/services/${item.slug}`}>{text(s.pageLinkLabel, 'See the service')} <Icon name="arrow" size={14} /></Link>
-                      : <ServiceLink className="link-under svc-cta" service={item.title}>{text(s.ctaLabel, 'Inquire for this service')} <Icon name="arrow" size={14} /></ServiceLink>}
-                  </div>
-                </Reveal>
-              </li>
-            );
-          })}
+          {items.map((item, i) => (
+            <li key={item.id ?? i}>
+              <ServiceCardItem item={item} index={i} labels={{ featured: text(s.labels?.featured, ''), pageLink: text(s.pageLinkLabel, ''), inquire: text(s.ctaLabel, '') }} />
+            </li>
+          ))}
         </ul>
         <div className="svc-foot">
           {!!extras.length && (
@@ -551,7 +523,6 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
   const { site } = ctx;
   const heading = copy(s.heading, COPY.contactHeading);
   const roles = s.roles ?? [];
-  const socials = s.showSocials !== false ? (site.socials ?? []).filter((x) => x.url) : [];
   return (
     <section className="contact-section contact-full dark" id={id} {...labelled(heading, hid, 'Contact')}>
       <div className="contact-glow" aria-hidden="true" />
@@ -575,13 +546,7 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
                 <Icon name="calendar" size={18} /> {text(s.bookLabel, 'Book a 15-minute call')}
               </a>
             )}
-            <ul className="contact-links">
-              <li><a href={`mailto:${site.email}`}><Icon name="mail" size={18} /><span><small>Email</small>{site.email}</span><Icon name="arrow" size={15} /></a></li>
-              {ctx.whatsapp && <li><a href={ctx.whatsapp} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={18} /><span><small>WhatsApp</small>{site.phone}</span><Icon name="arrow" size={15} /></a></li>}
-              {socials.map((x) => (
-                <li key={x.id ?? x.url}><a href={x.url} target="_blank" rel="noopener noreferrer"><Icon name={socialIcon(x.platform)} size={18} /><span><small>{SOCIAL_LABEL[x.platform] ?? x.platform}</small>{handle(x.url)}</span><Icon name="arrow" size={15} /></a></li>
-              ))}
-            </ul>
+            {/* email, WhatsApp and socials live in the footer, on every page */}
           </Reveal>
           <Reveal delay={0.1}><ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} chatUrl={ctx.whatsapp} copy={s.form ?? {}} /></Reveal>
         </div>
@@ -590,7 +555,6 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
   );
 }
 /** "https://www.instagram.com/kapturedcreatives" → "@kapturedcreatives" */
-const handle = (url: string) => { try { const seg = new URL(url).pathname.split('/').filter(Boolean).pop(); return seg ? `@${seg.replace(/^@/, '')}` : new URL(url).hostname; } catch { return url; } };
 
 /**
  * The numbered label that opens each chapter of a page (“02 — The process”), with a thin

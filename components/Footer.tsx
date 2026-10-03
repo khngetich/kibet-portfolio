@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Fragment } from 'react';
 import type { Footer as FooterData, Site } from '@/payload-types';
 import { Icon } from './Icon';
+import { digits } from '@/lib/format';
 import { SOCIAL_LABEL, socialIcon } from '@/lib/socials';
 import { Accent } from './Accent';
 import { SmartLink } from './SmartLink';
@@ -10,8 +11,9 @@ import { FooterWatch } from './FooterWatch';
 
 
 /**
- * The footer on every page, kept short: a dark call-to-action band, then one row with the name,
- * tagline and social icons, and a last line with the copyright and the policy links.
+ * The footer on every page, kept short: a dark call-to-action band, then one row with the name and
+ * tagline on one side and the ways to reach you (email, WhatsApp, social icons) on the other, and a
+ * last line with the copyright and the policy links.
  * Everything comes from Website → Footer and Site settings (Socials).
  */
 export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
@@ -21,6 +23,7 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
   // {year} becomes the live year (components/Year.tsx); {name} the first name
   const copyright = (footer.copyright || '© {year} {name}. All rights reserved.').replace('{name}', first).split('{year}');
   const socials = footer.showSocials !== false ? (site.socials ?? []).filter((s) => s.url) : [];
+  const wa = site.phone && site.whatsapp ? `https://wa.me/${digits(site.phone)}` : null;
   const statement = footer.tagline || site.tagline || `${site.role}${site.location ? ` · ${site.location}` : ''}`;
 
   return (
@@ -43,6 +46,12 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
             {statement && <p className="fx-statement">{statement}</p>}
             {footer.showAvailability !== false && site.availability && <p className="fx-status"><span className="dot" aria-hidden="true" />{site.availability}</p>}
           </div>
+          <div className="fx-reach">
+            <ul className="fx-contact" aria-label="Contact">
+              {site.email && <li><a className="fx-link" href={`mailto:${site.email}`}><Icon name="mail" size={16} />{site.email}</a></li>}
+              {wa && <li><a className="fx-link" href={wa} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={16} />{site.phone}</a></li>}
+              {site.phone && !wa && <li><a className="fx-link" href={`tel:+${digits(site.phone)}`}><Icon name="phone" size={16} />{site.phone}</a></li>}
+            </ul>
           {!!socials.length && (
             <ul className="fx-socials" aria-label="Social profiles">
               {socials.map((s) => (
@@ -50,6 +59,7 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
               ))}
             </ul>
           )}
+          </div>
         </div>
         <div className="fx-bottom">
           <FooterWatch />

@@ -9,7 +9,8 @@ import { Icon } from './Icon';
 export function MoreWork({ projects, allHref = '/work', label = 'More work' }: { projects: ProjectCard[]; allHref?: string; label?: string }) {
   return (
     <div className="ed-more">
-      <p className="ed-kicker">{label}</p>
+      {/* with nothing more to list, it's just the way to the full archive */}
+      {projects.length > 0 && <p className="ed-kicker">{label}</p>}
       <ul>
         {projects.map((p) => <li key={p.id}><Link className="link-under" href={`/work/${p.slug}`}>{p.title} <Icon name="arrow" size={13} /></Link></li>)}
         <li><Link className="link-under" href={allHref}>All work <Icon name="arrow" size={13} /></Link></li>

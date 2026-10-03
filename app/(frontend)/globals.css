@@ -302,6 +302,11 @@ main { padding-top: var(--header-h); }
 .fx-statement { max-width: 40ch; margin-top: 8px; font-size: .95rem; line-height: 1.6; color: var(--ink-2); }
 .fx-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-size: .88rem; color: var(--ink-2); }
 .fx-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #16A34A; }
+.fx-reach { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.fx-contact { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 22px; }
+.fx-contact .fx-link { gap: 8px; min-height: 44px; font-size: .95rem; color: var(--ink); overflow-wrap: anywhere; }
+.fx-contact svg { flex: none; color: var(--accent-ink); }
+@media (max-width: 640px) { .fx-reach { align-items: flex-start; } .fx-contact { justify-content: flex-start; flex-direction: column; } }
 .fx-socials { display: flex; flex-wrap: wrap; gap: 8px; }
 .fx-socials a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); transition: transform .2s ease-out, background-color .2s ease-out, color .2s ease-out; }
 .fx-socials a:hover { transform: translateY(-2px); background: var(--inverse); color: var(--inverse-ink); }
@@ -346,6 +351,10 @@ main { padding-top: var(--header-h); }
 html.near-footer :is(.wa-float, .avail-badge) { opacity: 0; translate: 0 12px; visibility: hidden; pointer-events: none; }
 /* on a page with the contact section, the footer's call-to-action band would only repeat it */
 body:has(main #contact) .fx-cta { display: none; }
+/* …and without the band, the footer starts right after the contact section, marked by a hairline */
+body:has(main #contact) .fx { margin-top: 0; }
+body:has(main #contact) .fx-main { border-top: 1px solid var(--line); }
+body:has(main #contact) main .contact-section { padding-bottom: calc(var(--section-y) * .6); }
 .wa-float:focus-visible .wa-float-icon { outline: 2px solid #fff; outline-offset: 3px; }
 @keyframes wa-in { from { opacity: 0; transform: translateY(16px) scale(.9); } }
 /* the availability badge moves left to make room */

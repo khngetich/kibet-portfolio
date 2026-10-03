@@ -319,7 +319,7 @@ export const ContactSection = section({
   slug: 'contact',
   labels: { singular: 'Contact form', plural: 'Contact forms' },
   anchor: 'contact',
-  description: 'Full-width closing section: heading, who it’s for, direct email / WhatsApp / social links and the enquiry form (messages arrive under Enquiries).',
+  description: 'Full-width closing section: heading, who it’s for, availability, a booking button and the enquiry form (messages arrive under Enquiries). Email, WhatsApp and socials are in the footer.',
   fields: [
     eyebrow(COPY.contactEyebrow),
     heading(COPY.contactHeading),
@@ -327,7 +327,8 @@ export const ContactSection = section({
     { name: 'rolesLead', label: 'Who it’s for: lead', type: 'text', defaultValue: COPY.contactRolesLead },
     { name: 'roles', label: 'Who it’s for', type: 'text', hasMany: true, admin: { description: 'Shown as tags, e.g. “startup founder”. Type one and press Enter.' } },
     { name: 'showAvailability', label: 'Show availability (from Site settings)', type: 'checkbox', defaultValue: true },
-    { name: 'showSocials', label: 'Show social links (from Site settings)', type: 'checkbox', defaultValue: true },
+    // the contact links moved to the footer (October 2026); kept so older pages still validate
+    { name: 'showSocials', label: 'Show social links (from Site settings)', type: 'checkbox', defaultValue: true, admin: { hidden: true } },
     { name: 'bookLabel', label: 'Booking button', type: 'text', admin: { placeholder: 'Book a 15-minute call', description: 'Shown when Site settings has a booking link.' } },
     {
       name: 'form',

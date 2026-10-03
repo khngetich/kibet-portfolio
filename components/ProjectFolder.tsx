@@ -71,7 +71,8 @@ function taglineOf(p: ProjectCard, category: string) {
 export function Slope() {
   return (
     <svg className="pcard-slope" viewBox="0 0 64 56" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <path d="M0 0h6c10 0 15 4 21 13l12 19c6 9 11 13 21 14.5h4V56H0z" />
+      {/* one S-curve: leaves the tab's top edge flat and lands flat on the panel's top edge (y = 56), so no corner or gap */}
+      <path d="M0 0H4C18 0 22 8 28 20L36 36C42 48 48 56 64 56H0Z" />
     </svg>
   );
 }
