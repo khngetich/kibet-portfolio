@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { SField } from '@/lib/studio-schema';
-import { deleteProject, getProject, saveProject } from './api';
+import { deletePost, deleteProject, deleteService, getPost, getProject, getService, listPosts, listServices, savePost, saveProject, saveService } from './api';
 import { Icon } from '@/components/ui/Icon';
 import { thumbURL } from '@/lib/media';
+import { price } from '@/lib/format';
 import { useStudioData, type ProjectRef } from './Data';
 import { FieldList } from './Fields';
 import { Modal, useConfirm } from './Modal';
@@ -114,6 +115,193 @@ export function ProjectsManager({ fields, onChanged }: { fields: SField[]; onCha
         open={!!editing}
         onClose={() => setEditing(null)}
         title={editing?.id ? (editing.value.title as string) || 'Project' : 'New project'}
+        size="lg"
+        className="st-modal-editor"
+        footer={
+          <>
+            {editing?.id && <button type="button" className="st-btn st-btn-danger-ghost" onClick={remove}>Delete</button>}
+            <span className="st-spacer" />
+            {err && <span className="st-error">{err}</span>}
+            <button type="button" className="st-btn" disabled={busy} onClick={() => save(false)}>Save draft</button>
+            <button type="button" className="st-btn st-btn-primary" disabled={busy} onClick={() => save(true)}>{busy ? 'Saving…' : 'Publish'}</button>
+          </>
+        }
+      >
+        {editing && <FieldList fields={fields} value={editing.value} onChange={(v) => setEditing({ ...editing, value: v })} />}
+      </Modal>
+    </div>
+  );
+}
+
+type PostRef = { id: number; title: string; slug?: string | null; excerpt?: string | null; cover?: number | null; publishedAt?: string | null; tags?: string[] | null; _status?: string | null; updatedAt?: string };
+const postDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'No date');
+
+/**
+ * Insights: articles as cards (cover, date, title, excerpt, status), and the same pop-up
+ * editor as projects: every field, Save draft / Publish / Delete.
+ */
+export function PostsManager({ fields, onChanged }: { fields: SField[]; onChanged: () => void }) {
+  const { media, ensureMedia } = useStudioData();
+  const confirm = useConfirm();
+  const [posts, setPosts] = useState<PostRef[] | null>(null);
+  const [editing, setEditing] = useState<{ id: number | null; value: Rec } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => setPosts((await listPosts()) as unknown as PostRef[]), []);
+  useEffect(() => {
+    let live = true;
+    listPosts().then((r) => { if (live) setPosts(r as unknown as PostRef[]); }).catch(() => { if (live) setPosts([]); });
+    return () => { live = false; };
+  }, []);
+  useEffect(() => { ensureMedia((posts ?? []).map((p) => p.cover).filter((c): c is number => typeof c === 'number')); }, [posts, ensureMedia]);
+
+  const open = async (id: number | null) => {
+    setErr(null);
+    setEditing({ id, value: id ? ((await getPost(id)) as unknown as Rec) : { ...defaultsOf(fields), publishedAt: new Date().toISOString() } });
+  };
+  const save = async (publish: boolean) => {
+    if (!editing) return;
+    setBusy(true); setErr(null);
+    try {
+      const r = await savePost(editing.id, editing.value, publish);
+      await load();
+      onChanged();
+      setEditing(publish ? null : { id: r.id, value: editing.value });
+    } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  const remove = async () => {
+    if (!editing?.id) return;
+    if (!(await confirm({ title: 'Delete this insight?', body: 'Its page will stop working and it will disappear from the site.', confirmLabel: 'Delete insight', danger: true }))) return;
+    await deletePost(editing.id);
+    await load();
+    onChanged();
+    setEditing(null);
+  };
+
+  return (
+    <div className="st-manager">
+      <div className="st-manager-bar">
+        <span className="st-help">{posts ? `${posts.length} ${posts.length === 1 ? 'insight' : 'insights'}` : 'Loading…'}</span>
+        <span className="st-spacer" />
+        <button type="button" className="st-btn st-btn-primary" onClick={() => open(null)}><Icon name="plus" size={14} /> New insight</button>
+      </div>
+      {posts && !posts.length && <p className="st-empty-note">No insights yet. Write a short design note: what you made, why, and what you learned.</p>}
+      {!!posts?.length && (
+        <ul className="st-cards">
+          {posts.map((p) => (
+            <li key={p.id}>
+              <button type="button" className="st-card st-post-card" onClick={() => open(p.id)}>
+                <span className="st-card-media">{p.cover && media[p.cover]?.url ? <img src={thumbURL(media[p.cover], 384)!} alt="" loading="lazy" /> : <span className="st-post-type">{p.title}</span>}</span>
+                <small className="st-post-date">{postDate(p.publishedAt)}{p._status === 'draft' ? ' · Draft' : ''}</small>
+                <b>{p.title}</b>
+                {p.excerpt && <small className="st-post-excerpt">{p.excerpt}</small>}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Modal
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        title={editing?.id ? (editing.value.title as string) || 'Insight' : 'New insight'}
+        size="lg"
+        className="st-modal-editor"
+        footer={
+          <>
+            {editing?.id && <button type="button" className="st-btn st-btn-danger-ghost" onClick={remove}>Delete</button>}
+            <span className="st-spacer" />
+            {err && <span className="st-error">{err}</span>}
+            <button type="button" className="st-btn" disabled={busy} onClick={() => save(false)}>Save draft</button>
+            <button type="button" className="st-btn st-btn-primary" disabled={busy} onClick={() => save(true)}>{busy ? 'Saving…' : 'Publish'}</button>
+          </>
+        }
+      >
+        {editing && <FieldList fields={fields} value={editing.value} onChange={(v) => setEditing({ ...editing, value: v })} />}
+      </Modal>
+    </div>
+  );
+}
+
+type ServiceRef = { id: number; title: string; slug?: string | null; description?: string | null; image?: number | null; priceFrom?: number | null; currency?: string | null; unit?: string | null; featured?: boolean | null; starter?: boolean | null; _status?: string | null };
+
+/**
+ * Services: one card per service in site order, showing its cover. A service without one is
+ * flagged, because the site then borrows a project cover for its card. Each card opens a
+ * pop-up editor with every service field, the cover first.
+ */
+export function ServicesManager({ fields, onChanged }: { fields: SField[]; onChanged: () => void }) {
+  const { media, ensureMedia } = useStudioData();
+  const confirm = useConfirm();
+  const [services, setServices] = useState<ServiceRef[] | null>(null);
+  const [editing, setEditing] = useState<{ id: number | null; value: Rec } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = useCallback(async () => setServices((await listServices()) as unknown as ServiceRef[]), []);
+  useEffect(() => {
+    let live = true;
+    listServices().then((r) => { if (live) setServices(r as unknown as ServiceRef[]); }).catch(() => { if (live) setServices([]); });
+    return () => { live = false; };
+  }, []);
+  useEffect(() => { ensureMedia((services ?? []).map((x) => x.image).filter((c): c is number => typeof c === 'number')); }, [services, ensureMedia]);
+
+  const open = async (id: number | null) => {
+    setErr(null);
+    setEditing({ id, value: id ? ((await getService(id)) as unknown as Rec) : defaultsOf(fields) });
+  };
+  const save = async (publish: boolean) => {
+    if (!editing) return;
+    setBusy(true); setErr(null);
+    try {
+      const r = await saveService(editing.id, editing.value, publish);
+      await load();
+      onChanged();
+      setEditing(publish ? null : { id: r.id, value: editing.value });
+    } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  const remove = async () => {
+    if (!editing?.id) return;
+    if (!(await confirm({ title: 'Delete this service?', body: 'Its page will stop working and its card will leave the Services section.', confirmLabel: 'Delete service', danger: true }))) return;
+    await deleteService(editing.id);
+    await load();
+    onChanged();
+    setEditing(null);
+  };
+  const missing = (services ?? []).filter((x) => !x.image).length;
+
+  return (
+    <div className="st-manager">
+      <div className="st-manager-bar">
+        <span className="st-help">{services ? `${services.length} ${services.length === 1 ? 'service' : 'services'}${missing ? ` · ${missing} without a cover` : ''}` : 'Loading…'}</span>
+        <span className="st-spacer" />
+        <button type="button" className="st-btn st-btn-primary" onClick={() => open(null)}><Icon name="plus" size={14} /> New service</button>
+      </div>
+      {missing > 0 && <p className="st-note">Services without a cover borrow a project cover on their card, and their page shows no picture. Open one and add a cover from your own work for it.</p>}
+      {services && !services.length && <p className="st-empty-note">No services yet. Add what you offer: each one gets a card in the Services section and its own page.</p>}
+      {!!services?.length && (
+        <ul className="st-cards">
+          {services.map((x) => {
+            const cover = x.image ? media[x.image] : null;
+            return (
+              <li key={x.id}>
+                <button type="button" className="st-card st-svc-card" onClick={() => open(x.id)}>
+                  <span className="st-card-media">
+                    {cover?.url ? <img src={thumbURL(cover, 384)!} alt="" loading="lazy" /> : <span className="st-svc-empty"><Icon name="image" size={18} />Add a cover</span>}
+                    {x.featured && <i className="st-svc-flag">Featured</i>}
+                  </span>
+                  <b>{x.title}</b>
+                  <small>{x.priceFrom != null ? `From ${price(x.priceFrom, x.currency)}${x.unit ? ` ${x.unit}` : ''}` : 'No price shown'}{x._status === 'draft' ? ' · Draft' : ''}</small>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <Modal
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        title={editing?.id ? (editing.value.title as string) || 'Service' : 'New service'}
         size="lg"
         className="st-modal-editor"
         footer={

@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { getPayload } from 'payload';
 import config from '@payload-config';
 
-type Values = { name: string; email: string; service: string; budget: string; timeline: string; message: string };
+type Values = { name: string; email: string; service: string; budget: string; timeline: string; message: string; whatsapp: string; logoWording: string; brandStage: string; keep: string };
 /** `field` names the input to fix; `values` refill the form, which React resets after every submit. */
 export type ContactState = { ok: boolean; error?: string; field?: 'name' | 'email' | 'message'; values?: Values } | null;
 
@@ -39,6 +39,10 @@ export async function sendEnquiry(_prev: ContactState, fd: FormData): Promise<Co
     service: field(fd, 'service', 120),
     budget: field(fd, 'budget', 60),
     timeline: field(fd, 'timeline', 60),
+    whatsapp: field(fd, 'whatsapp', 40),
+    logoWording: field(fd, 'logoWording', 160),
+    brandStage: field(fd, 'brandStage', 20),
+    keep: field(fd, 'keep', 2000),
     message: field(fd, 'message', 5000),
   };
   if (!data.name) return { ok: false, field: 'name', error: 'Please add your name.', values: data };
@@ -60,7 +64,9 @@ export async function sendEnquiry(_prev: ContactState, fd: FormData): Promise<Co
     if (inbox.totalDocs >= LIMITS.inbox.max) return { ok: false, error: 'The form is busy right now. Please email me directly instead.', values: data };
     // Public visitors can't create enquiries through the API (access is closed);
     // this trusted server action is the only way in.
-    await payload.create({ collection: 'inquiries', data: { ...data, status: 'new' }, overrideAccess: true });
+    // brandStage is a fixed list in the CMS: anything else (or nothing) is left empty
+    const brandStage = (['new', 'rebrand', 'refresh'] as const).find((x) => x === data.brandStage);
+    await payload.create({ collection: 'inquiries', data: { ...data, brandStage, status: 'new' }, overrideAccess: true });
     return { ok: true };
   } catch (err) {
     console.error('Enquiry failed', err);

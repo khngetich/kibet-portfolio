@@ -179,34 +179,7 @@ if (!home) {
     console.log('Header menu: Work · Process · About · Services (plus the Start a project button).');
   }
 
-  // footer links to sections that are now hidden
-  const footer = await payload.findGlobal({ slug: 'footer', depth: 0 });
-  const gone = ['/#for-who'];
-  const columns = (footer.columns ?? []).map((c) => ({ ...c, links: (c.links ?? []).filter((l) => !gone.includes(l.url)) }));
-  if (columns.some((c, i) => c.links.length !== (footer.columns?.[i]?.links?.length ?? 0))) {
-    await payload.updateGlobal({ slug: 'footer', data: { columns } as never });
-    console.log('Footer: removed links to the hidden “Who it’s for” section.');
-  }
-
-  // Step 5: the inverted footer's lists (Navigation, Services; Contact comes from Site settings).
-  const foot = await payload.findGlobal({ slug: 'footer', depth: 0 });
-  if (force || !(foot.columns ?? []).some((c) => c.heading === 'Services')) {
-    await payload.updateGlobal({
-      slug: 'footer',
-      data: {
-        title: 'HUMPHREY',
-        copyright: '© {year} {name}. All rights reserved.',
-        columns: [
-          { heading: 'Navigation', links: [{ label: 'Work', url: '/#work' }, { label: 'Process', url: '/#process' }, { label: 'About', url: '/#about' }, { label: 'Services', url: '/#services' }, { label: 'Contact', url: '/#contact' }] },
-          { heading: 'Services', links: [
-            { label: 'Graphic Design & Social Assets', url: '/#services' }, { label: 'Brand Identity & Systems', url: '/#services' },
-            { label: 'Design on Demand', url: '/#services' }, { label: 'Creative Direction', url: '/#services' },
-          ] },
-        ],
-      } as never,
-    });
-    console.log('Footer: Navigation and Services lists, copyright line.');
-  }
+  // (the footer's link columns were removed in the 2026-10 redesign; it's name, socials and policies now)
 
   const theme = await payload.findGlobal({ slug: 'theme', depth: 0 });
   if (!theme.mutedText || theme.mutedText.toUpperCase() === '#A8A8A6') {

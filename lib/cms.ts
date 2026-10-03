@@ -4,7 +4,7 @@ import type { Palette } from './paletteVars';
 import { cookies, draftMode } from 'next/headers';
 import { getPayload, type Where } from 'payload';
 import config from '@payload-config';
-import type { Project } from '@/payload-types';
+import type { Project, Service } from '@/payload-types';
 
 /**
  * All reads for the public site. Pages are statically rendered and re-rendered when
@@ -72,6 +72,27 @@ export const getProject = cache(async (slug: string) => {
 
 export const getProjectSlugs = async () => {
   const { docs } = await (await cms()).find({ collection: 'projects', where: published(false), limit: 1000, depth: 0, select: { slug: true } });
+  return docs.map((d) => d.slug).filter(Boolean) as string[];
+};
+
+/** Services, in their dashboard order. Cards only need these fields; the page loads the rest. */
+const serviceSelect = { title: true, slug: true, description: true, deliverables: true, priceFrom: true, currency: true, unit: true, image: true, imageCaption: true, featured: true, starter: true } as const;
+export type ServiceCard = Pick<Service, keyof typeof serviceSelect | 'id'>;
+
+export const getServices = cache(async () => {
+  const draft = await isPreview();
+  const { docs } = await (await cms()).find({ collection: 'services', where: published(draft), sort: '_order', depth: 1, limit: 50, draft, select: serviceSelect });
+  return docs as ServiceCard[];
+});
+
+export const getService = cache(async (slug: string) => {
+  const draft = await isPreview();
+  const { docs } = await (await cms()).find({ collection: 'services', where: { and: [{ slug: { equals: slug } }, published(draft)] }, depth: 2, limit: 1, draft });
+  return docs[0] ?? null;
+});
+
+export const getServiceSlugs = async () => {
+  const { docs } = await (await cms()).find({ collection: 'services', where: published(false), limit: 200, depth: 0, select: { slug: true } });
   return docs.map((d) => d.slug).filter(Boolean) as string[];
 };
 

@@ -21,6 +21,16 @@ export const Inquiries: CollectionConfig = {
       { name: 'budget', type: 'text', admin: { width: '50%' } },
     ] },
     { name: 'timeline', type: 'text', admin: { description: 'When they need it, from the brief builder.' } },
+    { type: 'row', fields: [
+      { name: 'brandStage', label: 'New or existing brand', type: 'select', options: [
+        { label: 'A new brand', value: 'new' },
+        { label: 'A rebrand / redesign', value: 'rebrand' },
+        { label: 'A refresh of an existing identity', value: 'refresh' },
+      ], admin: { width: '50%' } },
+      { name: 'whatsapp', label: 'WhatsApp', type: 'text', admin: { width: '50%' } },
+    ] },
+    { name: 'logoWording', label: 'Wording for the logo', type: 'text' },
+    { name: 'keep', label: 'What prompts the change, and what should stay', type: 'textarea' },
     { name: 'message', type: 'textarea', required: true },
     {
       name: 'status',

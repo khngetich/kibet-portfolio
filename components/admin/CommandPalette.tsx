@@ -10,7 +10,7 @@ import { sectionIcon } from './sectionIcons';
 /**
  * ⌘K / Ctrl+K: jump to any page, project, enquiry, file or setting, or start something new.
  * Mounted once in the sidebar, so it works on every CMS screen. Nothing is fetched until it is
- * first opened; pages and projects then load once (titles only), and enquiries and media are
+ * first opened; pages, projects, services and insights then load once (titles only), and enquiries and media are
  * searched on the server as you type.
  */
 
@@ -69,9 +69,13 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
     Promise.all([
       getJSON<{ id: number; title?: string | null; slug?: string | null }>(`/api/pages?${qs({ depth: 0, limit: 200, draft: 'true', sort: '-updatedAt', ...fields(['title', 'slug']) })}`),
       getJSON<{ id: number; title?: string | null; client?: string | null }>(`/api/projects?${qs({ depth: 0, limit: 300, draft: 'true', sort: '-updatedAt', ...fields(['title', 'client']) })}`),
-    ]).then(([pages, projects]) => setDocs([
+      getJSON<{ id: number; title?: string | null; publishedAt?: string | null }>(`/api/posts?${qs({ depth: 0, limit: 200, draft: 'true', sort: '-publishedAt', ...fields(['title', 'publishedAt']) })}`),
+      getJSON<{ id: number; title?: string | null; image?: number | null }>(`/api/services?${qs({ depth: 0, limit: 100, draft: 'true', sort: '_order', ...fields(['title', 'image']) })}`),
+    ]).then(([pages, projects, posts, services]) => setDocs([
       ...pages.map((p) => ({ id: `page-${p.id}`, label: p.title || 'Untitled page', hint: !p.slug ? 'No address yet' : p.slug === 'home' ? '/' : `/${p.slug}`, group: 'Pages', icon: 'file' as const, href: `${admin}/collections/pages/${p.id}`, doc: { collection: 'pages', id: p.id } })),
       ...projects.map((p) => ({ id: `project-${p.id}`, label: p.title || 'Untitled project', hint: p.client || 'Project', group: 'Projects', icon: 'portfolio' as const, href: `${admin}/collections/projects/${p.id}`, doc: { collection: 'projects', id: p.id } })),
+      ...services.map((x) => ({ id: `service-${x.id}`, label: x.title || 'Untitled service', hint: x.image ? 'Service' : 'Service · no cover yet', group: 'Services', icon: 'tag' as const, href: `${admin}/collections/services/${x.id}`, doc: { collection: 'services', id: x.id } })),
+      ...posts.map((p) => ({ id: `post-${p.id}`, label: p.title || 'Untitled insight', hint: p.publishedAt ? new Date(p.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Insight', group: 'Insights', icon: 'pen' as const, href: `${admin}/collections/posts/${p.id}`, doc: { collection: 'posts', id: p.id } })),
     ])).catch(() => setDocs([]));
   }, [open, docs, admin]);
 
@@ -101,6 +105,8 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
   const fixed = useMemo<Item[]>(() => [
     { id: 'new-page', label: 'New page', group: 'Actions', icon: 'file', href: `${admin}/collections/pages/create`, doc: { collection: 'pages' } },
     { id: 'new-project', label: 'New project', group: 'Actions', icon: 'portfolio', href: `${admin}/collections/projects/create`, doc: { collection: 'projects' } },
+    { id: 'new-service', label: 'New service', hint: 'Something you offer', group: 'Actions', icon: 'tag', href: `${admin}/collections/services/create`, doc: { collection: 'services' } },
+    { id: 'new-post', label: 'New insight', hint: 'Write an article', group: 'Actions', icon: 'pen', href: `${admin}/collections/posts/create`, doc: { collection: 'posts' } },
     { id: 'upload', label: 'Upload media', group: 'Actions', icon: 'image', href: `${admin}/collections/media/create`, doc: { collection: 'media' } },
     { id: 'studio', label: 'Open Studio', hint: 'Visual editor', group: 'Actions', icon: 'pen', href: '/studio', full: true },
     { id: 'site', label: 'View site', group: 'Actions', icon: 'external', href: '/', external: true },
@@ -171,7 +177,7 @@ export function CommandPalette({ admin, groups }: { admin: string; groups: NavGr
               aria-controls={`${base}-list`}
               aria-activedescendant={results[active] ? `${base}-opt-${active}` : undefined}
               aria-autocomplete="list"
-              placeholder="Search pages, projects, enquiries, files…"
+              placeholder="Search pages, projects, services, insights, enquiries, files…"
               value={q}
               onChange={(e) => { setQ(e.target.value); setActive(0); }}
               onKeyDown={onKey}

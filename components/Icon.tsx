@@ -13,6 +13,7 @@ const paths = {
   spark: <path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z" fill="currentColor" />,
   play: <path d="M9 6.6c0-.9 1-1.4 1.7-.9l7.6 5.4c.6.4.6 1.3 0 1.8l-7.6 5.4c-.7.5-1.7 0-1.7-.9z" fill="currentColor" />,
   close: <path {...S} d="M6 6l12 12M18 6L6 18" />,
+  plus: <path {...S} d="M12 5v14M5 12h14" />,
   // process steps (outline, 1.8 stroke to sit beside the step titles)
   compass: <g {...S}><circle cx="12" cy="12" r="8.5" /><path d="M15.3 8.7l-2 4.6-4.6 2 2-4.6z" /></g>,
   pen: <g {...S}><path d="M4.5 19.5l1-4L15.8 5.2a2 2 0 0 1 2.9 0l.1.1a2 2 0 0 1 0 2.9L8.5 18.5z" /><path d="M13.8 7.2l3 3" /></g>,

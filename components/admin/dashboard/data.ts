@@ -75,6 +75,59 @@ export const getProjects = cache(async (payload: Payload) => {
   }));
 });
 
+/** Insights (articles), newest first, with the same live / unpublished changes / not live rule. */
+export const getPostsStatus = cache(async (payload: Payload) => {
+  const [latest, main] = await Promise.all([
+    payload.find({ collection: 'posts', draft: true, depth: 0, limit: 200, pagination: false, sort: '-updatedAt', select: { title: true, slug: true, updatedAt: true, _status: true, publishedAt: true } }),
+    payload.find({ collection: 'posts', depth: 0, limit: 200, pagination: false, select: { _status: true } }),
+  ]);
+  const live = new Map(main.docs.map((d) => [d.id, d._status]));
+  const now = Date.now();
+  return latest.docs.map((p) => ({
+    id: p.id,
+    title: p.title || 'Untitled insight',
+    path: p.slug ? `/insights/${p.slug}` : null,
+    status: statusOf(p._status, live.get(p.id)),
+    ago: ago(p.updatedAt, now),
+    updatedAt: p.updatedAt,
+  }));
+});
+
+/** Services in site order, with whether each has its own cover (the card borrows a project cover otherwise). */
+export const getServicesCovers = cache(async (payload: Payload) => {
+  const res = await payload.find({ collection: 'services', draft: true, depth: 0, limit: 100, pagination: false, sort: '_order', select: { title: true, image: true } });
+  return res.docs.map((d) => ({ id: d.id, title: d.title || 'Untitled service', cover: !!d.image }));
+});
+
+type Sec = { blockType: string; hidden?: boolean | null; photo?: unknown; intro?: string | null; body?: unknown; items?: unknown[] | null };
+
+/**
+ * What a visitor needs to trust you, as checks. Each names where it's fixed. Read from Site
+ * settings, the live pages' sections (portrait and bio, testimonials) and the projects.
+ */
+export const getProfile = cache(async (payload: Payload) => {
+  const [site, pages, projects] = await Promise.all([
+    payload.findGlobal({ slug: 'site', depth: 0 }),
+    payload.find({ collection: 'pages', depth: 0, limit: 200, pagination: false, where: { _status: { equals: 'published' } }, select: { sections: true } }),
+    getProjects(payload),
+  ]);
+  const sections = pages.docs.flatMap((p) => ((p as { sections?: Sec[] | null }).sections ?? []).filter((x) => !x.hidden));
+  const about = sections.find((x) => (x.blockType === 'aboutBanner' || x.blockType === 'profile') && x.photo && (x.intro || x.body));
+  const quotes = sections.filter((x) => x.blockType === 'testimonials').reduce((a, x) => a + (x.items?.length ?? 0), 0);
+  const socials = (site.socials ?? []).filter((x) => x.url).length;
+  const showcase = projects.filter((p) => p.status !== 'draft' && p.samples > 0).length;
+  return [
+    { key: 'identity', label: 'Role and location', ok: !!(site.role && site.location), detail: site.role && site.location ? `${site.role} · ${site.location}` : 'Say what you do and where you are', fix: 'site' },
+    { key: 'availability', label: 'Availability', ok: !!site.availability?.trim(), detail: site.availability?.trim() || 'Tell visitors whether you’re booking', fix: 'site' },
+    { key: 'contact', label: 'Ways to reach you', ok: !!(site.email && (site.phone || site.bookingUrl)), detail: site.email && (site.phone || site.bookingUrl) ? 'Email plus phone or booking link' : 'Add a phone number or a booking link', fix: 'site' },
+    { key: 'socials', label: 'Social profiles', ok: socials >= 2, detail: socials ? `${socials} linked${socials < 2 ? ', add one more' : ''}` : 'Link at least two', fix: 'site' },
+    { key: 'about', label: 'Portrait and short bio', ok: !!about, detail: about ? 'In your About section' : 'Add an About or Profile section with a photo', fix: 'pages' },
+    { key: 'quotes', label: 'Client testimonials', ok: quotes >= 2, detail: quotes ? `${quotes} on the site${quotes < 2 ? ', add one more' : ''}` : 'Add a Testimonials section with two or more', fix: 'pages' },
+    { key: 'showcase', label: 'Three live case studies', ok: showcase >= 3, detail: `${showcase} live with samples`, fix: 'projects' },
+    { key: 'sharing', label: 'Search and share defaults', ok: !!(site.metaDescription && site.ogImage), detail: site.metaDescription && site.ogImage ? 'Description and share image set' : 'Add a site description and share image', fix: 'site' },
+  ] as const;
+});
+
 /** The latest four projects with their covers, for the visual "Recent work" strip. Status comes from getProjects (same rule). */
 export const getRecentWork = cache(async (payload: Payload) => {
   const [latest, all] = await Promise.all([

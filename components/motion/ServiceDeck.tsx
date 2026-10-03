@@ -2,10 +2,13 @@
 
 import { AnimatePresence, motion, useReducedMotionConfig } from 'motion/react';
 import { useEffect, useId, useState, useSyncExternalStore } from 'react';
+import Link from 'next/link';
 import { Icon } from '@/components/Icon';
+import { Img } from '@/components/Img';
 import { ServiceLink } from './ServiceLink';
 
-export type DeckService = { title: string; description?: string | null; deliverables?: string[] | null };
+// `image`: the service's cover (Content → Services → Cover image), shown behind the glass
+export type DeckService = { title: string; description?: string | null; deliverables?: string[] | null; image?: unknown; slug?: string | null };
 
 const SPRING = { type: 'spring', stiffness: 170, damping: 22, mass: 0.9 } as const;
 const WIDE = '(min-width: 900px)';
@@ -15,10 +18,11 @@ const subscribe = (cb: () => void) => { const mq = window.matchMedia(WIDE); mq.a
  * Services as an isometric deck of glass cards. At rest they stand in a staggered, tilted
  * stack; hovering one lifts it 15px out of the deck; clicking brings it to the front at 0°
  * tilt and opens its deliverables and an "Inquire" button while the rest sink back, dimmed.
+ * Each card carries its service's cover under a dark scrim, faded back once the card is open.
  * Escape, the close button or a click beside the cards puts it back. Below 900px the deck
  * becomes a plain list of the same cards, each opening in place.
  */
-export function ServiceDeck({ services, ctaLabel }: { services: DeckService[]; ctaLabel: string }) {
+export function ServiceDeck({ services, ctaLabel, pageLabel = 'See the service' }: { services: DeckService[]; ctaLabel: string; pageLabel?: string }) {
   const base = useId();
   const reduce = useReducedMotionConfig();
   const wide = useSyncExternalStore(subscribe, () => window.matchMedia(WIDE).matches, () => true);
@@ -55,6 +59,7 @@ export function ServiceDeck({ services, ctaLabel }: { services: DeckService[]; c
               animate={wide ? { width: on ? 380 : 288, height: on ? 452 : 304 } : undefined}
               transition={SPRING}
             >
+              {!!s.image && <span className="deck-cover" aria-hidden="true"><Img media={s.image} sizes="380px" /></span>}
               {!on && (
                 <button type="button" className="deck-hit" aria-expanded={false} aria-controls={`${id}-more`} onClick={() => setActive(i)}
                   onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
@@ -75,7 +80,10 @@ export function ServiceDeck({ services, ctaLabel }: { services: DeckService[]; c
                     transition={{ ...SPRING, opacity: { duration: 0.25, delay: wide ? 0.12 : 0 } }}
                   >
                     {!!s.deliverables?.length && <ul className="deck-list">{s.deliverables.map((d) => <li key={d}><Icon name="check" size={14} />{d}</li>)}</ul>}
-                    <ServiceLink className="btn btn-light deck-cta" service={s.title}>{ctaLabel} <Icon name="arrow" size={15} /></ServiceLink>
+                    <div className="deck-actions">
+                      <ServiceLink className="btn btn-light deck-cta" service={s.title}>{ctaLabel} <Icon name="arrow" size={15} /></ServiceLink>
+                      {s.slug && <Link className="link-under deck-page" href={`/services/${s.slug}`}>{pageLabel} <Icon name="arrow" size={13} /></Link>}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

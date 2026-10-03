@@ -5,10 +5,9 @@ import { AnimatePresence, animate, motion, useInView, useReducedMotionConfig } f
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Img } from '@/components/Img';
 import { Icon } from '@/components/Icon';
+import { Accent, plain } from '@/components/Accent';
 
 export type AboutTab = { label: string; heading: string; text?: string | null; rows: { value: string; label: string }[] };
-
-const SPRING = { type: 'spring', stiffness: 260, damping: 30 } as const;
 
 /** "3.5M+" → 0 → 3.5, keeping the prefix, suffix and decimals; values without a number stay as they are. */
 function CountUp({ value, run }: { value: string; run: boolean }) {
@@ -31,26 +30,55 @@ function CountUp({ value, run }: { value: string; run: boolean }) {
 }
 
 /**
- * Editorial about: a monochrome cut-out portrait on the left with the name and role, and on
- * the right a heading, a short bio and a table of figures. The pill tabs on the slider line
- * below swap the right column (cross-fade) while the dot slides to the active tab; the
- * figures count up the first time the section scrolls into view.
+ * How a tab's rows read best, worked out from the values themselves:
+ *  - "01", "02", … in order → a numbered list (the label is the item)
+ *  - numbers ("50+", "3.5M+", "100%") → specimen figures that count up
+ *  - words ("Live", "Weekly") → a stamped badge beside each note
  */
-export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs, watermark, link }: {
-  id?: string; headingId: string; chapter?: ReactNode; name: string; role?: string | null; photo: unknown;
-  tabs: AboutTab[]; watermark: string; link?: { label: string; url: string } | null;
-}) {
+type Kind = 'list' | 'figures' | 'stamps';
+const kindOf = (rows: AboutTab['rows']): Kind => {
+  if (rows.length && rows.every((r, i) => /^\d{1,2}$/.test(r.value.trim()) && Number(r.value) === i + 1)) return 'list';
+  if (rows.length && rows.every((r) => /\d/.test(r.value))) return 'figures';
+  return 'stamps';
+};
+
+/** The portrait as a print proof: crop marks, a colour bar and a "Proof" label. `children` sit on the sheet (stickers). */
+export function ProofPrint({ photo, moodPhoto, mood = false, name, children }: { photo: unknown; moodPhoto?: unknown; mood?: boolean; name: string; children?: ReactNode }) {
+  return (
+    <div className="about-proof-sheet">
+      <span className="about-proof-crop is-tl" aria-hidden="true" />
+      <span className="about-proof-crop is-tr" aria-hidden="true" />
+      <span className="about-proof-crop is-bl" aria-hidden="true" />
+      <span className="about-proof-crop is-br" aria-hidden="true" />
+      <div className="about-proof-photo">
+        <span className={`about-proof-layer${mood ? ' is-hidden' : ''}`}><Img media={photo} sizes="(max-width: 900px) 80vw, 40vw" /></span>
+        {!!moodPhoto && <span className={`about-proof-layer${mood ? '' : ' is-hidden'}`} aria-hidden={!mood}><Img media={moodPhoto} sizes="(max-width: 900px) 80vw, 40vw" /></span>}
+      </div>
+      <span className="about-proof-bar" aria-hidden="true"><i /><i /><i /><i /><i /></span>
+      <span className="about-proof-label" aria-hidden="true">Proof 01 · {plain(name)}</span>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The folder: index tabs along its top edge (the active one rises) over a card that swaps its
+ * contents, each tab laid out for what it holds. The card's heading is the section's h2 when
+ * the folder carries it (`headingId`), otherwise an h3 under the section's own heading.
+ */
+export function AboutFolder({ tabs, seen, link, headingId }: { tabs: AboutTab[]; seen: boolean; link?: { label: string; url: string } | null; headingId?: string }) {
   const base = useId();
   const reduce = useReducedMotionConfig();
-  const ref = useRef<HTMLElement>(null);
-  const seen = useInView(ref, { once: true, margin: '0px 0px -20% 0px' });
   const [tab, setTab] = useState(0);
   const btns = useRef<(HTMLButtonElement | null)[]>([]);
   const t = tabs[tab] ?? tabs[0];
+  if (!t) return null;
+  const kind = kindOf(t.rows);
+  const H = headingId ? 'h2' : 'h3';
 
   const onKey = (e: React.KeyboardEvent, i: number) => {
     const last = tabs.length - 1;
-    const to = e.key === 'ArrowRight' ? (i === last ? 0 : i + 1) : e.key === 'ArrowLeft' ? (i === 0 ? last : i - 1) : null;
+    const to = e.key === 'ArrowRight' ? (i === last ? 0 : i + 1) : e.key === 'ArrowLeft' ? (i === 0 ? last : i - 1) : e.key === 'Home' ? 0 : e.key === 'End' ? last : null;
     if (to == null) return;
     e.preventDefault();
     setTab(to);
@@ -58,69 +86,95 @@ export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs
   };
 
   return (
-    <section ref={ref} className="about-ed" id={id} aria-labelledby={headingId}>
-      <p className="about-ed-watermark" aria-hidden="true">{watermark}</p>
-      <div className="wrap about-ed-grid">
-        <div className="about-ed-left">
-          <div className="about-ed-photo"><Img media={photo} sizes="(max-width: 900px) 90vw, 45vw" /></div>
-          <div className="about-ed-name">
-            <p className="about-ed-title">{name}</p>
-            {role && <p className="about-ed-role">{role}</p>}
-          </div>
-        </div>
-
-        <div className="about-ed-right">
-          {chapter}
-          <div className="about-ed-panel" role="tabpanel" id={`${base}-panel`} aria-labelledby={`${base}-tab-${tab}`}>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={tab}
-                initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.15, ease: 'easeOut' } }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-              >
-                <h2 className="about-ed-heading" id={headingId}>{t.heading}</h2>
-                {t.text && <p className="about-ed-text">{t.text}</p>}
-                {!!t.rows.length && (
-                  <dl className="about-ed-table">
-                    {t.rows.map((r) => (
-                      <div key={r.label} className="about-ed-row">
-                        <dt>{r.label}</dt>
-                        <dd><CountUp value={r.value} run={seen} /></dd>
-                      </div>
-                    ))}
-                  </dl>
-                )}
-                {link && tab === 0 && <Link className="link-arrow" href={link.url}>{link.label} <Icon name="arrow" size={15} /></Link>}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </div>
-
+    <div className="about-folder">
       {tabs.length > 1 && (
-        <div className="wrap">
-          <div className="about-ed-nav">
-            <span className="about-ed-line" aria-hidden="true">
-              <motion.span className="about-ed-dot" initial={false} animate={{ left: `${((tab + 0.5) / tabs.length) * 100}%` }} transition={reduce ? { duration: 0 } : SPRING} />
-            </span>
-            <div className="about-ed-tabs" role="tablist" aria-label="About">
-              {tabs.map((x, i) => (
-                <button
-                  key={x.label}
-                  ref={(el) => { btns.current[i] = el; }}
-                  type="button" role="tab" id={`${base}-tab-${i}`} aria-controls={`${base}-panel`} aria-selected={tab === i} tabIndex={tab === i ? 0 : -1}
-                  className={tab === i ? 'is-on' : undefined}
-                  onClick={() => setTab(i)} onKeyDown={(e) => onKey(e, i)}
-                >
-                  <span>{String(i + 1).padStart(2, '0')}</span> {x.label}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="about-folder-tabs" role="tablist" aria-label="About">
+          {tabs.map((x, i) => (
+            <button
+              key={x.label}
+              ref={(el) => { btns.current[i] = el; }}
+              type="button" role="tab" id={`${base}-tab-${i}`} aria-controls={`${base}-panel`} aria-selected={tab === i} tabIndex={tab === i ? 0 : -1}
+              className={tab === i ? 'is-on' : undefined}
+              onClick={() => setTab(i)} onKeyDown={(e) => onKey(e, i)}
+            >
+              <span aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>{x.label}
+            </button>
+          ))}
         </div>
       )}
+      <div className="about-folder-card" role={tabs.length > 1 ? 'tabpanel' : undefined} id={`${base}-panel`} aria-labelledby={tabs.length > 1 ? `${base}-tab-${tab}` : undefined}>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={tab}
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.15, ease: 'easeOut' } }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          >
+            <H className={`about-ed-heading${headingId ? '' : ' is-sub'}`} id={headingId}><Accent text={t.heading} /></H>
+            {t.text && <p className="about-ed-text">{t.text}</p>}
+            {!!t.rows.length && kind === 'figures' && (
+              <dl className="about-figures">
+                {t.rows.map((r) => (
+                  <div key={r.label} className="about-figure">
+                    {/* label first for the definition list; the number is shown above it (CSS) */}
+                    <dt>{r.label}</dt>
+                    <dd><CountUp value={r.value} run={seen} /></dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {!!t.rows.length && kind === 'list' && (
+              <ol className="about-list">
+                {t.rows.map((r) => <li key={r.label}><span className="about-list-n" aria-hidden="true">{r.value}</span>{r.label}</li>)}
+              </ol>
+            )}
+            {!!t.rows.length && kind === 'stamps' && (
+              <dl className="about-stamps">
+                {t.rows.map((r, i) => (
+                  <div key={r.label} className="about-stamp-row">
+                    <dt className="about-stamp" style={{ '--tilt': `${[-6, 4, -3, 5][i % 4]}deg` } as React.CSSProperties}>{r.value}</dt>
+                    <dd>{r.label}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {link && tab === 0 && <Link className="link-under" href={link.url}>{link.label} <Icon name="arrow" size={14} /></Link>}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * About, as a designer's proof sheet: the portrait as a print (ProofPrint) with the name and
+ * role beneath, and on the right the folder (AboutFolder) carrying the section's heading. The
+ * figures count up the first time the section is seen. Same props as before, so every page
+ * using this layout keeps its content.
+ */
+export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs, watermark, link }: {
+  id?: string; headingId: string; chapter?: ReactNode; name: string; role?: string | null; photo: unknown;
+  tabs: AboutTab[]; watermark: string; link?: { label: string; url: string } | null;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const seen = useInView(ref, { once: true, margin: '0px 0px -20% 0px' });
+  return (
+    <section ref={ref} className={`about-ed${seen ? ' is-seen' : ''}`} id={id} aria-labelledby={headingId}>
+      <p className="about-ed-watermark" aria-hidden="true">{watermark}</p>
+      <div className="wrap about-ed-grid">
+        <figure className="about-proof">
+          <ProofPrint photo={photo} name={name} />
+          <figcaption className="about-proof-caption">
+            <span className="about-ed-title">{name}</span>
+            {role && <span className="about-ed-role">{role}</span>}
+          </figcaption>
+        </figure>
+        <div className="about-ed-right">
+          {chapter}
+          <AboutFolder tabs={tabs} seen={seen} link={link} headingId={headingId} />
+        </div>
+      </div>
     </section>
   );
 }

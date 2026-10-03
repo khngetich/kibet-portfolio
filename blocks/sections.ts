@@ -138,9 +138,10 @@ export const AboutBannerSection = section({
   slug: 'aboutBanner',
   labels: { singular: 'About banner', plural: 'About banners' },
   anchor: 'about',
-  description: 'About you. “Editorial”: portrait and name on the left, and on the right tabs (Overview, Expertise, Impact) that switch a heading, a short text and a table of figures that count up. “Red banner”: portrait on red with intro, expertise, services and stats.',
+  description: 'About you. “Portrait”: a tilted portrait with sticker labels (and a second photo to switch the mood) beside a two-line heading, a short intro and a link. “Editorial”: portrait and name on the left, and on the right tabs (Overview, Expertise, Impact) that switch a heading, a short text and a table of figures that count up. “Red banner”: portrait on red with intro, expertise, services and stats.',
   fields: [
     { name: 'layout', type: 'select', defaultValue: 'editorial', options: [
+      { label: 'Portrait with stickers', value: 'portrait' },
       { label: 'Editorial with tabs', value: 'editorial' },
       { label: 'Red banner', value: 'banner' },
     ] },
@@ -172,7 +173,10 @@ export const AboutBannerSection = section({
     },
     { name: 'greeting', type: 'text', defaultValue: COPY.aboutGreeting, admin: { description: 'Followed by your first name, e.g. “Hi, I’m” → “Hi, I’m Humphrey,”.' } },
     heading(undefined, true),
-    { name: 'photo', type: 'upload', relationTo: 'media', admin: { description: 'A cut-out portrait (transparent PNG or WebP) looks best.' } },
+    { name: 'photo', type: 'upload', relationTo: 'media', admin: { description: 'A cut-out portrait (transparent PNG or WebP) looks best. Portrait layout: any portrait photo works.' } },
+    { name: 'moodPhoto', label: 'Second photo (mood)', type: 'upload', relationTo: 'media', admin: { description: 'Portrait layout: a second portrait. A “Change the mood” button swaps between the two.' } },
+    { name: 'stickers', type: 'text', hasMany: true, maxRows: 3, admin: { description: 'Portrait layout: short labels stuck on the photo, e.g. “Always curious”. The site tagline is added on its own.' } },
+    { name: 'caption', type: 'text', admin: { description: 'Portrait layout: a small line under the photo, e.g. “Designer by practice. Explorer by nature.”' } },
     { name: 'intro', type: 'textarea', defaultValue: COPY.aboutIntro, admin: { description: 'Continues the greeting, e.g. “a Senior Designer specialising in”. The list below finishes it.' } },
     { name: 'expertise', type: 'text', hasMany: true, admin: { description: 'Short points, one per line. Type one and press Enter.' } },
     { name: 'servicesHeading', type: 'text', defaultValue: COPY.aboutServicesHeading },
@@ -220,13 +224,14 @@ export const ProcessSection = section({
   slug: 'process',
   labels: { singular: 'Process', plural: 'Process' },
   anchor: 'process',
-  description: 'Your way of working as a circuit: a badge that branches into step cards (click one for its deliverables and timing), or as steps in a row, or stacking cards.',
+  description: 'Your way of working as a numbered timeline (heading on the left, each step with its timing and points), or as steps in a row, or stacking cards.',
   fields: [
     eyebrow(COPY.processEyebrow),
     heading(COPY.processHeading),
     { name: 'lead', type: 'text', admin: { description: 'A line under the heading, e.g. “Vision → Design → Performance”.' } },
     { name: 'layout', type: 'select', defaultValue: 'circuit', options: [
-      { label: 'Circuit flow', value: 'circuit' },
+      // 'circuit' is the stored value for the timeline; it predates the redesign
+      { label: 'Numbered timeline', value: 'circuit' },
       { label: 'Steps in a row', value: 'steps' },
       { label: 'Stacking cards', value: 'stack' },
     ] },
@@ -245,7 +250,7 @@ export const ProcessSection = section({
           { label: 'Light bulb (discovery)', value: 'bulb' }, { label: 'Chart (strategy)', value: 'chart' },
           { label: 'Sliders (execution)', value: 'sliders' }, { label: 'Check (delivery)', value: 'checkCircle' },
         ] },
-        { name: 'duration', label: 'Timeline', type: 'text', admin: { description: 'How long this phase usually takes, e.g. “2–3 days”. Shown when the step is opened (circuit layout).' } },
+        { name: 'duration', label: 'Timeline', type: 'text', admin: { description: 'How long this phase usually takes, e.g. “2–3 days”. Shown beside the step’s title (timeline layout).' } },
         { name: 'description', type: 'textarea' },
         { name: 'points', type: 'text', hasMany: true },
         { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'Stacking-cards layout only. Leave empty to use a project cover.' } },
@@ -258,7 +263,7 @@ export const ServicesSection = section({
   slug: 'services',
   labels: { singular: 'Services', plural: 'Services' },
   anchor: 'services',
-  description: 'Your services as an interactive 3D deck of glass cards (click one to open its deliverables), or as priced cards. Each “Inquire” button opens the contact form with that service chosen.',
+  description: 'Your services (Content → Services) as priced cards that open each service’s page, or as a 3D deck of glass cards. “Start a project” opens the contact form with that service chosen.',
   fields: [
     eyebrow(COPY.servicesEyebrow),
     heading(COPY.servicesHeading),
@@ -268,11 +273,13 @@ export const ServicesSection = section({
       { label: 'Priced cards', value: 'cards' },
     ] },
     { name: 'ctaLabel', label: 'Card button', type: 'text', defaultValue: 'Inquire for this service', admin: { description: 'The button inside an opened card.' } },
+    { name: 'pageLinkLabel', label: 'Card link', type: 'text', defaultValue: 'See the service', admin: { description: 'The link on each card to that service’s own page.' } },
+    { name: 'services', label: 'Services to show', type: 'relationship', relationTo: 'services', hasMany: true, admin: { description: 'Pick from Content → Services (each has its own page). Leave empty to show every published service.' } },
     {
       name: 'items',
-      label: 'Services',
+      label: 'Services (older list)',
       type: 'array',
-      admin: { initCollapsed: true },
+      admin: { initCollapsed: true, description: 'Kept for older pages. Used only when there are no published services in Content → Services.' },
       fields: [
         { name: 'title', type: 'text', required: true },
         { name: 'description', type: 'textarea', admin: { description: 'One line, shown on the card.' } },
@@ -282,9 +289,15 @@ export const ServicesSection = section({
           { name: 'currency', type: 'select', defaultValue: 'KES', options: ['KES', 'USD'], admin: { width: '33%' } },
           { name: 'unit', type: 'text', admin: { width: '33%', placeholder: '/month' } },
         ] },
-        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'The blurred strip at the top of the card. Leave empty to use a project cover.' } },
+        { name: 'image', type: 'upload', relationTo: 'media', admin: { description: 'The picture at the top of the card, ideally real work for this service. Leave empty to use a project cover.' } },
+        { name: 'imageCaption', type: 'text', admin: { description: 'Under the picture, e.g. “Triad Brands / Brand identity”.' } },
+        { type: 'row', fields: [
+          { name: 'featured', label: 'Featured service', type: 'checkbox', admin: { width: '50%', description: 'Shown inverted (dark), with a “Featured” label.' } },
+          { name: 'starter', label: 'A good first project', type: 'checkbox', admin: { width: '50%', description: 'Marks a small, low-risk way to start working together.' } },
+        ] },
       ],
     },
+    { name: 'extras', label: 'A little extra', type: 'text', hasMany: true, admin: { description: 'Small add-ons shown as chips under the cards, e.g. “Logo animation”.' } },
     { name: 'showWhatsApp', label: 'Show “Or chat on WhatsApp” under each card', type: 'checkbox', defaultValue: true },
   ],
 });
@@ -332,6 +345,24 @@ export const ContactSection = section({
     { name: 'roles', label: 'Who it’s for', type: 'text', hasMany: true, admin: { description: 'Shown as tags, e.g. “startup founder”. Type one and press Enter.' } },
     { name: 'showAvailability', label: 'Show availability (from Site settings)', type: 'checkbox', defaultValue: true },
     { name: 'showSocials', label: 'Show social links (from Site settings)', type: 'checkbox', defaultValue: true },
+    {
+      name: 'form',
+      label: 'Form',
+      type: 'group',
+      admin: { description: 'The wording on the enquiry form. Leave anything empty to keep the default shown in grey.' },
+      fields: [
+        { type: 'row', fields: [
+          { name: 'serviceLabel', label: 'Service question', type: 'text', admin: { width: '50%', placeholder: 'What do you need?' } },
+          { name: 'submitLabel', label: 'Button', type: 'text', admin: { width: '50%', placeholder: 'Send message' } },
+        ] },
+        { name: 'messagePlaceholder', label: 'Message hint', type: 'text', admin: { placeholder: 'What is it, who is it for, and when do you need it?' } },
+        { name: 'successText', label: 'After sending', type: 'text', admin: { placeholder: 'I usually reply within one working day.' } },
+        { type: 'row', fields: [
+          { name: 'privacyNote', label: 'Privacy line', type: 'text', defaultValue: 'Your details are only used to reply to you.', admin: { width: '65%' } },
+          { name: 'privacyUrl', label: 'Links to', type: 'text', defaultValue: '/cookies', admin: { width: '35%' } },
+        ] },
+      ],
+    },
   ],
 });
 

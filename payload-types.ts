@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     pages: Page;
     projects: Project;
+    services: Service;
     posts: Post;
     media: Media;
     inquiries: Inquiry;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
@@ -261,7 +263,7 @@ export interface Page {
             blockType: 'workShowcase';
           }
         | {
-            layout?: ('editorial' | 'banner') | null;
+            layout?: ('portrait' | 'editorial' | 'banner') | null;
             /**
              * The small line above the heading.
              */
@@ -297,9 +299,21 @@ export interface Page {
             greeting?: string | null;
             heading: string;
             /**
-             * A cut-out portrait (transparent PNG or WebP) looks best.
+             * A cut-out portrait (transparent PNG or WebP) looks best. Portrait layout: any portrait photo works.
              */
             photo?: (number | null) | Media;
+            /**
+             * Portrait layout: a second portrait. A “Change the mood” button swaps between the two.
+             */
+            moodPhoto?: (number | null) | Media;
+            /**
+             * Portrait layout: short labels stuck on the photo, e.g. “Always curious”. The site tagline is added on its own.
+             */
+            stickers?: string[] | null;
+            /**
+             * Portrait layout: a small line under the photo, e.g. “Designer by practice. Explorer by nature.”
+             */
+            caption?: string | null;
             /**
              * Continues the greeting, e.g. “a Senior Designer specialising in”. The list below finishes it.
              */
@@ -428,7 +442,7 @@ export interface Page {
                       )
                     | null;
                   /**
-                   * How long this phase usually takes, e.g. “2–3 days”. Shown when the step is opened (circuit layout).
+                   * How long this phase usually takes, e.g. “2–3 days”. Shown beside the step’s title (timeline layout).
                    */
                   duration?: string | null;
                   description?: string | null;
@@ -475,6 +489,17 @@ export interface Page {
              * The button inside an opened card.
              */
             ctaLabel?: string | null;
+            /**
+             * The link on each card to that service’s own page.
+             */
+            pageLinkLabel?: string | null;
+            /**
+             * Pick from Content → Services (each has its own page). Leave empty to show every published service.
+             */
+            services?: (number | Service)[] | null;
+            /**
+             * Kept for older pages. Used only when there are no published services in Content → Services.
+             */
             items?:
               | {
                   title: string;
@@ -493,12 +518,28 @@ export interface Page {
                   currency?: ('KES' | 'USD') | null;
                   unit?: string | null;
                   /**
-                   * The blurred strip at the top of the card. Leave empty to use a project cover.
+                   * The picture at the top of the card, ideally real work for this service. Leave empty to use a project cover.
                    */
                   image?: (number | null) | Media;
+                  /**
+                   * Under the picture, e.g. “Triad Brands / Brand identity”.
+                   */
+                  imageCaption?: string | null;
+                  /**
+                   * Shown inverted (dark), with a “Featured” label.
+                   */
+                  featured?: boolean | null;
+                  /**
+                   * Marks a small, low-risk way to start working together.
+                   */
+                  starter?: boolean | null;
                   id?: string | null;
                 }[]
               | null;
+            /**
+             * Small add-ons shown as chips under the cards, e.g. “Logo animation”.
+             */
+            extras?: string[] | null;
             showWhatsApp?: boolean | null;
             /**
              * Leave anything empty to keep the design’s default.
@@ -585,6 +626,17 @@ export interface Page {
             roles?: string[] | null;
             showAvailability?: boolean | null;
             showSocials?: boolean | null;
+            /**
+             * The wording on the enquiry form. Leave anything empty to keep the default shown in grey.
+             */
+            form?: {
+              serviceLabel?: string | null;
+              submitLabel?: string | null;
+              messagePlaceholder?: string | null;
+              successText?: string | null;
+              privacyNote?: string | null;
+              privacyUrl?: string | null;
+            };
             /**
              * Leave anything empty to keep the design’s default.
              */
@@ -996,6 +1048,10 @@ export interface Project {
    */
   cover: number | Media;
   /**
+   * One or two sentences on your part, shown under the lead image, e.g. “Creative lead: I created the logo and visual identity, and work across social and campaigns.”
+   */
+  contribution?: string | null;
+  /**
    * What the client needed.
    */
   brief?: string | null;
@@ -1241,6 +1297,90 @@ export interface Media {
   focalY?: number | null;
 }
 /**
+ * Each service has its own page. Drag rows to set the order they appear in.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: number;
+  _order?: string | null;
+  title: string;
+  /**
+   * Shown on the card and under the title on the page.
+   */
+  description?: string | null;
+  /**
+   * Leave empty to hide the price.
+   */
+  priceFrom?: number | null;
+  currency?: ('KES' | 'USD') | null;
+  unit?: string | null;
+  /**
+   * The picture on the service card, under the title on its page, and when the page is shared. Use real work for this service. If empty, the card borrows a project cover and the page shows no picture.
+   */
+  image?: (number | null) | Media;
+  /**
+   * Under the cover, e.g. “Triad Brands / Brand identity”.
+   */
+  imageCaption?: string | null;
+  /**
+   * The bullet points on the card and the page. Type one and press Enter.
+   */
+  deliverables?: string[] | null;
+  /**
+   * Shown inverted (dark), with a “Featured” label.
+   */
+  featured?: boolean | null;
+  /**
+   * Marks a small, low-risk way to start working together.
+   */
+  starter?: boolean | null;
+  /**
+   * A short paragraph: what it is and the problem it solves.
+   */
+  intro?: string | null;
+  /**
+   * Who it suits, e.g. “Startups launching”.
+   */
+  goodFor?: string[] | null;
+  timeline?: string | null;
+  steps?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Projects shown on the page as examples of this service.
+   */
+  projects?: (number | Project)[] | null;
+  faqs?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Defaults to the service title.
+   */
+  metaTitle?: string | null;
+  /**
+   * Defaults to the one-line summary.
+   */
+  metaDescription?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * Short articles and design notes. They appear at /insights and in the Insights section.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1304,6 +1444,10 @@ export interface Inquiry {
    * When they need it, from the brief builder.
    */
   timeline?: string | null;
+  brandStage?: ('new' | 'rebrand' | 'refresh') | null;
+  whatsapp?: string | null;
+  logoWording?: string | null;
+  keep?: string | null;
   message: string;
   status?: ('new' | 'replied' | 'archived') | null;
   updatedAt: string;
@@ -1371,6 +1515,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'projects';
         value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'services';
+        value: number | Service;
       } | null)
     | ({
         relationTo: 'posts';
@@ -1539,6 +1687,9 @@ export interface PagesSelect<T extends boolean = true> {
               greeting?: T;
               heading?: T;
               photo?: T;
+              moodPhoto?: T;
+              stickers?: T;
+              caption?: T;
               intro?: T;
               expertise?: T;
               servicesHeading?: T;
@@ -1657,6 +1808,8 @@ export interface PagesSelect<T extends boolean = true> {
               intro?: T;
               layout?: T;
               ctaLabel?: T;
+              pageLinkLabel?: T;
+              services?: T;
               items?:
                 | T
                 | {
@@ -1667,8 +1820,12 @@ export interface PagesSelect<T extends boolean = true> {
                     currency?: T;
                     unit?: T;
                     image?: T;
+                    imageCaption?: T;
+                    featured?: T;
+                    starter?: T;
                     id?: T;
                   };
+              extras?: T;
               showWhatsApp?: T;
               style?:
                 | T
@@ -1734,6 +1891,16 @@ export interface PagesSelect<T extends boolean = true> {
               roles?: T;
               showAvailability?: T;
               showSocials?: T;
+              form?:
+                | T
+                | {
+                    serviceLabel?: T;
+                    submitLabel?: T;
+                    messagePlaceholder?: T;
+                    successText?: T;
+                    privacyNote?: T;
+                    privacyUrl?: T;
+                  };
               style?:
                 | T
                 | {
@@ -2037,6 +2204,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   title?: T;
   summary?: T;
   cover?: T;
+  contribution?: T;
   brief?: T;
   approach?: T;
   outcome?: T;
@@ -2185,6 +2353,48 @@ export interface ProjectsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  _order?: T;
+  title?: T;
+  description?: T;
+  priceFrom?: T;
+  currency?: T;
+  unit?: T;
+  image?: T;
+  imageCaption?: T;
+  deliverables?: T;
+  featured?: T;
+  starter?: T;
+  intro?: T;
+  goodFor?: T;
+  timeline?: T;
+  steps?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  projects?: T;
+  faqs?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  metaTitle?: T;
+  metaDescription?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -2233,6 +2443,10 @@ export interface InquiriesSelect<T extends boolean = true> {
   service?: T;
   budget?: T;
   timeline?: T;
+  brandStage?: T;
+  whatsapp?: T;
+  logoWording?: T;
+  keep?: T;
   message?: T;
   status?: T;
   updatedAt?: T;
@@ -2325,6 +2539,7 @@ export interface Header {
       }[]
     | null;
   quoteButton: {
+    show?: boolean | null;
     label: string;
     url: string;
   };
@@ -2353,34 +2568,8 @@ export interface Footer {
   tagline?: string | null;
   showAvailability?: boolean | null;
   showSocials?: boolean | null;
-  columns?:
-    | {
-        heading: string;
-        links?:
-          | {
-              label: string;
-              /**
-               * A page (/about), a section (/#work) or a full URL.
-               */
-              url: string;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
   /**
-   * Email, phone and WhatsApp come from Site settings → Contact.
-   */
-  contact?: {
-    show?: boolean | null;
-    heading?: string | null;
-    showEmail?: boolean | null;
-    showPhone?: boolean | null;
-    showWhatsApp?: boolean | null;
-  };
-  /**
-   * The dark card at the top of the footer.
+   * The dark band at the top of the footer.
    */
   cta?: {
     show?: boolean | null;
@@ -2397,7 +2586,7 @@ export interface Footer {
    */
   copyright?: string | null;
   /**
-   * Shown beside the copyright, e.g. Privacy policy → /privacy. Link only to pages that exist.
+   * Shown beside the copyright, e.g. Terms → /terms. The pages themselves are in Pages; link only to ones that exist.
    */
   legal?:
     | {
@@ -2425,26 +2614,29 @@ export interface Footer {
 export interface Theme {
   id: number;
   /**
-   * Page background (dark sections).
+   * The page in dark mode, and dark bands in either mode.
    */
   background?: string | null;
   /**
-   * Cards and panels on dark.
+   * Cards and panels in dark mode.
    */
   surface?: string | null;
   text?: string | null;
   /**
-   * Paragraphs and secondary text. A soft off-white reads more comfortably than pure white.
+   * Paragraphs and labels in dark mode.
    */
   mutedText?: string | null;
   /**
-   * Highlights, tags, the glow and the about banner.
+   * The serif accent words, dots, numbers and small highlights, in both light and dark mode.
    */
   accent?: string | null;
   /**
-   * Gradients and light streaks.
+   * Gradients and small details.
    */
   accent2?: string | null;
+  /**
+   * The page in light mode (the default).
+   */
   lightBackground?: string | null;
   lightSurface?: string | null;
   lightText?: string | null;
@@ -2511,6 +2703,10 @@ export interface Site {
    * e.g. Graphic designer & social media creative
    */
   role: string;
+  /**
+   * One short line repeated across the site: under the hero, on the About portrait and in search results, e.g. “A little logic. A lot of imagination.”
+   */
+  tagline?: string | null;
   location?: string | null;
   /**
    * Shown in the footer and contact section, e.g. "Booking projects for October"
@@ -2562,6 +2758,7 @@ export interface HeaderSelect<T extends boolean = true> {
   quoteButton?:
     | T
     | {
+        show?: T;
         label?: T;
         url?: T;
       };
@@ -2579,28 +2776,6 @@ export interface FooterSelect<T extends boolean = true> {
   tagline?: T;
   showAvailability?: T;
   showSocials?: T;
-  columns?:
-    | T
-    | {
-        heading?: T;
-        links?:
-          | T
-          | {
-              label?: T;
-              url?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  contact?:
-    | T
-    | {
-        show?: T;
-        heading?: T;
-        showEmail?: T;
-        showPhone?: T;
-        showWhatsApp?: T;
-      };
   cta?:
     | T
     | {
@@ -2664,6 +2839,7 @@ export interface SiteSelect<T extends boolean = true> {
   name?: T;
   studio?: T;
   role?: T;
+  tagline?: T;
   location?: T;
   availability?: T;
   email?: T;

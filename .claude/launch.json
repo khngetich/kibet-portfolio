@@ -14,6 +14,26 @@
       "autoPort": false
     },
     {
+      "name": "portfolio (running)",
+      "url": "http://localhost:3001",
+      "port": 3001
+    },
+    {
+      "name": "portfolio (redesign preview)",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=postgres://localhost/portfolio_preview",
+        "NEXT_PUBLIC_SERVER_URL=http://localhost:3200",
+        "npx",
+        "next",
+        "start",
+        "-p",
+        "3200"
+      ],
+      "port": 3200,
+      "autoPort": false
+    },
+    {
       "name": "kaptured",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [

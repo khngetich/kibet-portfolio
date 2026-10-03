@@ -5,7 +5,8 @@
 # Then run this in a terminal:  scripts/setup-storage.sh
 # It asks for the session pooler string and the two keys (typing hidden; nothing is printed or
 # saved locally), then: migrates the database, uploads ./media, checks a file is publicly
-# readable, and stores the S3_* settings in Vercel (keys as secrets) for Production and Preview.
+# readable, and stores DATABASE_URL and the S3_* settings in Vercel (secrets hidden) for
+# Production and Preview. Safe to run again.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [[ ! -t 0 ]]; then echo "Run this in a terminal window: it needs to ask for the keys." >&2; exit 1; fi
@@ -24,6 +25,8 @@ export S3_BUCKET=media S3_REGION="$REGION" S3_ENDPOINT="https://$REF.supabase.co
 S3_PUBLIC_URL="https://$REF.supabase.co/storage/v1/object/public/media"
 
 echo "── 1/4  Database: pending migrations ──"
+# an earlier content copy could leave id counters behind their rows; set them right first
+psql "$TARGET_URL" -v ON_ERROR_STOP=1 -q -f scripts/fix-sequences.sql
 DATABASE_URL="$TARGET_URL" npx cross-env NODE_OPTIONS=--no-deprecation payload migrate 2>&1 | grep -vE 'email adapter'
 
 echo "── 2/4  Uploading ./media to the \"media\" bucket ──"
@@ -38,8 +41,19 @@ if [[ "$code" != "200" ]]; then
 fi
 echo "   ✓ $sample loads from the public URL"
 
-echo "── 4/4  S3 settings in Vercel ──"
-add() { printf '%s' "$2" | vercel env add "$1" production,preview "$3" --force --yes 2>&1 | grep -E '✓|Error' || true; }
+echo "── 4/4  Settings in Vercel ──"
+# show Vercel's own messages (minus its banner) so a failure is never silent; stop on the first one
+add() {
+  local out
+  if ! out=$(printf '%s' "$2" | vercel env add "$1" production,preview "$3" --force --yes 2>&1); then
+    echo "$out" | grep -v '^Vercel CLI' >&2
+    echo "   Couldn't save $1 to Vercel (see above). Fix that and run this again." >&2
+    exit 1
+  fi
+  echo "   ✓ $1"
+}
+# the database address too, so Vercel always has the current password (transaction pooler, port 6543)
+add DATABASE_URL "${TARGET_URL/:5432\//:6543/}" --sensitive
 add S3_BUCKET "$S3_BUCKET" --no-sensitive
 add S3_REGION "$S3_REGION" --no-sensitive
 add S3_ENDPOINT "$S3_ENDPOINT" --no-sensitive

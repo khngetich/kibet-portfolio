@@ -10,6 +10,7 @@ import sharp from 'sharp';
 import { Users } from './collections/Users';
 import { Media } from './collections/Media';
 import { Projects } from './collections/Projects';
+import { Services } from './collections/Services';
 import { Posts } from './collections/Posts';
 import { Inquiries } from './collections/Inquiries';
 import { Pages, pagePath } from './collections/Pages';
@@ -54,10 +55,11 @@ export default buildConfig({
       url: ({ data, collectionConfig }) => {
         let target = '/';
         if (collectionConfig?.slug === 'projects') target = `/work/${data?.slug || ''}`;
+        else if (collectionConfig?.slug === 'services') target = `/services/${data?.slug || ''}`;
         else if (collectionConfig?.slug === 'pages') target = pagePath(data?.slug);
         return `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/preview?path=${encodeURIComponent(target)}`;
       },
-      collections: ['pages', 'projects'],
+      collections: ['pages', 'projects', 'services'],
       globals: ['header', 'footer', 'theme', 'site'],
       breakpoints: [
         { label: 'Mobile', name: 'mobile', width: 390, height: 844 },
@@ -65,7 +67,7 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Pages, Projects, Posts, Media, Inquiries, Users],
+  collections: [Pages, Projects, Services, Posts, Media, Inquiries, Users],
   globals: [Header, Footer, Theme, Site],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -74,6 +76,10 @@ export default buildConfig({
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL || '' },
     migrationDir: path.resolve(dirname, 'migrations'),
+    // Dev mode would otherwise push schema changes straight into whatever database it's pointed
+    // at. Only a database on this machine may be changed that way; Supabase (production) only
+    // ever changes through migrations (`payload migrate`).
+    push: /@(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//.test(process.env.DATABASE_URL || ''),
   }),
   sharp,
   plugins: [

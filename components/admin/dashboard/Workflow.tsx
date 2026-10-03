@@ -5,7 +5,12 @@ import { Icon } from '@/components/ui/Icon';
 import type { Status } from './data';
 import { DocLink } from '../DocModal';
 
-export type WorkItem = { key: string; id: number; kind: 'page' | 'project'; title: string; sub: string; path: string | null; href: string; status: Status; ago: string };
+export type WorkItem = { key: string; id: number; kind: 'page' | 'project' | 'post'; title: string; sub: string; path: string | null; href: string; status: Status; ago: string };
+const KIND = {
+  page: { collection: 'pages', icon: 'file', label: 'Page', tint: 0 },
+  project: { collection: 'projects', icon: 'portfolio', label: 'Project', tint: 3 },
+  post: { collection: 'posts', icon: 'pen', label: 'Insight', tint: 3 },
+} as const;
 
 const LABEL: Record<Status, string> = { live: 'Live', edits: 'Unpublished changes', draft: 'Not live' };
 const HINT: Record<Status, string> = {
@@ -19,9 +24,9 @@ export function StatusBadge({ status }: { status: Status }) {
   return <span className={`cms-status is-${status}`} title={HINT[status]}><i aria-hidden="true" />{LABEL[status]}</span>;
 }
 
-type Filter = 'todo' | 'page' | 'project';
+type Filter = 'todo' | 'page' | 'project' | 'post';
 
-/** Pages and projects in one list, newest first; opens on what still needs publishing. */
+/** Pages, projects and insights in one list, newest first; opens on what still needs publishing. */
 export function Workflow({ items }: { items: WorkItem[] }) {
   const todo = items.filter((i) => i.status !== 'live');
   const [filter, setFilter] = useState<Filter>(todo.length ? 'todo' : 'page');
@@ -30,6 +35,8 @@ export function Workflow({ items }: { items: WorkItem[] }) {
     { key: 'todo', label: 'To publish', n: todo.length },
     { key: 'page', label: 'Pages', n: items.filter((i) => i.kind === 'page').length },
     { key: 'project', label: 'Projects', n: items.filter((i) => i.kind === 'project').length },
+    // the Insights tab only once there's something to show in it
+    ...(items.some((i) => i.kind === 'post') ? [{ key: 'post' as const, label: 'Insights', n: items.filter((i) => i.kind === 'post').length }] : []),
   ];
 
   return (
@@ -53,11 +60,11 @@ export function Workflow({ items }: { items: WorkItem[] }) {
         <ul className="cms-work">
           {shown.map((i) => (
             <li key={i.key}>
-              <DocLink collection={i.kind === 'page' ? 'pages' : 'projects'} id={i.id} href={i.href} className="cms-work-row">
-                <span className={`cms-tile tint-${i.kind === 'page' ? 0 : 3}`} aria-hidden="true"><Icon name={i.kind === 'page' ? 'file' : 'portfolio'} size={16} /></span>
+              <DocLink collection={KIND[i.kind].collection} id={i.id} href={i.href} className="cms-work-row">
+                <span className={`cms-tile tint-${KIND[i.kind].tint}`} aria-hidden="true"><Icon name={KIND[i.kind].icon} size={16} /></span>
                 <span className="cms-work-main">
                   <b>{i.title}</b>
-                  <small>{i.kind === 'page' ? 'Page' : 'Project'} · {i.sub} · edited {i.ago}</small>
+                  <small>{KIND[i.kind].label} · {i.sub} · edited {i.ago}</small>
                 </span>
                 <StatusBadge status={i.status} />
                 <span className="cms-work-edit" aria-hidden="true">Edit</span>

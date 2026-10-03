@@ -3,7 +3,7 @@ import { anyone, authenticated } from '../access';
 import { revalidateGlobal } from '../hooks/revalidate';
 import { linkFields } from './Header';
 
-/** The footer on every page. Saving publishes immediately; earlier versions stay in History. */
+/** The footer on every page: a call-to-action band, the name and socials, the copyright and policy links. Saving publishes immediately; earlier versions stay in History. */
 export const Footer: GlobalConfig = {
   slug: 'footer',
   label: 'Footer',
@@ -24,38 +24,10 @@ export const Footer: GlobalConfig = {
       { name: 'showSocials', label: 'Show social profiles', type: 'checkbox', defaultValue: true, admin: { width: '50%' } },
     ] },
     {
-      name: 'columns',
-      label: 'Link columns',
-      type: 'array',
-      maxRows: 4,
-      admin: { components: { RowLabel: '/components/admin/LinkRowLabel#LinkRowLabel' } },
-      fields: [
-        { name: 'heading', type: 'text', required: true },
-        { name: 'links', type: 'array', admin: { initCollapsed: true, components: { RowLabel: '/components/admin/LinkRowLabel#LinkRowLabel' } }, fields: linkFields },
-      ],
-    },
-    {
-      name: 'contact',
-      label: 'Contact column',
-      type: 'group',
-      admin: { description: 'Email, phone and WhatsApp come from Site settings → Contact.' },
-      fields: [
-        { type: 'row', fields: [
-          { name: 'show', type: 'checkbox', defaultValue: true, admin: { width: '30%' } },
-          { name: 'heading', type: 'text', defaultValue: 'Contact', admin: { width: '70%' } },
-        ] },
-        { type: 'row', fields: [
-          { name: 'showEmail', type: 'checkbox', defaultValue: true, admin: { width: '33%' } },
-          { name: 'showPhone', type: 'checkbox', defaultValue: true, admin: { width: '33%' } },
-          { name: 'showWhatsApp', label: 'Show WhatsApp', type: 'checkbox', defaultValue: true, admin: { width: '33%' } },
-        ] },
-      ],
-    },
-    {
       name: 'cta',
       label: 'Call to action card',
       type: 'group',
-      admin: { description: 'The dark card at the top of the footer.' },
+      admin: { description: 'The dark band at the top of the footer.' },
       fields: [
         { name: 'show', type: 'checkbox', defaultValue: true },
         { name: 'heading', type: 'text', defaultValue: 'Ready to elevate your visual identity?' },
@@ -67,7 +39,7 @@ export const Footer: GlobalConfig = {
       ],
     },
     { name: 'copyright', type: 'text', defaultValue: '© {year} {name}. All rights reserved.', admin: { description: '{year} and {name} are filled in automatically.' } },
-    { name: 'legal', label: 'Legal links', type: 'array', admin: { initCollapsed: true, description: 'Shown beside the copyright, e.g. Privacy policy → /privacy. Link only to pages that exist.' }, fields: linkFields },
+    { name: 'legal', label: 'Policy links', type: 'array', admin: { initCollapsed: true, description: 'Shown beside the copyright, e.g. Terms → /terms. The pages themselves are in Pages; link only to ones that exist.' }, fields: linkFields },
     { name: 'note', type: 'text', defaultValue: 'Some client work is shown under NDA or with permission.', admin: { description: 'Small print after the copyright line.' } },
   ],
 };

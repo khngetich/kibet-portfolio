@@ -195,6 +195,58 @@ async function deleteProjectImpl(id: number) {
   return true;
 }
 
+async function listPostsImpl() {
+  const { payload, user } = await session();
+  const res = await payload.find({ collection: 'posts', user, overrideAccess: false, draft: true, depth: 0, limit: 200, sort: '-publishedAt', select: { title: true, slug: true, excerpt: true, cover: true, publishedAt: true, tags: true, _status: true, updatedAt: true } });
+  return json(res.docs);
+}
+
+async function getPostImpl(id: number) {
+  const { payload, user } = await session();
+  return json(await payload.findByID({ collection: 'posts', id, user, overrideAccess: false, draft: true, depth: 0 }));
+}
+
+async function savePostImpl(id: number | null, data: Rec, publish: boolean) {
+  const { payload, user } = await session();
+  const body = { ...clean(data), _status: publish ? 'published' : 'draft' } as never;
+  const doc = id
+    ? await payload.update({ collection: 'posts', id, data: body, draft: !publish, user, overrideAccess: false, depth: 0 })
+    : await payload.create({ collection: 'posts', data: body, draft: !publish, user, overrideAccess: false, depth: 0 });
+  return json({ id: doc.id, title: doc.title });
+}
+
+async function deletePostImpl(id: number) {
+  const { payload, user } = await session();
+  await payload.delete({ collection: 'posts', id, user, overrideAccess: false });
+  return true;
+}
+
+async function listServicesImpl() {
+  const { payload, user } = await session();
+  const res = await payload.find({ collection: 'services', user, overrideAccess: false, draft: true, depth: 0, limit: 100, sort: '_order', select: { title: true, slug: true, description: true, image: true, priceFrom: true, currency: true, unit: true, featured: true, starter: true, _status: true, updatedAt: true } });
+  return json(res.docs);
+}
+
+async function getServiceImpl(id: number) {
+  const { payload, user } = await session();
+  return json(await payload.findByID({ collection: 'services', id, user, overrideAccess: false, draft: true, depth: 0 }));
+}
+
+async function saveServiceImpl(id: number | null, data: Rec, publish: boolean) {
+  const { payload, user } = await session();
+  const body = { ...clean(data), _status: publish ? 'published' : 'draft' } as never;
+  const doc = id
+    ? await payload.update({ collection: 'services', id, data: body, draft: !publish, user, overrideAccess: false, depth: 0 })
+    : await payload.create({ collection: 'services', data: body, draft: !publish, user, overrideAccess: false, depth: 0 });
+  return json({ id: doc.id, title: doc.title });
+}
+
+async function deleteServiceImpl(id: number) {
+  const { payload, user } = await session();
+  await payload.delete({ collection: 'services', id, user, overrideAccess: false });
+  return true;
+}
+
 async function listEnquiriesImpl() {
   const { payload, user } = await session();
   const res = await payload.find({ collection: 'inquiries', user, overrideAccess: false, sort: '-createdAt', limit: 100, depth: 0 });
@@ -234,6 +286,14 @@ export async function listProjects(...a: Parameters<typeof listProjectsImpl>): P
 export async function getProject(...a: Parameters<typeof getProjectImpl>): Promise<Result<Awaited<ReturnType<typeof getProjectImpl>>>> { return run(() => getProjectImpl(...a)); }
 export async function saveProject(...a: Parameters<typeof saveProjectImpl>): Promise<Result<Awaited<ReturnType<typeof saveProjectImpl>>>> { return run(() => saveProjectImpl(...a)); }
 export async function deleteProject(...a: Parameters<typeof deleteProjectImpl>): Promise<Result<Awaited<ReturnType<typeof deleteProjectImpl>>>> { return run(() => deleteProjectImpl(...a)); }
+export async function listPosts(...a: Parameters<typeof listPostsImpl>): Promise<Result<Awaited<ReturnType<typeof listPostsImpl>>>> { return run(() => listPostsImpl(...a)); }
+export async function getPost(...a: Parameters<typeof getPostImpl>): Promise<Result<Awaited<ReturnType<typeof getPostImpl>>>> { return run(() => getPostImpl(...a)); }
+export async function savePost(...a: Parameters<typeof savePostImpl>): Promise<Result<Awaited<ReturnType<typeof savePostImpl>>>> { return run(() => savePostImpl(...a)); }
+export async function deletePost(...a: Parameters<typeof deletePostImpl>): Promise<Result<Awaited<ReturnType<typeof deletePostImpl>>>> { return run(() => deletePostImpl(...a)); }
+export async function listServices(...a: Parameters<typeof listServicesImpl>): Promise<Result<Awaited<ReturnType<typeof listServicesImpl>>>> { return run(() => listServicesImpl(...a)); }
+export async function getService(...a: Parameters<typeof getServiceImpl>): Promise<Result<Awaited<ReturnType<typeof getServiceImpl>>>> { return run(() => getServiceImpl(...a)); }
+export async function saveService(...a: Parameters<typeof saveServiceImpl>): Promise<Result<Awaited<ReturnType<typeof saveServiceImpl>>>> { return run(() => saveServiceImpl(...a)); }
+export async function deleteService(...a: Parameters<typeof deleteServiceImpl>): Promise<Result<Awaited<ReturnType<typeof deleteServiceImpl>>>> { return run(() => deleteServiceImpl(...a)); }
 export async function listEnquiries(...a: Parameters<typeof listEnquiriesImpl>): Promise<Result<Awaited<ReturnType<typeof listEnquiriesImpl>>>> { return run(() => listEnquiriesImpl(...a)); }
 export async function setEnquiryStatus(...a: Parameters<typeof setEnquiryStatusImpl>): Promise<Result<Awaited<ReturnType<typeof setEnquiryStatusImpl>>>> { return run(() => setEnquiryStatusImpl(...a)); }
 export async function deleteEnquiry(...a: Parameters<typeof deleteEnquiryImpl>): Promise<Result<Awaited<ReturnType<typeof deleteEnquiryImpl>>>> { return run(() => deleteEnquiryImpl(...a)); }

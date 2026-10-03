@@ -11,6 +11,10 @@ import * as migration_20261001_171615_user_roles_site_versions from './20261001_
 import * as migration_20261001_205913_slider_labels_booking_timeline from './20261001_205913_slider_labels_booking_timeline';
 import * as migration_20261001_224434_media_prefix from './20261001_224434_media_prefix';
 import * as migration_20261002_174456_tools_showreel_insights from './20261002_174456_tools_showreel_insights';
+import * as migration_20261003_103258_editorial_redesign from './20261003_103258_editorial_redesign';
+import * as migration_20261003_111048_services_policies_simple_footer from './20261003_111048_services_policies_simple_footer';
+import * as migration_20261003_111200_seed_services_policies from './20261003_111200_seed_services_policies';
+import * as migration_20261003_151213_orange_accent from './20261003_151213_orange_accent';
 
 export const migrations = [
   {
@@ -76,6 +80,26 @@ export const migrations = [
   {
     up: migration_20261002_174456_tools_showreel_insights.up,
     down: migration_20261002_174456_tools_showreel_insights.down,
-    name: '20261002_174456_tools_showreel_insights'
+    name: '20261002_174456_tools_showreel_insights',
+  },
+  {
+    up: migration_20261003_103258_editorial_redesign.up,
+    down: migration_20261003_103258_editorial_redesign.down,
+    name: '20261003_103258_editorial_redesign',
+  },
+  {
+    up: migration_20261003_111048_services_policies_simple_footer.up,
+    down: migration_20261003_111048_services_policies_simple_footer.down,
+    name: '20261003_111048_services_policies_simple_footer',
+  },
+  {
+    up: migration_20261003_111200_seed_services_policies.up,
+    down: migration_20261003_111200_seed_services_policies.down,
+    name: '20261003_111200_seed_services_policies',
+  },
+  {
+    up: migration_20261003_151213_orange_accent.up,
+    down: migration_20261003_151213_orange_accent.down,
+    name: '20261003_151213_orange_accent'
   },
 ];

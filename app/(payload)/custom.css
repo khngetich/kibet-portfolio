@@ -231,8 +231,21 @@ html.cms-nav-collapsed .nav__controls { align-self: stretch; }
 .cms-ph-parts li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 9999px; background: var(--sub); color: var(--ink-2); font-size: 12px; line-height: 16px; font-weight: 500; }
 .cms-ph-parts li i { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-2); }
 .cms-ph-parts li.is-done { background: var(--green-soft); color: var(--green); }
-@media (max-width: 760px) { .cms-ph-body { grid-template-columns: 1fr; } .cms-ph-banner { height: 160px; } }
+@media (max-width: 760px) { .cms-ph-body { grid-template-columns: minmax(0, 1fr); } .cms-ph-banner { height: 160px; } }
 @media (prefers-reduced-motion: reduce) { .cms-ph-meter i { transition: none; } }
+
+/* ── phones: Payload's own header rows don't wrap or shrink, which widened every admin screen
+   past the phone (the browser then zooms out). Let them give way instead. ── */
+@media (max-width: 640px) {
+  .template-default__wrap, .collection-list, .collection-edit, .document-fields__main { min-width: 0; }
+  .app-header__content, .step-nav { min-width: 0; }
+  .step-nav { overflow: hidden; }
+  .step-nav > * { min-width: 0; }
+  .step-nav > :not(:first-child):not(:last-child) { display: none; }
+  .step-nav__last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .list-header__title-and-actions, .doc-header, .doc-controls__wrapper, .doc-controls__content { flex-wrap: wrap; min-width: 0; }
+  .list-header__title, .doc-header__title { min-width: 0; overflow-wrap: anywhere; }
+}
 
 /* ── login, forgot-password and first-user screens: the site's dark look ── */
 .template-minimal {
@@ -696,6 +709,26 @@ html.cms-embed body::after { display: none; }
 .cms-folder-text b { display: flex; align-items: center; gap: 8px; font-weight: 500; }
 .cms-folder-text small { font-size: 12px; line-height: 16px; color: var(--d-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* profile: trust signals as a score ring and the checks behind it, open ones first */
+.cms-profile-score { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.cms-profile-score p { margin: 0; color: var(--d-ink-2); font-size: 12px; line-height: 16px; }
+.cms-profile-score p b { display: block; color: var(--d-ink); font-size: 14px; line-height: 20px; }
+.cms-profile-ring { position: relative; display: grid; place-items: center; flex: none; width: 88px; height: 88px; }
+.cms-profile-ring svg { position: absolute; inset: 0; }
+.cms-profile-ring > b { position: relative; font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.cms-profile-ring > b small { font-size: 12px; font-weight: 500; color: var(--d-ink-2); }
+.cms-profile-ring.is-done .cms-cs-arc { stroke: var(--green); }
+.cms-profile-list { display: flex; flex-direction: column; gap: 2px; margin: 0 -8px; padding: 0; list-style: none; }
+.cms-profile-row { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 8px; border-radius: 8px; color: inherit; text-decoration: none; transition-property: background-color; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-profile-row:hover { background: var(--d-sub); }
+.cms-profile-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cms-profile-row .ui-icon { color: var(--d-ink-2); }
+.cms-profile-row.is-ok .cms-task-mark { background: var(--green); color: #FFFFFF; box-shadow: none; }
+.cms-profile-text { flex: 1; min-width: 0; }
+.cms-profile-text b { display: block; font-weight: 500; }
+.cms-profile-row.is-ok .cms-profile-text b { color: var(--d-ink-2); }
+.cms-profile-text small { display: block; font-size: 12px; line-height: 16px; color: var(--d-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* enquiries by service: a short bar list under the chart */
 .cms-mix { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--d-line); }
 .cms-mix-head { margin: 0 0 8px; font-size: 14px; line-height: 20px; font-weight: 500; }
@@ -752,7 +785,7 @@ html.cms-embed body::after { display: none; }
 .cms-cs-arc { stroke: var(--chart-1); }
 .cms-cs-ring.is-done .cms-cs-arc { stroke: var(--green); }
 @media (max-width: 900px) {
-  .cms-cs-list { grid-template-columns: 1fr; }
+  .cms-cs-list { grid-template-columns: minmax(0, 1fr); }
   .cms-cs-summary { justify-items: start; }
 }
 @media (max-width: 640px) {

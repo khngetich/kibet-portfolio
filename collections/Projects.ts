@@ -40,6 +40,7 @@ export const Projects: CollectionConfig = {
           fields: [
             { name: 'summary', type: 'textarea', required: true, maxLength: 220, admin: { description: 'One or two sentences. Shown on project cards and in search/social previews.' } },
             { name: 'cover', type: 'upload', relationTo: 'media', required: true, admin: { description: 'The thumbnail and the big image at the top of the case study. Landscape 16:10 works best.' } },
+            { name: 'contribution', label: 'My contribution', type: 'textarea', admin: { description: 'One or two sentences on your part, shown under the lead image, e.g. “Creative lead: I created the logo and visual identity, and work across social and campaigns.”' } },
             { name: 'brief', type: 'textarea', admin: { description: 'What the client needed.' } },
             { name: 'approach', type: 'textarea', admin: { description: 'What you did and why.' } },
             { name: 'outcome', type: 'textarea', admin: { description: 'What happened after launch. Keep it factual.' } },

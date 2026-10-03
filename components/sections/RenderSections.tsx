@@ -5,7 +5,7 @@ import { PostCard } from '@/components/PostCard';
 import { embedURL } from '@/lib/media';
 import { getPosts, getTools } from '@/lib/cms';
 import type { Header, Media, Page, Project, Site } from '@/payload-types';
-import { asMedia, getHeader, getProjects, getSite, type ProjectCard as Card } from '@/lib/cms';
+import { asMedia, getHeader, getProjects, getServices, getSite, type ProjectCard as Card, type ServiceCard } from '@/lib/cms';
 import { digits, price } from '@/lib/format';
 import { COPY, DEFAULT_PROCESS, DEFAULT_ROLES, copy, orDefault, text } from '@/lib/home-copy';
 import { Img } from '@/components/Img';
@@ -13,12 +13,12 @@ import { Icon, type IconName } from '@/components/Icon';
 import { CaseStudies } from '@/components/sections/CaseStudies';
 import { ScrollRow } from '@/components/motion/ScrollRow';
 import { ServiceDeck } from '@/components/motion/ServiceDeck';
-import { ProcessCircuit } from '@/components/motion/ProcessCircuit';
 import { ContactForm } from '@/components/ContactForm';
 import { ProjectCard } from '@/components/ProjectCard';
 import { WorkGrid } from '@/components/WorkGrid';
 import { Reveal, ScrollWords } from '@/components/motion/Reveal';
 import { LivingTitle } from '@/components/motion/LivingTitle';
+import { Accent, plain } from '@/components/Accent';
 import { MarqueeToggle } from '@/components/motion/PauseButton';
 import { HeroCards } from '@/components/motion/HeroCards';
 import { RoleWheel } from '@/components/motion/RoleWheel';
@@ -27,6 +27,7 @@ import { CoverFlow } from '@/components/motion/CoverFlow';
 import { StackCards } from '@/components/motion/StackCards';
 import { AboutBanner } from '@/components/motion/AboutBanner';
 import { AboutEditorial } from '@/components/motion/AboutEditorial';
+import { AboutPortrait } from '@/components/motion/AboutPortrait';
 import { GrowMedia } from '@/components/motion/GrowMedia';
 import { ServiceLink } from '@/components/motion/ServiceLink';
 
@@ -68,6 +69,7 @@ type Ctx = {
   all: Card[];
   featured: Card[];
   covers: Media[];
+  services: ServiceCard[];
   serviceTitles: string[];
   whatsapp: string | null;
   cta: { label: string; url: string };
@@ -80,6 +82,15 @@ const projectsOf = (rel: (number | Project)[] | null | undefined): Card[] =>
   (rel ?? []).filter((p): p is Project => typeof p === 'object' && !!p).map(({ id, title, slug, client, year, disciplines, summary, cover, featured, accent, role, outcome, stats }) => ({ id, title, slug, client, year, disciplines, summary, cover, featured, accent, role, outcome, stats }));
 /** A section is named by its visible heading, or by a hidden label when the heading was emptied. */
 const labelled = (heading: string, hid: string, fallback: string) => (heading ? { 'aria-labelledby': hid } : { 'aria-label': fallback });
+
+/** A Services section's cards: the services picked in it, else every published service, else its older inline list. */
+type SvcItem = Omit<ServiceCard, 'id' | 'slug'> & { id?: string | number | null; slug?: string | null };
+function serviceList(s: Of<'services'>, all: ServiceCard[]): SvcItem[] {
+  const picked = (s.services ?? []).filter((x): x is Exclude<typeof x, number> => typeof x === 'object' && !!x && x._status !== 'draft');
+  if (picked.length) return picked;
+  if (all.length) return all;
+  return (s.items ?? []).map((x) => ({ ...x, slug: null }));
+}
 
 const linkOf = (l: Link, fallback: { label: string; url: string }) => ({ label: text(l?.label, fallback.label), url: text(l?.url, fallback.url), variant: l?.variant ?? null });
 
@@ -96,9 +107,10 @@ export async function RenderSections({ sections, studio = false, title }: { sect
   const visible = (sections ?? []).map((s, index) => ({ s, index })).filter(({ s }) => studio || !s.hidden);
   if (!visible.length) return null;
 
-  const [site, header, all, featuredOnly] = await Promise.all([getSite(), getHeader(), getProjects(), getProjects({ featured: true })]);
+  const [site, header, all, featuredOnly, services] = await Promise.all([getSite(), getHeader(), getProjects(), getProjects({ featured: true }), getServices()]);
   const featured = featuredOnly.length ? featuredOnly : all;
   const ctx: Ctx = {
+    services,
     site,
     header,
     all,
@@ -107,9 +119,9 @@ export async function RenderSections({ sections, studio = false, title }: { sect
     // the contact form's "What do you need?" options: services listed anywhere on the page
     // (the Services section's list when it's on the page, otherwise the About section's)
     serviceTitles: (() => {
-      const from = (t: string) => visible.flatMap(({ s }) => (s.hidden || s.blockType !== t ? [] : ((s as { items?: { title: string }[]; services?: { title: string }[] }).items ?? (s as { services?: { title: string }[] }).services ?? []).map((i) => i.title)));
-      const list = from('services');
-      return [...new Set(list.length ? list : from('aboutBanner'))];
+      const shown = visible.flatMap(({ s }) => (!s.hidden && s.blockType === 'services' ? serviceList(s, services).map((i) => i.title) : []));
+      const about = visible.flatMap(({ s }) => (!s.hidden && s.blockType === 'aboutBanner' ? ((s as { services?: { title: string }[] }).services ?? []).map((i) => i.title) : []));
+      return [...new Set(shown.length ? shown : about.length ? about : services.map((x) => x.title))];
     })(),
     whatsapp: site.phone && site.whatsapp ? `https://wa.me/${digits(site.phone)}` : null,
     cta: { label: text(header.quoteButton?.label, 'Start a project'), url: text(header.quoteButton?.url, '/#contact') },
@@ -118,7 +130,7 @@ export async function RenderSections({ sections, studio = false, title }: { sect
 
   // Chapters: the story sections after the hero are numbered 01, 02, … (on pages with three or more).
   // (numbered by what visitors see, so the Studio canvas shows the same numbers as the live page)
-  const renders = (s: Section) => !s.hidden && (s.blockType === 'testimonials' || s.blockType === 'services' ? !!s.items?.length : true);
+  const renders = (s: Section) => !s.hidden && (s.blockType === 'testimonials' ? !!s.items?.length : s.blockType === 'services' ? serviceList(s, services).length > 0 : true);
   const storyIdx = visible.filter(({ s }) => CHAPTERS.includes(s.blockType) && renders(s)).map(({ index }) => index);
   const chapterOf = (index: number) => (storyIdx.length >= 3 && storyIdx.includes(index) ? storyIdx.indexOf(index) + 1 : undefined);
 
@@ -178,7 +190,7 @@ function HeroSection({ s, ctx, id, hid }: P<'hero'>) {
   const trusted = s.trustedText == null ? COPY.trustedText : s.trustedText.trim();
   const button = linkOf(s.button, ctx.cta);
   return (
-    <section className="hero dark" id={id} aria-labelledby={hid}>
+    <section className="hero" id={id} aria-labelledby={hid}>
       <div className="hero-glow" aria-hidden="true" />
       <div className="wrap hero-inner">
         {!!clients.length && trusted && <p className="hero-proof intro">{trusted.replace('{count}', String(clients.length))}</p>}
@@ -240,7 +252,7 @@ function WorkShowcaseSection({ s, ctx, id, hid, chapter }: P<'workShowcase'>) {
         {s.showWall === true && <TiltGallery images={wall} />}
         <div className={`wrap section-intro${s.showWall === true ? '' : ' no-wall'}`}>
           <Chapter n={chapter} label={s.eyebrow} />
-          {heading && <ScrollWords className="h-lg" id={hid} text={heading} />}
+          {heading && <ScrollWords className="h-lg" id={hid} text={plain(heading)} />}
           {s.intro && <Reveal><p className="lede">{s.intro}</p></Reveal>}
         </div>
         <CoverFlow projects={work} />
@@ -249,15 +261,18 @@ function WorkShowcaseSection({ s, ctx, id, hid, chapter }: P<'workShowcase'>) {
     );
   }
   return (
-    <section className="work work-cases dark" id={id} {...labelled(heading, hid, 'Selected work')}>
+    <section className="work work-cases" id={id} {...labelled(heading, hid, 'Selected work')}>
       <div className="wrap">
-        <Reveal className="section-intro">
-          <Chapter n={chapter} label={s.eyebrow} />
-          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
-          {s.intro && <p className="lede">{s.intro}</p>}
+        {/* editorial intro: label and two-line heading on the left, the link to all work on the right */}
+        <Reveal className="ed-intro">
+          <div>
+            <Chapter n={chapter} label={s.eyebrow} />
+            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
+            {s.intro && <p className="lede">{s.intro}</p>}
+          </div>
+          {link && <Link className="link-under" href={link.url}>{link.label} <Icon name="arrow" size={14} /></Link>}
         </Reveal>
         <CaseStudies projects={work} />
-        {link && <div className="center"><Link className="btn btn-outline" href={link.url}>{link.label} <Icon name="arrow" size={15} /></Link></div>}
       </div>
     </section>
   );
@@ -267,8 +282,31 @@ function AboutBannerSection({ s, ctx, id, hid, chapter }: P<'aboutBanner'>) {
   const first = ctx.site.name.split(/\s+/)[0];
   const link = s.link?.label && s.link?.url ? { label: s.link.label, url: s.link.url } : null;
   const cta = s.cta?.label && s.cta?.url ? { label: s.cta.label, url: s.cta.url, className: btn(s.cta.variant, 'btn-light') } : null;
+  const tabs = (s.tabs ?? []).map((t) => ({ label: t.label, heading: t.heading, text: t.text ?? null, rows: (t.rows ?? []).map((r) => ({ value: r.value, label: r.label })) }));
+  if (s.layout === 'portrait') {
+    // the site tagline rides along as the last sticker, so it shows up here as on the hero
+    const tagline = ctx.site.tagline?.trim();
+    const stickers = [...(s.stickers ?? []).filter(Boolean), ...(tagline ? [tagline] : [])].slice(0, 3);
+    return (
+      <AboutPortrait
+        id={id}
+        headingId={hid}
+        chapter={<Chapter n={chapter} label={s.eyebrow} />}
+        heading={<Accent text={s.heading} />}
+        intro={s.intro}
+        photo={s.photo}
+        moodPhoto={s.moodPhoto}
+        stickers={stickers}
+        caption={s.caption}
+        link={link}
+        name={text(s.bigName, first).toUpperCase()}
+        // the same tabs as the editorial layout; without tabs, the stats alone (the heading and
+        // intro are already above the folder)
+        tabs={tabs.length ? tabs : s.stats?.length ? [{ label: 'Overview', heading: 'In numbers', text: null, rows: s.stats.map((r) => ({ value: r.value, label: r.label })) }] : []}
+      />
+    );
+  }
   if (s.layout !== 'banner') {
-    const tabs = (s.tabs ?? []).map((t) => ({ label: t.label, heading: t.heading, text: t.text ?? null, rows: (t.rows ?? []).map((r) => ({ value: r.value, label: r.label })) }));
     // no tabs yet: one panel from the heading and stats
     const panels = tabs.length ? tabs : [{ label: 'Overview', heading: s.heading, text: s.intro ?? null, rows: (s.stats ?? []).map((r) => ({ value: r.value, label: r.label })) }];
     return (
@@ -312,18 +350,35 @@ function ProcessSection({ s, ctx, id, hid, chapter }: P<'process'>) {
     image: asMedia((step as { image?: unknown }).image) ?? ctx.covers[(i + 1) % Math.max(ctx.covers.length, 1)] ?? null,
   }));
   const heading = copy(s.heading, COPY.processHeading);
+  // the numbered timeline ('circuit' is the stored value: it predates the redesign)
   if (s.layout !== 'steps' && s.layout !== 'stack') {
     return (
-      <section className="process process-circuit dark" id={id} {...labelled(heading, hid, 'How it works')}>
-        <div className="circuit-bg" aria-hidden="true" />
-        <div className="wrap">
-          <div className="center"><Chapter n={chapter} label={s.eyebrow} /></div>
-          <ProcessCircuit
-            badge={heading || 'The process'}
-            badgeId={hid}
-            steps={(s.steps ?? []).map((x) => ({ title: x.title, icon: x.icon ?? null, description: x.description ?? null, points: x.points ?? null, duration: (x as { duration?: string | null }).duration ?? null }))}
-            footer={<div className="center steps-cta"><Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link></div>}
-          />
+      <section className="process process-tl" id={id} {...labelled(heading, hid, 'How it works')}>
+        <div className="wrap tl-grid">
+          <Reveal className="tl-intro">
+            <Chapter n={chapter} label={s.eyebrow} />
+            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
+            {s.lead && <p className="lede">{s.lead}</p>}
+            <Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
+          </Reveal>
+          <ol className="tl-steps">
+            {steps.map((step, i) => {
+              const duration = (step as { duration?: string | null }).duration;
+              return (
+                <li key={(step as { id?: string }).id ?? i} className="tl-step">
+                  <span className="tl-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <div>
+                    <div className="tl-head">
+                      <h3 className="tl-title"><span className="sr-only">Step {i + 1}: </span>{step.title}</h3>
+                      {duration && <span className="tl-time"><span className="sr-only">Takes </span>{duration}</span>}
+                    </div>
+                    {step.description && <p className="tl-desc">{step.description}</p>}
+                    {!!step.points?.length && <ul className="tl-points">{step.points.map((pt) => <li key={pt}>{pt}</li>)}</ul>}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </section>
     );
@@ -333,7 +388,7 @@ function ProcessSection({ s, ctx, id, hid, chapter }: P<'process'>) {
       <div className="wrap">
         <Reveal className="section-intro">
           <Chapter n={chapter} label={s.eyebrow} />
-          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
           {s.lead && <p className="lede process-lead">{s.lead}</p>}
         </Reveal>
         {s.layout === 'stack' ? (
@@ -363,7 +418,7 @@ function ProcessSection({ s, ctx, id, hid, chapter }: P<'process'>) {
 const STEP_ICONS: IconName[] = ['compass', 'pen', 'chat', 'rocket'];
 
 function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
-  const items = s.items ?? [];
+  const items = serviceList(s, ctx.services);
   if (!items.length) return null;
   const heading = copy(s.heading, COPY.servicesHeading);
   if (s.layout !== 'cards') {
@@ -372,47 +427,71 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
         <div className="wrap services-deck-inner">
           <Reveal className="services-deck-intro">
             <Chapter n={chapter} label={s.eyebrow} />
-            {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
             {s.intro && <p className="lede">{s.intro}</p>}
             <p className="deck-hint">Pick a card to see what’s included.</p>
             <Link className="btn btn-outline" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
           </Reveal>
-          <ServiceDeck services={items.map((x) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null }))} ctaLabel={text(s.ctaLabel, 'Inquire for this service')} />
+          <ServiceDeck services={items.map((x, i) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, image: asMedia(x.image) ?? ctx.covers[i % Math.max(ctx.covers.length, 1)] ?? null }))} ctaLabel={text(s.ctaLabel, 'Inquire for this service')} pageLabel={text(s.pageLinkLabel, 'See the service')} />
         </div>
       </section>
     );
   }
+  // productised cards: real work on top, a one-line promise, "What you get", then the extras
+  const extras = (s.extras ?? []).filter(Boolean);
   return (
-    <section className="pricing dark" id={id} {...labelled(copy(s.heading, COPY.servicesHeading), hid, 'Services')}>
-      <div className="streaks" aria-hidden="true"><span /><span /><span /><span /></div>
+    <section className="svc" id={id} {...labelled(heading, hid, 'Services')}>
       <div className="wrap">
-        <Reveal className="section-intro">
-          <Chapter n={chapter} label={s.eyebrow} />
-          {copy(s.heading, COPY.servicesHeading) && <h2 className="h-lg" id={hid}>{copy(s.heading, COPY.servicesHeading)}</h2>}
-          {s.intro && <p className="lede">{s.intro}</p>}
+        <Reveal className="ed-intro">
+          <div>
+            <Chapter n={chapter} label={s.eyebrow} />
+            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
+            {s.intro && <p className="lede">{s.intro}</p>}
+          </div>
         </Reveal>
-        <ul className="price-grid">
+        <ul className="svc-grid">
           {items.map((item, i) => {
             const image = asMedia(item.image) ?? ctx.covers[i % Math.max(ctx.covers.length, 1)];
             return (
               <li key={item.id ?? i}>
-                <Reveal className="price-card" delay={i * 0.1}>
-                  <div className="price-media" aria-hidden="true">{image && <Img media={image} sizes="400px" />}</div>
-                  <div className="price-body">
-                    <div className="price-top">
-                      <h3 className="pill-tag">{item.title}</h3>
-                      {item.priceFrom != null && <p className="price-amount"><small>from</small> {price(item.priceFrom, item.currency)}<small>{item.unit}</small></p>}
-                    </div>
-                    {item.description && <p className="price-desc">{item.description}</p>}
-                    {!!item.deliverables?.length && <ul className="price-list">{item.deliverables.map((d) => <li key={d}><Icon name="check" size={14} />{d}</li>)}</ul>}
-                    <ServiceLink className="btn btn-dark price-btn" service={item.title}>{ctx.cta.label}</ServiceLink>
-                    {s.showWhatsApp !== false && ctx.whatsapp && <a className="price-alt" href={ctx.whatsapp} target="_blank" rel="noopener noreferrer">Or chat on WhatsApp</a>}
+                <Reveal className={`svc-card${item.featured ? ' band-dark is-featured' : ''}`} delay={(i % 3) * 0.08}>
+                  <figure className="svc-media">
+                    <span className="svc-img">{image && <Img media={image} sizes="(max-width: 760px) 90vw, 400px" />}</span>
+                    {item.featured && <span className="svc-flag">Featured service</span>}
+                    {item.imageCaption && <figcaption>{item.imageCaption}</figcaption>}
+                  </figure>
+                  <div className="svc-body">
+                    {item.starter && <p className="svc-starter"><Icon name="spark" size={12} /> A good first project</p>}
+                    <h3 className="svc-title">{item.title}</h3>
+                    {item.description && <p className="svc-desc">{item.description}</p>}
+                    {item.priceFrom != null && <p className="svc-price"><small>From</small> {price(item.priceFrom, item.currency)}<small>{item.unit}</small></p>}
+                    {!!item.deliverables?.length && (
+                      <div className="svc-get">
+                        <p className="ed-kicker">What you get</p>
+                        <ul>{item.deliverables.map((d) => <li key={d}>{d}</li>)}</ul>
+                      </div>
+                    )}
+                    {item.slug
+                      ? <Link className="link-under svc-cta" href={`/services/${item.slug}`}>{text(s.pageLinkLabel, 'See the service')} <Icon name="arrow" size={14} /></Link>
+                      : <ServiceLink className="link-under svc-cta" service={item.title}>{text(s.ctaLabel, 'Inquire for this service')} <Icon name="arrow" size={14} /></ServiceLink>}
                   </div>
                 </Reveal>
               </li>
             );
           })}
         </ul>
+        <div className="svc-foot">
+          {!!extras.length && (
+            <div className="svc-extras">
+              <p className="ed-kicker">A little extra</p>
+              <ul>{extras.map((x) => <li key={x}>{x}</li>)}</ul>
+            </div>
+          )}
+          <div className="svc-actions">
+            <Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
+            {s.showWhatsApp !== false && ctx.whatsapp && <a className="link-under" href={ctx.whatsapp} target="_blank" rel="noopener noreferrer">Or chat on WhatsApp</a>}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -427,7 +506,7 @@ function TestimonialsSection({ s, ctx, id, hid, chapter }: P<'testimonials'>) {
       <div className="wrap">
         <Reveal className="section-intro">
           <Chapter n={chapter} label={s.eyebrow} />
-          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
         </Reveal>
         {!items.length ? (
           <p className="studio-empty">Add three or four client quotes in this section’s Content tab. It stays hidden on the live site until there is at least one.</p>
@@ -470,7 +549,7 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
       <div className="wrap">
         <Reveal className="section-intro contact-head">
           <Chapter n={chapter} label={s.eyebrow} />
-          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
           {!!roles.length && (
             <div className="contact-roles">
               {s.rolesLead && <p>{s.rolesLead}</p>}
@@ -495,7 +574,7 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
               ))}
             </ul>
           </Reveal>
-          <Reveal delay={0.1}><ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} /></Reveal>
+          <Reveal delay={0.1}><ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} chatUrl={ctx.whatsapp} copy={s.form ?? {}} /></Reveal>
         </div>
       </div>
     </section>
@@ -523,7 +602,7 @@ function ProjectGridSection({ s, ctx, id, first }: { s: Of<'projectGrid'>; ctx: 
     <section className="page-head-section" id={id}>
       <div className="wrap">
         <header className="page-head">
-          {s.heading ? <Heading className="h-xl">{s.heading}</Heading> : first && <h1 className="sr-only">Work</h1>}
+          {s.heading ? <Heading className="h-xl"><Accent text={s.heading} /></Heading> : first && <h1 className="sr-only">Work</h1>}
           {s.intro && <p className="lede">{s.intro}</p>}
         </header>
         {projects.length ? (
@@ -555,7 +634,7 @@ function ProfileSection({ s, id, first }: { s: Of<'profile'>; id?: string; first
       <div className="wrap about">
         <div className="about-main">
           {s.eyebrow && <p className="kicker">{s.eyebrow}</p>}
-          <Heading className="h-xl">{s.heading}</Heading>
+          <Heading className="h-xl"><Accent text={s.heading} /></Heading>
           {s.body && <RichText data={s.body} className="prose about-body" />}
           <div className="ctas">
             {s.button?.label && s.button?.url && <Link className={btn(s.button.variant, 'btn-light')} href={s.button.url}>{s.button.label}</Link>}
@@ -583,7 +662,7 @@ function RichTextSection({ s, id, hid }: Omit<P<'richText'>, 'ctx'>) {
     <section className={`text-section dark${s.align === 'center' ? ' center' : ''}`} id={id} aria-labelledby={s.heading ? hid : undefined}>
       <Reveal className="wrap text-inner">
         {s.eyebrow && <p className="eyebrow">{s.eyebrow}</p>}
-        {s.heading && <h2 className="h-lg" id={hid}>{s.heading}</h2>}
+        {s.heading && <h2 className="h-lg" id={hid}><Accent text={s.heading} /></h2>}
         {s.body && <RichText data={s.body} className="prose" />}
       </Reveal>
     </section>
@@ -610,7 +689,7 @@ function CtaSection({ s, ctx, id, hid }: P<'ctaBanner'>) {
       <div className="wrap">
         <Reveal className="cta-card">
           <div className="cta-glow" aria-hidden="true" />
-          <h2 className="h-lg" id={hid}>{s.heading}</h2>
+          <h2 className="h-lg" id={hid}><Accent text={s.heading} /></h2>
           {s.text && <p className="lede">{s.text}</p>}
           <a className={btn(button.variant, 'btn-light')} href={button.url}>{button.label} <Icon name="arrow" size={15} /></a>
         </Reveal>
@@ -627,7 +706,7 @@ function FaqSection({ s, id, hid }: Omit<P<'faq'>, 'ctx'>) {
       <div className="wrap faq">
         <Reveal className="faq-head">
           {s.eyebrow && <p className="eyebrow">{s.eyebrow}</p>}
-          {s.heading && <h2 className="h-lg" id={hid}>{s.heading}</h2>}
+          {s.heading && <h2 className="h-lg" id={hid}><Accent text={s.heading} /></h2>}
         </Reveal>
         <div className="faq-list">
           {items.map((q, i) => (
@@ -671,7 +750,7 @@ async function ToolsSection({ s, id, hid, chapter }: P<'tools'>) {
       <div className="wrap">
         <Reveal className="section-intro">
           <Chapter n={chapter} label={s.eyebrow} />
-          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
           {s.intro && <p className="lede">{s.intro}</p>}
         </Reveal>
         <ul className="tools-grid">
@@ -703,7 +782,7 @@ function ShowreelSection({ s, ctx, id, hid, chapter }: P<'showreel'>) {
       <div className="wrap reel">
         <Reveal className="reel-intro">
           <Chapter n={chapter} label={s.eyebrow} />
-          {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+          {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
           {s.text && <p className="lede">{s.text}</p>}
           <p className="reel-hint"><Icon name="play" size={14} /> {label}</p>
         </Reveal>
@@ -726,7 +805,7 @@ async function InsightsSection({ s, id, hid, chapter }: Omit<P<'insights'>, 'ctx
         <Reveal className="insights-head">
           <div>
             <Chapter n={chapter} label={s.eyebrow} />
-            {heading && <h2 className="h-lg" id={hid}>{heading}</h2>}
+            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
           </div>
           <a className={btn(button.variant, 'btn-outline')} href={button.url}>{button.label} <Icon name="arrow" size={15} /></a>
         </Reveal>

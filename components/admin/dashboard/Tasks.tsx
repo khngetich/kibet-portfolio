@@ -13,7 +13,8 @@ import { DocLink } from '../DocModal';
  */
 
 export type Priority = 'high' | 'medium' | 'normal';
-export type Task = { key: string; label: string; detail: string; priority: Priority; done: boolean; href: string; doc?: { collection: string; id: number } };
+// `doc` without an id opens a create form in the pop-up
+export type Task = { key: string; label: string; detail: string; priority: Priority; done: boolean; href: string; doc?: { collection: string; id?: number } };
 
 const RANK: Record<Priority, number> = { high: 0, medium: 1, normal: 2 };
 const WORD: Record<Priority, string> = { high: 'High', medium: 'Medium', normal: 'Normal' };

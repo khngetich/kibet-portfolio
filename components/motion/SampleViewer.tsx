@@ -102,6 +102,18 @@ export function SampleGrid({ items }: { items: ViewItem[] }) {
   );
 }
 
+/** A button that opens the viewer at the first of `items`: the "+" on a lead image, "Explore all (N)". */
+export function ViewerButton({ items, className, label, children }: { items: ViewItem[]; className?: string; label?: string; children: ReactNode }) {
+  const [index, setIndex] = useState<number | null>(null);
+  if (!items.length) return null;
+  return (
+    <>
+      <button type="button" className={className} aria-label={label} onClick={() => setIndex(0)}>{children}</button>
+      <Viewer items={items} index={index} onIndex={setIndex} onClose={() => setIndex(null)} />
+    </>
+  );
+}
+
 /** "Watch the video": opens a YouTube/Vimeo link in the same viewer instead of leaving the page. */
 export function WatchButton({ embed, title, children }: { embed: string; title: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);

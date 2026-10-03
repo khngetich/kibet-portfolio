@@ -348,6 +348,18 @@ textarea.st-input { resize: vertical; line-height: 1.5; }
 .st-versions b { display: block; font-size: 14px; line-height: 20px; font-weight: 500; }
 .st-versions small { font-size: 12px; line-height: 16px; color: var(--ink-2); }
 
+/* insights cards: a post without a cover shows its title on the dark surface */
+.st-post-card .st-card-media { position: relative; display: grid; }
+.st-post-type { display: flex; align-items: flex-end; padding: 12px; background: var(--inverse); color: var(--on-inverse); font-size: 16px; line-height: 1.1; font-weight: 700; letter-spacing: -.02em; text-transform: uppercase; }
+.st-post-date { color: var(--ink-2) !important; }
+.st-post-excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+
+/* services cards: the cover, or a dashed "Add a cover" slot when the site is borrowing one */
+.st-insp-library { justify-content: center; width: 100%; }
+.st-svc-card .st-card-media { position: relative; display: grid; }
+.st-svc-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--line-2); outline: 1px dashed var(--line-2); outline-offset: -6px; color: var(--ink-2); font-size: 12px; font-weight: 500; }
+.st-svc-flag { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 9999px; background: var(--inverse); color: var(--on-inverse); font-size: 11px; line-height: 16px; font-style: normal; font-weight: 500; }
+
 /* projects as a board: one column per publishing state (components/studio/Managers.tsx) */
 .st-manager-bar { gap: 12px; }
 .st-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
@@ -372,7 +384,7 @@ textarea.st-input { resize: vertical; line-height: 1.5; }
 .st-board-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; line-height: 16px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .st-board-missing { color: var(--amber) !important; }
 .st-board-empty { padding: 24px 8px; border-radius: 8px; text-align: center; color: var(--ink-2); font-size: 12px; border: 1px dashed var(--line-2); }
-@media (max-width: 900px) { .st-board { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .st-board { grid-template-columns: minmax(0, 1fr); } }
 
 /* enquiries as a mail client: the list beside the open message (components/studio/Inbox.tsx) */
 .st-mail { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 0; min-height: min(560px, calc(100dvh - 220px)); margin: 0 -24px -24px; border-top: 1px solid var(--line); }
@@ -408,7 +420,7 @@ textarea.st-input { resize: vertical; line-height: 1.5; }
 .st-mail-reply { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 12px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
 .st-mail-templates { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 @media (max-width: 760px) {
-  .st-mail { grid-template-columns: 1fr; }
+  .st-mail { grid-template-columns: minmax(0, 1fr); }
   .st-mail-list { border-right: 0; border-bottom: 1px solid var(--line); max-height: 40dvh; }
 }
 

@@ -9,6 +9,7 @@ export const SECTION_ICON: Record<string, IconName> = {
   dashboard: 'dashboard',
   pages: 'file',
   projects: 'portfolio',
+  services: 'tag',
   posts: 'pen',
   media: 'image',
   inquiries: 'inbox',

@@ -31,6 +31,7 @@ export const Header: GlobalConfig = {
       label: 'Quote button',
       type: 'group',
       fields: [
+        { name: 'show', label: 'Show the button in the header', type: 'checkbox', defaultValue: false },
         { type: 'row', fields: [
           { name: 'label', type: 'text', defaultValue: 'Start a project', required: true, admin: { width: '40%' } },
           { name: 'url', type: 'text', defaultValue: '/#contact', required: true, admin: { width: '60%' } },

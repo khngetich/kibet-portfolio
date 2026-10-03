@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotionConfig } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from './Icon';
+import { ThemeToggle } from './ThemeToggle';
 
 type NavLink = { label: string; url: string };
 
@@ -14,12 +15,12 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 const anchorOf = (url: string) => (url.startsWith('#') ? url.slice(1) : url.startsWith('/#') ? url.slice(2) : null);
 
 /**
- * The floating header: a capsule held off the screen edges on every page, with the name
- * on the left, the menu in the middle and the quote button on the right. Links to page
+ * The header bar on every page: the name on the left, the menu in the middle, and on the right
+ * the theme switch (plus a quote button when Header settings turn it on). Links to page
  * sections highlight while that section is on screen; the links and button come from the
  * Header settings in the CMS.
  */
-export function Header({ name, menu, quote, availability }: { name: string; menu: NavLink[]; quote: NavLink; availability?: string | null }) {
+export function Header({ name, menu, quote, availability }: { name: string; menu: NavLink[]; quote: NavLink | null; availability?: string | null }) {
   const pathname = usePathname();
   const reduce = useReducedMotionConfig();
   const [active, setActive] = useState<string | null>(null);
@@ -74,7 +75,7 @@ export function Header({ name, menu, quote, availability }: { name: string; menu
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 0.3, ease: EASE }}
       >
-        <Link className="brand" href="/" aria-label={`${name}, home`}>{name}</Link>
+        <Link className="brand" href="/" aria-label={`${name}, home`}>{name}<span className="brand-dot" aria-hidden="true">.</span></Link>
 
         <nav className="header-nav" aria-label="Primary">
           <ul>
@@ -98,8 +99,11 @@ export function Header({ name, menu, quote, availability }: { name: string; menu
               <Icon name={open ? 'close' : 'menu'} size={16} />
             </button>
           )}
-          <Link className="header-cta" href={href(quote.url)}>{quote.label}</Link>
+          {quote && <Link className="header-cta" href={href(quote.url)}>{quote.label} <Icon name="arrow" size={14} /></Link>}
+          <ThemeToggle />
         </div>
+        {/* how far down the page you are: a hairline driven by scroll position (CSS only) */}
+        <span className="scroll-progress" aria-hidden="true" />
 
         <AnimatePresence>
           {open && (

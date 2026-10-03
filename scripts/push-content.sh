@@ -35,7 +35,7 @@ dump="$(mktemp -t cms-content).sql"
 
 echo "1/3  Dumping content from the local database…"
 pg_dump "$SOURCE_URL" --data-only --no-owner --no-privileges \
-  --exclude-table='payload_migrations' --exclude-table='payload_locked_documents*' --exclude-table='payload_preferences*' \
+  --exclude-table='payload_migrations*' --exclude-table='payload_locked_documents*' --exclude-table='payload_preferences*' \
   -f "$dump"
 
 echo "2/3  Building the schema on the target (payload migrate)…"
@@ -65,6 +65,9 @@ cat "$dump" >> "$load"
 
 echo "3/3  Loading the content…"
 psql "$TARGET_URL" -v ON_ERROR_STOP=1 --single-transaction -q -o /dev/null -f "$load"
+
+# the copy carries explicit ids: move every id counter past them (scripts/fix-sequences.sql)
+psql "$TARGET_URL" -v ON_ERROR_STOP=1 -q -f scripts/fix-sequences.sql
 
 echo "Done. Counts on the target:"
 psql "$TARGET_URL" -At -c "$counts" | sed 's/^/   /'

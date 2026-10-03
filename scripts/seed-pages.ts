@@ -190,23 +190,11 @@ async function run() {
   }
 
   const footer = (await payload.findGlobal({ slug: 'footer', depth: 0 })) as unknown as Rec;
-  if (!rows(footer.columns).length) {
+  if (!footer.note) {
     await payload.updateGlobal({
       slug: 'footer',
       context: ctx,
-      data: {
-        columns: [{
-          heading: 'Site',
-          links: [
-            { label: 'Work', url: '/work' },
-            { label: 'About', url: '/about' },
-            { label: 'Process', url: '/#process' },
-            { label: 'Services', url: '/#services' },
-            { label: 'Contact', url: '/#contact' },
-          ],
-        }],
-        note: (siteRec.footerNote as string) || 'Some client work is shown under NDA or with permission.',
-      },
+      data: { note: (siteRec.footerNote as string) || 'Some client work is shown under NDA or with permission.' },
     });
     payload.logger.info('Footer filled');
   }

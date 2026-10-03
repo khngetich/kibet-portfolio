@@ -8,8 +8,8 @@ import { DashIntro } from './DashIntro';
 import { EnquiryChart } from './DashboardCharts';
 import { Img } from '@/components/Img';
 import { DISCIPLINES } from '@/collections/Projects';
-import { getCaseStudies, getDisciplines, getEnquiryStats, getInbox, getMediaStats, getPages, getProjects, getRecentWork, getServiceMix, getSiteDefaults, LARGE_IMAGE } from './dashboard/data';
-import { Availability, CaseStudies, Folders } from './dashboard/Portfolio';
+import { getCaseStudies, getDisciplines, getEnquiryStats, getInbox, getPostsStatus, getProfile, getMediaStats, getPages, getProjects, getRecentWork, getServiceMix, getServicesCovers, getSiteDefaults, LARGE_IMAGE } from './dashboard/data';
+import { Availability, CaseStudies, Folders, Profile } from './dashboard/Portfolio';
 import { Greeting, LiveStatus, StickyHero } from './dashboard/Hero';
 import { Tasks, type Task } from './dashboard/Tasks';
 import { Health, type HealthCheck } from './dashboard/Health';
@@ -26,7 +26,8 @@ import { StatusBadge, Workflow, type WorkItem } from './dashboard/Workflow';
  *   folders   the work grouped by discipline, each folder with its newest cover peeking out
  *   bento     enquiries + content workflow (8 cols) beside to-do, site health and settings (4)
  *   work      the four latest projects, with their covers
- *   case      how complete each project's case study is, least complete first
+ *   case      how complete each project's case study is, least complete first, beside the
+ *             profile score (trust signals: contact, socials, portrait, testimonials…)
  *   inbox     latest enquiries with triage on the row
  *
  * The hero renders at once; every card below is its own Suspense boundary, so each streams in
@@ -145,10 +146,11 @@ async function EnquiriesCard({ payload }: { payload: Payload }) {
 }
 
 async function WorkflowCard({ payload, admin }: { payload: Payload; admin: string }) {
-  const [pages, projects] = await Promise.all([getPages(payload), getProjects(payload)]);
+  const [pages, projects, posts] = await Promise.all([getPages(payload), getProjects(payload), getPostsStatus(payload)]);
   const items: (WorkItem & { at: string })[] = [
     ...pages.map((p) => ({ key: `page-${p.id}`, id: p.id, kind: 'page' as const, title: p.title, sub: p.path ?? 'No address yet', path: p.path, href: `${admin}/collections/pages/${p.id}`, status: p.status, ago: p.ago, at: p.updatedAt })),
     ...projects.map((p) => ({ key: `project-${p.id}`, id: p.id, kind: 'project' as const, title: p.title, sub: p.client || p.path || 'No address yet', path: p.path, href: `${admin}/collections/projects/${p.id}`, status: p.status, ago: p.ago, at: p.updatedAt })),
+    ...posts.map((p) => ({ key: `post-${p.id}`, id: p.id, kind: 'post' as const, title: p.title, sub: p.path ?? 'No address yet', path: p.path, href: `${admin}/collections/posts/${p.id}`, status: p.status, ago: p.ago, at: p.updatedAt })),
   ].sort((a, b) => b.at.localeCompare(a.at));
   return (
     <section className="cms-card cms-anim" aria-labelledby="dash-workflow">
@@ -181,7 +183,11 @@ async function HealthCard({ payload, admin }: { payload: Payload; admin: string 
 }
 
 async function TasksCard({ payload, admin }: { payload: Payload; admin: string }) {
-  const [inbox, pages, projects, media, site] = await Promise.all([getInbox(payload), getPages(payload), getProjects(payload), getMediaStats(payload), getSiteDefaults(payload)]);
+  const [inbox, pages, projects, media, site, posts, services] = await Promise.all([getInbox(payload), getPages(payload), getProjects(payload), getMediaStats(payload), getSiteDefaults(payload), getPostsStatus(payload), getServicesCovers(payload)]);
+  const noCover = services.filter((x) => !x.cover);
+  const postDoc = (id: number) => ({ href: `${admin}/collections/posts/${id}`, doc: { collection: 'posts', id } });
+  const livePosts = posts.filter((p) => p.status !== 'draft').length;
+  const draftPost = posts.find((p) => p.status === 'draft');
   const pageDoc = (id: number) => ({ href: `${admin}/collections/pages/${id}`, doc: { collection: 'pages', id } });
   const projectDoc = (id: number) => ({ href: `${admin}/collections/projects/${id}`, doc: { collection: 'projects', id } });
   const noTitle = pages.filter((p) => !p.meta?.title);
@@ -198,12 +204,26 @@ async function TasksCard({ payload, admin }: { payload: Payload; admin: string }
       label: inbox.unread ? `Reply to ${plural(inbox.unread, 'new enquiry', 'new enquiries')}` : 'Reply to new enquiries',
       detail: inbox.unread ? 'Waiting in the inbox below' : 'Inbox is clear',
     },
-    ...[...pages.map((p) => ({ ...p, kind: 'page' as const })), ...projects.map((p) => ({ ...p, kind: 'project' as const }))]
+    ...[...pages.map((p) => ({ ...p, kind: 'page' as const })), ...projects.map((p) => ({ ...p, kind: 'project' as const })), ...posts.map((p) => ({ ...p, kind: 'post' as const }))]
       .filter((d) => d.status === 'edits')
       .map((d): Task => ({
-        key: `edits-${d.kind}-${d.id}`, priority: 'medium', done: false, ...(d.kind === 'page' ? pageDoc(d.id) : projectDoc(d.id)),
-        label: `Publish changes to ${d.title}`, detail: `${d.kind === 'page' ? 'Page' : 'Project'} · edited ${d.ago}; visitors still see the older version`,
+        key: `edits-${d.kind}-${d.id}`, priority: 'medium', done: false, ...(d.kind === 'page' ? pageDoc(d.id) : d.kind === 'post' ? postDoc(d.id) : projectDoc(d.id)),
+        label: `Publish changes to ${d.title}`, detail: `${d.kind === 'page' ? 'Page' : d.kind === 'post' ? 'Insight' : 'Project'} · edited ${d.ago}; visitors still see the older version`,
       })),
+    // an Insights section shows nothing until an article is live
+    {
+      key: 'insight', priority: 'normal', done: livePosts > 0,
+      ...(draftPost ? postDoc(draftPost.id) : { href: `${admin}/collections/posts/create`, doc: { collection: 'posts' } }),
+      label: livePosts ? 'Publish an insight' : draftPost ? `Finish and publish ${draftPost.title}` : 'Write your first insight',
+      detail: livePosts ? `${plural(livePosts, 'insight')} live at /insights` : draftPost ? 'A draft is waiting; /insights stays empty until one is live' : 'A short design note shows how you think. It appears at /insights.',
+    },
+    // a service without a cover borrows a project cover on its card and has no picture on its page
+    ...(services.length ? [{
+      key: 'service-covers', priority: 'medium' as const, done: noCover.length === 0,
+      ...(noCover[0] ? { href: `${admin}/collections/services/${noCover[0].id}`, doc: { collection: 'services', id: noCover[0].id } } : { href: `${admin}/collections/services` }),
+      label: noCover.length ? `Add covers to ${plural(noCover.length, 'service')}` : 'Service covers',
+      detail: noCover.length ? `${noCover.map((x) => x.title).join(', ')} · their cards borrow a project cover` : 'Every service has its own cover',
+    }] : []),
     {
       key: 'titles', priority: 'medium', done: noTitle.length === 0, ...firstOf(noTitle),
       label: noTitle.length ? `Write search titles for ${plural(noTitle.length, 'page')}` : 'Search titles',
@@ -279,6 +299,10 @@ async function RecentWorkCard({ payload, admin }: { payload: Payload; admin: str
 
 async function FoldersCard({ payload, admin }: { payload: Payload; admin: string }) {
   return <Folders folders={await getDisciplines(payload, DISCIPLINES)} admin={admin} disciplines={DISCIPLINES} />;
+}
+
+async function ProfileCard({ payload, admin }: { payload: Payload; admin: string }) {
+  return <Profile checks={await getProfile(payload)} admin={admin} />;
 }
 
 async function CaseStudiesCard({ payload, admin }: { payload: Payload; admin: string }) {
@@ -357,7 +381,8 @@ export async function Dashboard({ payload, user }: Props) {
         <div className="cms-cell cms-span-4 is-fill"><Suspense fallback={<Skeleton height={360} lines={5} />}><TasksCard payload={payload} admin={admin} /></Suspense></div>
         <div className="cms-cell cms-span-8"><Suspense fallback={<Skeleton height={340} lines={3} />}><RecentWorkCard payload={payload} admin={admin} /></Suspense></div>
         <div className="cms-cell cms-span-4"><SettingsCard admin={admin} /></div>
-        <div className="cms-cell cms-span-12"><Suspense fallback={<Skeleton height={280} lines={4} />}><CaseStudiesCard payload={payload} admin={admin} /></Suspense></div>
+        <div className="cms-cell cms-span-8"><Suspense fallback={<Skeleton height={280} lines={4} />}><CaseStudiesCard payload={payload} admin={admin} /></Suspense></div>
+        <div className="cms-cell cms-span-4"><Suspense fallback={<Skeleton height={280} lines={4} />}><ProfileCard payload={payload} admin={admin} /></Suspense></div>
         {/* full width with no partner: an empty inbox stays a slim strip instead of stretching */}
         <div className="cms-cell cms-span-12"><Suspense fallback={<Skeleton height={200} lines={3} />}><InboxCard payload={payload} admin={admin} /></Suspense></div>
       </div>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import { Manrope } from 'next/font/google';
 import './globals.css';
 import './sections.css';
 import { Header } from '@/components/Header';
@@ -14,6 +15,15 @@ import { MotionPrefs } from '@/components/MotionPrefs';
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000';
 
+// The site's sans (self-hosted at build); the accent serif is Georgia, already on every device.
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' });
+
+/**
+ * Runs before first paint: applies the visitor's saved theme (ThemeToggle), else light, so the
+ * page never flashes the wrong colours. Kept tiny and dependency-free on purpose.
+ */
+const THEME_BOOT = `try{var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light')t='light';var d=document.documentElement;d.dataset.theme=t;d.style.colorScheme=t}catch(e){}`;
+
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
   const title = site.studio ? `${site.name} — ${site.studio}` : site.name;
@@ -21,8 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(SERVER_URL),
     title: { default: title, template: `%s — ${site.name}` },
-    description: site.metaDescription || site.role,
-    openGraph: { title, description: site.metaDescription || site.role, type: 'website', images: og?.url ? [{ url: og.url, width: og.width ?? undefined, height: og.height ?? undefined }] : [{ url: '/og', width: 1200, height: 630, alt: title }] },
+    description: site.metaDescription || site.tagline || site.role,
+    openGraph: { title, description: site.metaDescription || site.tagline || site.role, type: 'website', images: og?.url ? [{ url: og.url, width: og.width ?? undefined, height: og.height ?? undefined }] : [{ url: '/og', width: 1200, height: 630, alt: title }] },
     twitter: { card: 'summary_large_image' },
   };
 }
@@ -31,14 +41,20 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#000000',
-  colorScheme: 'dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
+  colorScheme: 'light dark',
 };
 
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const [site, header, footer, theme, preview, studio] = await Promise.all([getSite(), getHeader(), getFooter(), getTheme(), isPreview(), isStudioCanvas()]);
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} data-theme="dark" data-motion={theme.motion ?? 'full'} data-scroll-behavior="smooth" data-wa={!studio && site.phone && site.whatsapp ? '' : undefined}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${manrope.variable}`} data-theme="light" suppressHydrationWarning data-motion={theme.motion ?? 'full'} data-scroll-behavior="smooth" data-wa={!studio && site.phone && site.whatsapp ? '' : undefined}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
+      </head>
       <body>
         <ThemeStyle theme={theme} />
         {/* Ink layer: the misregistration filter used on project images (sections.css, "ink and paper") */}
@@ -67,7 +83,7 @@ export default async function FrontendLayout({ children }: { children: React.Rea
           <Header
             name={site.name}
             menu={(header.menu ?? []).map((l) => ({ label: l.label, url: l.url }))}
-            quote={{ label: header.quoteButton?.label || 'Start a project', url: header.quoteButton?.url || '/#contact' }}
+            quote={header.quoteButton?.show ? { label: header.quoteButton.label || 'Start a project', url: header.quoteButton.url || '/#contact' } : null}
             availability={header.showAvailability !== false ? site.availability : null}
           />
           <main id="main">{children}</main>

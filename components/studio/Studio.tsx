@@ -13,7 +13,7 @@ import { ConfirmProvider, Modal, useConfirm } from './Modal';
 import { MediaLibrary, StudioDataProvider } from './Data';
 import { FieldList } from './Fields';
 import type { UploadMode } from './upload';
-import { ProjectsManager } from './Managers';
+import { PostsManager, ProjectsManager, ServicesManager } from './Managers';
 import { EnquiriesManager } from './Inbox';
 import { TabList, TabPanel } from './TabList';
 import { defaultsOf, newId, pagePath, slugify, timeAgo, type Rec } from './util';
@@ -26,7 +26,7 @@ import { defaultsOf, newId, pagePath, slugify, timeAgo, type Rec } from './util'
  * Edits autosave as a draft (the canvas refreshes as you type); Publish puts them live.
  */
 
-type Schema = { sections: SBlock[]; globals: { slug: string; label: string; description?: string; fields: SField[] }[]; project: SField[] };
+type Schema = { sections: SBlock[]; globals: { slug: string; label: string; description?: string; fields: SField[] }[]; project: SField[]; post: SField[]; service: SField[] };
 type PageRef = { id: number; title: string; slug?: string | null; _status?: string | null; updatedAt?: string };
 type GlobalSlug = 'header' | 'footer' | 'theme' | 'site';
 type Panel = { kind: 'section'; index: number } | { kind: 'page' } | { kind: 'global'; slug: GlobalSlug };
@@ -58,7 +58,7 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
   const [save, setSave] = useState<SaveState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [modal, setModal] = useState<null | 'addSection' | 'newPage' | 'versions' | 'media' | 'projects' | 'enquiries'>(null);
+  const [modal, setModal] = useState<null | 'addSection' | 'newPage' | 'versions' | 'media' | 'projects' | 'posts' | 'services' | 'enquiries'>(null);
   const [insertAt, setInsertAt] = useState(0);
   const [canvasKey, setCanvasKey] = useState(0);
   const frame = useRef<HTMLIFrameElement>(null);
@@ -341,6 +341,8 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
             <p className="st-group-title">Library</p>
             <SiteLink label="Media" hint="Images, videos and PDFs" onClick={() => setModal('media')} />
             <SiteLink label="Projects" hint="Case studies" onClick={() => setModal('projects')} />
+            <SiteLink label="Services" hint="What you offer, with covers and pages" onClick={() => setModal('services')} />
+            <SiteLink label="Insights" hint="Articles and design notes" onClick={() => setModal('posts')} />
             <SiteLink label="Enquiries" hint="Messages from the contact form" onClick={() => setModal('enquiries')} />
             <p className="st-group-title">More</p>
             <SiteLink label="CMS dashboard" hint="The full Payload admin" href={adminRoute} />
@@ -366,6 +368,7 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
             setTab={setTab}
             onChange={(v) => setSections(sections.map((s, j) => (j === panel.index ? v : s)))}
             onClose={() => setPanel({ kind: 'page' })}
+            onLibrary={(m) => setModal(m)}
           />
         ) : panel.kind === 'global' ? (
           <GlobalInspector key={panel.slug} slug={panel.slug} schema={schema.globals.find((g) => g.slug === panel.slug)!} post={post} onSaved={() => { setStatus('Saved — live across the site.'); post({ type: 'refresh' }); }} onError={setError} />
@@ -398,6 +401,8 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
       <VersionsModal open={modal === 'versions'} pageId={pageId} onClose={() => setModal(null)} onRestored={async () => { setModal(null); if (pageId != null) { const d = await getPage(pageId); setDoc(d as unknown as Rec); latest.current = d as unknown as Rec; post({ type: 'refresh' }); setStatus('Earlier version restored as a draft.'); } }} />
       <Modal open={modal === 'media'} onClose={() => setModal(null)} title="Media library" description="Drop files anywhere in this window to upload. Click a file to edit its description or delete it." size="xl"><MediaLibrary /></Modal>
       <Modal open={modal === 'projects'} onClose={() => setModal(null)} title="Projects" description="Case studies shown on Work and in the showcase sections." size="xl"><ProjectsManager fields={schema.project} onChanged={() => post({ type: 'refresh' })} /></Modal>
+      <Modal open={modal === 'services'} onClose={() => setModal(null)} title="Services" description="Each service has a card in the Services section and its own page. The cover shows on both." size="xl"><ServicesManager fields={schema.service} onChanged={() => post({ type: 'refresh' })} /></Modal>
+      <Modal open={modal === 'posts'} onClose={() => setModal(null)} title="Insights" description="Articles shown at /insights and in the Insights section." size="xl"><PostsManager fields={schema.post} onChanged={() => post({ type: 'refresh' })} /></Modal>
       <Modal open={modal === 'enquiries'} onClose={() => setModal(null)} title="Enquiries" description="Messages sent through the contact form. Reply from your own email app." size="xl"><EnquiriesManager /></Modal>
     </div>
   );
@@ -448,7 +453,16 @@ function PagesList({ pages, current, onOpen, onNew, onDuplicate, onDelete }: { p
   );
 }
 
-function SectionInspector({ block, value, tab, setTab, onChange, onClose }: { block: SBlock; value: Rec; tab: 'content' | 'style'; setTab: (t: 'content' | 'style') => void; onChange: (v: Rec) => void; onClose: () => void }) {
+// sections whose cards come from a collection: the inspector links straight to that library
+const LIBRARY: Record<string, { modal: 'services' | 'posts' | 'projects'; label: string }> = {
+  services: { modal: 'services', label: 'Edit services and their covers' },
+  insights: { modal: 'posts', label: 'Edit insights' },
+  workShowcase: { modal: 'projects', label: 'Edit projects' },
+  projectGrid: { modal: 'projects', label: 'Edit projects' },
+};
+
+function SectionInspector({ block, value, tab, setTab, onChange, onClose, onLibrary }: { block: SBlock; value: Rec; tab: 'content' | 'style'; setTab: (t: 'content' | 'style') => void; onChange: (v: Rec) => void; onClose: () => void; onLibrary: (m: 'services' | 'posts' | 'projects') => void }) {
+  const library = LIBRARY[block.slug];
   const styleGroup = block.fields.find((f) => f.styleTab);
   const anchor = block.fields.find((f) => f.name === 'anchor');
   const content = block.fields.filter((f) => !f.styleTab && f.name !== 'anchor' && f.name !== 'hidden');
@@ -465,6 +479,7 @@ function SectionInspector({ block, value, tab, setTab, onChange, onClose }: { bl
         {tab === 'content' ? (
           <>
             {block.description && <p className="st-note">{block.description}</p>}
+            {library && <button type="button" className="st-btn st-insp-library" onClick={() => onLibrary(library.modal)}><Icon name="external" size={14} /> {library.label}</button>}
             <FieldList fields={content} value={value} onChange={onChange} />
           </>
         ) : (

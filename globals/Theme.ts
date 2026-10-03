@@ -35,27 +35,27 @@ export const Theme: GlobalConfig = {
           label: 'Colours',
           fields: [
             { type: 'row', fields: [
-              colour('background', 'Background', '#000000', 'Page background (dark sections).'),
-              colour('surface', 'Surface', '#131313', 'Cards and panels on dark.'),
-              colour('text', 'Text', '#F5F5F4'),
-              colour('mutedText', 'Body text', '#E2E8F0', 'Paragraphs and secondary text. A soft off-white reads more comfortably than pure white.'),
+              colour('background', 'Dark theme: background', '#000000', 'The page in dark mode, and dark bands in either mode.'),
+              colour('surface', 'Dark theme: cards', '#131313', 'Cards and panels in dark mode.'),
+              colour('text', 'Dark theme: text', '#F5F5F4'),
+              colour('mutedText', 'Dark theme: secondary text', '#A6A6B0', 'Paragraphs and labels in dark mode.'),
             ] },
             { type: 'row', fields: [
-              colour('accent', 'Accent', '#E8352B', 'Highlights, tags, the glow and the about banner.'),
-              colour('accent2', 'Second accent', '#FF6A2B', 'Gradients and light streaks.'),
+              colour('accent', 'Accent', '#E8352B', 'The serif accent words, dots, numbers and small highlights, in both light and dark mode.'),
+              colour('accent2', 'Second accent', '#FF6A2B', 'Gradients and small details.'),
             ] },
             { type: 'row', fields: [
-              colour('lightBackground', 'Light section background', '#F2F2F1'),
-              colour('lightSurface', 'Light card', '#FFFFFF'),
-              colour('lightText', 'Text on light', '#0A0A0A'),
+              colour('lightBackground', 'Light theme: background', '#FFFFFF', 'The page in light mode (the default).'),
+              colour('lightSurface', 'Light theme: cards and bands', '#F7F7F5'),
+              colour('lightText', 'Light theme: text', '#0A0A0A'),
             ] },
-            { name: 'glow', label: 'Show the accent glow at the bottom of the screen', type: 'checkbox', defaultValue: true },
+            { name: 'glow', label: 'Show the accent glow at the bottom of the screen', type: 'checkbox', defaultValue: false },
           ],
         },
         {
           label: 'Type',
           fields: [
-            { type: 'row', fields: [font('headingFont', 'Heading font', 'Geist'), font('bodyFont', 'Body font', 'Geist')] },
+            { type: 'row', fields: [font('headingFont', 'Heading font', 'Manrope'), font('bodyFont', 'Body font', 'Manrope')] },
             { type: 'row', fields: [
               { name: 'headingWeight', type: 'select', defaultValue: '500', options: ['300', '400', '500', '600', '700'] },
               range('headingTracking', 'Heading letter-spacing', -4, -8, 2, 0.5, '%'),
@@ -67,9 +67,9 @@ export const Theme: GlobalConfig = {
           label: 'Buttons',
           fields: [
             { type: 'row', fields: [
-              colour('buttonBackground', 'Main button', '#FFFFFF'),
-              colour('buttonText', 'Main button text', '#0A0A0A'),
-              colour('buttonDarkBackground', 'Button on light', '#0A0A0A'),
+              colour('buttonBackground', 'Button in dark mode', '#FFFFFF'),
+              colour('buttonText', 'Button text in dark mode', '#0A0A0A'),
+              colour('buttonDarkBackground', 'Button in light mode', '#0A0A0A'),
             ] },
             { type: 'row', fields: [
               { name: 'buttonShape', type: 'select', defaultValue: 'pill', options: [{ label: 'Pill', value: 'pill' }, { label: 'Rounded', value: 'rounded' }, { label: 'Square', value: 'square' }] },

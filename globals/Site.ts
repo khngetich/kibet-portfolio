@@ -32,6 +32,7 @@ export const Site: GlobalConfig = {
               { name: 'studio', type: 'text', admin: { width: '50%' } },
             ] },
             { name: 'role', type: 'text', required: true, admin: { description: 'e.g. Graphic designer & social media creative' } },
+            { name: 'tagline', type: 'text', admin: { description: 'One short line repeated across the site: under the hero, on the About portrait and in search results, e.g. “A little logic. A lot of imagination.”' } },
             { name: 'location', type: 'text' },
             { name: 'availability', type: 'text', admin: { description: 'Shown in the footer and contact section, e.g. "Booking projects for October"' } },
           ],

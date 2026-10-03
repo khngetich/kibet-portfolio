@@ -12,6 +12,7 @@ import type { Status } from './data';
  *                folder with its newest cover peeking out
  *   CaseStudies  how complete each project's story is, the least complete first
  *   Availability the "open for work" line from Site settings, shown in the dashboard header
+ *   Profile      how complete the trust signals are: a score ring and the checks behind it
  */
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
@@ -115,5 +116,49 @@ export function Availability({ text, admin }: { text: string | null; admin: stri
       <span>{text ?? 'Add your availability'}</span>
       <Icon name="pen" size={13} />
     </Link>
+  );
+}
+
+type Check = { key: string; label: string; ok: boolean; detail: string; fix: 'site' | 'pages' | 'projects' };
+
+/** Trust signals as a score ring (like a profile-completeness meter) and the checks behind it. */
+export function Profile({ checks, admin }: { checks: readonly Check[]; admin: string }) {
+  const done = checks.filter((c) => c.ok).length;
+  const score = Math.round((done / checks.length) * 100);
+  const size = 88, stroke = 8, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  const fixHref = { site: `${admin}/globals/site`, pages: `${admin}/collections/pages`, projects: `${admin}/collections/projects` };
+  // open checks first, so the next thing to do is at the top
+  const sorted = [...checks].sort((a, b) => Number(a.ok) - Number(b.ok));
+  return (
+    <section className="cms-card cms-anim" aria-labelledby="dash-profile">
+      <div className="cms-card-head">
+        <div>
+          <h2 id="dash-profile">Profile</h2>
+          <p className="cms-muted">What visitors need to trust you</p>
+        </div>
+      </div>
+      <div className="cms-profile-score">
+        <span className={`cms-profile-ring${score >= 100 ? ' is-done' : ''}`} aria-hidden="true">
+          <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} className="cms-cs-track" />
+            {score > 0 && <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={stroke} strokeLinecap="round" className="cms-cs-arc" strokeDasharray={`${(c * score) / 100} ${c}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />}
+          </svg>
+          <b>{score}<small>%</small></b>
+        </span>
+        <p><b>{done} of {checks.length}</b> in place. {score >= 100 ? 'Everything a visitor looks for is there.' : 'Each one makes it easier for a visitor to get in touch.'}</p>
+      </div>
+      <ul className="cms-profile-list">
+        {sorted.map((ck) => (
+          <li key={ck.key}>
+            <Link className={`cms-profile-row${ck.ok ? ' is-ok' : ''}`} href={fixHref[ck.fix]}>
+              <span className="cms-task-mark" aria-hidden="true">{ck.ok && <Icon name="check" size={12} weight="semibold" />}</span>
+              <span className="cms-profile-text"><b>{ck.label}</b><small>{ck.detail}</small></span>
+              <span className="cms-sr">{ck.ok ? '(done)' : '(to do)'}</span>
+              {!ck.ok && <Icon name="right" size={14} />}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

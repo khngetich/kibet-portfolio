@@ -1,50 +1,71 @@
 /* ───────────────────────── tokens ─────────────────────────
-   The site is dark by default. `.light` re-scopes the same tokens for the light
-   sections of the homepage and for white cards placed on dark backgrounds. */
+   Two themes, chosen per visitor (components/ThemeToggle.tsx; default light), in the
+   dashboard's neutrals (styles/cms-tokens.css) with the site's original orange-red accent:
+     light  a white page, #F7F7F5 bands and cards, ink #0A0A0A
+     dark   black #000000, #131313 cards, #F5F5F4 ink
+   The accent (#E8352B, second accent #FF6A2B) marks the serif accent words, dots and numbers.
+   Styles (Website → Styles) sets the raw colours (--light-*, --dark-*, --red: the accent; the
+   name predates the neutral palette); the mappings below turn them into the working tokens
+   every rule uses (--bg, --surface, --ink, --accent, …). `.light` keeps a card light on
+   either theme; `.band-dark` keeps a band dark. Sections marked `.dark` follow the theme. */
 :root {
-  --bg: #000000; --bg-2: color-mix(in srgb, var(--bg) 96%, #fff); --surface: #131313; --surface-2: color-mix(in srgb, var(--surface) 92%, #fff);
-  /* headings near-white; body copy a soft off-white so long reads don't glare; captions dimmer */
-  --ink: #F5F5F4; --ink-2: #E2E8F0; --ink-3: color-mix(in srgb, var(--ink-2) 68%, var(--bg)); --line: color-mix(in srgb, var(--ink) 10%, transparent);
-  --inverse: #FFFFFF; --inverse-ink: #0A0A0A;
-  --red: #E8352B; --red-2: #FF6A2B; --blue: #7B96FF;
-  --accent: var(--red);
-  /* the accent, darkened enough for white text on it (pill tags, accent buttons) */
-  --accent-strong: color-mix(in srgb, var(--red) 85%, #000);
-  /* focus ring: the bright accent on dark, a darker one inside light cards */
-  --focus: var(--red-2);
-  --shadow: 0 30px 60px -28px rgba(0, 0, 0, .9), 0 2px 6px rgba(0, 0, 0, .35);
-  --r-lg: calc(22px * var(--radius-scale)); --r-md: calc(14px * var(--radius-scale)); --r-sm: calc(10px * var(--radius-scale));
-  /* Styles-global defaults (components/ThemeStyle.tsx overrides these on :root). */
-  --light-bg: #F2F2F1; --light-surface: #FFFFFF; --light-ink: #0A0A0A;
-  --font-heading: var(--font); --heading-weight: 500; --heading-tracking: -.04em; --base-scale: 1;
-  --btn-bg: #FFFFFF; --btn-ink: #0A0A0A; --btn-dark-bg: #0A0A0A; --btn-radius: 999px; --btn-h: 44px;
-  --radius-scale: 1; --space: 1; --container: 1240px; --glow: 1;
-  /* vertical rhythm: every story section breathes the same amount (≈120px on desktop) */
-  --section-y: calc(clamp(88px, 11vw, 128px) * var(--space, 1));
-  --header-h: 80px;
+  --dark-bg: #000000; --dark-surface: #131313; --dark-ink: #F5F5F4; --dark-ink-2: #A6A6B0;
+  --light-bg: #FFFFFF; --light-surface: #F7F7F5; --light-ink: #0A0A0A;
+  --red: #E8352B; --red-2: #FF6A2B; --blue: #4F46E5;
+  --r-lg: calc(20px * var(--radius-scale)); --r-md: calc(14px * var(--radius-scale)); --r-sm: calc(10px * var(--radius-scale));
+  --font-heading: var(--font); --heading-weight: 500; --heading-tracking: -.045em; --base-scale: 1;
+  /* the pairing: a sans for everything, a classic serif italic for the accent words (*like this*) */
+  --font-accent: Georgia, 'Times New Roman', Times, serif;
+  --btn-radius: 999px; --btn-h: 46px;
+  --radius-scale: 1; --space: 1; --container: 1240px; --glow: 0;
+  /* vertical rhythm: every story section breathes the same amount (96px on desktop, 64px on phones) */
+  --section-y: calc(clamp(64px, 7vw, 96px) * var(--space, 1));
+  --header-h: 72px;
   --ease: cubic-bezier(.16, 1, .3, 1);
-  --font: var(--font-geist-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font: var(--font-manrope), 'Manrope', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+html[data-theme='light'], .light, .stack-card, .price-card {
+  --bg: var(--light-bg); --bg-2: var(--light-surface); --surface: var(--light-surface); --surface-2: color-mix(in srgb, var(--light-surface) 94%, var(--light-ink));
+  --ink: var(--light-ink); --ink-2: color-mix(in srgb, var(--light-ink) 68%, var(--light-bg)); --ink-3: color-mix(in srgb, var(--light-ink) 58%, var(--light-bg)); --line: color-mix(in srgb, var(--light-ink) 11%, transparent);
+  --inverse: var(--light-ink); --inverse-ink: var(--light-bg);
+  --btn-bg: var(--btn-dark-bg, var(--light-ink)); --btn-ink: var(--light-bg);
+  --accent: var(--red); --accent-ink: var(--red);
+  /* the accent, dark enough for light text on it (pill tags, accent buttons) */
+  --accent-strong: color-mix(in srgb, var(--red) 85%, #000);
+  /* small text in the accent: deepened to 4.5:1 on white (big accent words keep the true colour) */
+  --accent-text: color-mix(in srgb, var(--red) 82%, #000);
+  --focus: var(--light-ink);
+  --shadow: 0 16px 48px rgba(10, 10, 10, .12), 0 4px 12px rgba(10, 10, 10, .06);
+  color-scheme: light;
+}
+html[data-theme='dark'], .band-dark {
+  --bg: var(--dark-bg); --bg-2: color-mix(in srgb, var(--dark-bg) 94%, var(--dark-ink)); --surface: var(--dark-surface); --surface-2: color-mix(in srgb, var(--dark-surface) 90%, var(--dark-ink));
+  --ink: var(--dark-ink); --ink-2: var(--dark-ink-2); --ink-3: color-mix(in srgb, var(--dark-ink-2) 75%, var(--dark-bg)); --line: color-mix(in srgb, var(--dark-ink) 12%, transparent);
+  --inverse: var(--dark-ink); --inverse-ink: var(--dark-bg);
+  --btn-bg: var(--btn-light-bg, var(--dark-ink)); --btn-ink: var(--btn-light-ink, var(--dark-bg));
+  /* the accent reads on black as it is (#E8352B is 5:1 on #000); text-sized uses lift it a touch */
+  --accent: var(--red); --accent-ink: color-mix(in oklab, var(--red) 88%, #FFFFFF);
+  --accent-strong: color-mix(in oklab, var(--red) 70%, #000);
+  --accent-text: var(--accent-ink);
+  --focus: var(--dark-ink);
+  --shadow: 0 30px 60px -28px rgba(0, 0, 0, .75), 0 2px 6px rgba(0, 0, 0, .3);
   color-scheme: dark;
 }
-.light, .stack-card, .price-card {
-  --bg: var(--light-bg); --bg-2: color-mix(in srgb, var(--light-bg) 94%, #000); --surface: var(--light-surface); --surface-2: color-mix(in srgb, var(--light-surface) 93%, var(--light-ink));
-  --ink: var(--light-ink); --ink-2: color-mix(in srgb, var(--light-ink) 72%, var(--light-bg)); --ink-3: color-mix(in srgb, var(--light-ink) 55%, var(--light-bg)); --line: color-mix(in srgb, var(--light-ink) 9%, transparent);
-  --inverse: var(--btn-dark-bg); --inverse-ink: #FFFFFF;
-  --focus: var(--accent-strong);
-  --shadow: 0 24px 48px -24px rgba(25, 25, 20, .35), 0 2px 6px rgba(25, 25, 20, .06);
-  color-scheme: light;
-  color: var(--ink);
-}
+.light, .band-dark { color: var(--ink); }
 .light { background: var(--bg); }
-.dark { color: var(--ink); }
-/* The red glow from the "Who it's for" section, fixed to the bottom of the screen and
-   shared by every page: dark sections are transparent so it shows through all of them. */
-body::before { content: ''; position: fixed; left: 10%; right: 10%; bottom: -30vh; height: 60vh; z-index: -1; pointer-events: none; opacity: var(--glow); background: radial-gradient(closest-side, color-mix(in srgb, var(--red) 22%, transparent), transparent); }
+.band-dark { background: var(--bg); }
+/* a soft accent glow at the bottom of the screen; off unless Styles turns it on */
+body::before { content: ''; position: fixed; left: 10%; right: 10%; bottom: -30vh; height: 60vh; z-index: -1; pointer-events: none; opacity: var(--glow); background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent); }
+
+/* the accent words: *Made visible.* → serif italic in the accent colour */
+.accent { font-family: var(--font-accent); font-style: italic; font-weight: 400; color: var(--accent-ink); letter-spacing: -.035em; }
 
 /* ───────────────────────── base ───────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 /* Body text size (Styles) scales the root, so every rem-sized text follows it and a reader's own browser text size still applies. */
-html { font-size: calc(100% * var(--base-scale, 1)); -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 12px); background: var(--bg); }
+html { font-size: calc(100% * var(--base-scale, 1)); -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 12px); background: var(--bg); color: var(--ink); }
+/* switching theme cross-fades the page (ThemeToggle adds the class for one transition) */
+html.theme-switching, html.theme-switching * { transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease !important; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body { margin: 0; color: var(--ink); font-family: var(--font); font-size: 1rem; line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: clip; }
 h1, h2, h3, p, ul, dl, dd, figure, blockquote { margin: 0; }
@@ -101,24 +122,42 @@ a { color: inherit; text-decoration: none; }
 
 /* ───────────────────────── floating header ─────────────────────────
    A capsule held off the screen edges: name · menu · quote button. */
-.site-header { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 0; right: 0; z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; width: min(1180px, calc(100% - 24px)); height: 56px; margin-inline: auto; padding: 0 6px 0 22px; border-radius: calc(999px * var(--radius-scale, 1)); background: color-mix(in srgb, var(--surface) 72%, transparent); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); box-shadow: inset 0 0 0 1px var(--line), 0 16px 40px -12px rgba(0, 0, 0, .7); color: var(--ink); }
+.site-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; height: var(--header-h); padding-top: env(safe-area-inset-top, 0px); padding-inline: max(clamp(16px, 4vw, 48px), calc((100% - var(--container)) / 2 + clamp(16px, 4vw, 48px))); background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); box-shadow: inset 0 -1px 0 var(--line); color: var(--ink); }
 main { padding-top: var(--header-h); }
-.brand { justify-self: start; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-weight: 600; font-size: .98rem; letter-spacing: -.03em; white-space: nowrap; }
+.brand { justify-self: start; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-weight: 700; font-size: 1.08rem; letter-spacing: -.045em; white-space: nowrap; }
+.brand-dot { color: var(--accent-ink); }
 .header-nav ul { display: flex; gap: 2px; }
 .header-nav a { position: relative; display: block; padding: 8px 14px; border-radius: calc(999px * var(--radius-scale, 1)); font-size: .86rem; color: var(--ink-2); transition: color .15s; }
 .header-nav a:hover, .header-nav a.is-active, .header-nav a[aria-current='page'] { color: var(--ink); }
 .nav-active { position: absolute; inset: 0; border-radius: calc(999px * var(--radius-scale, 1)); background: color-mix(in srgb, var(--ink) 12%, transparent); }
 .nav-label { position: relative; }
 .header-end { justify-self: end; display: flex; align-items: center; gap: 6px; }
-.header-cta { display: inline-flex; align-items: center; height: var(--btn-h); padding: 0 20px; border-radius: var(--btn-radius); background: var(--btn-bg); color: var(--btn-ink); font-size: .86rem; font-weight: 500; white-space: nowrap; transition: background-color .2s, transform .2s; }
+.header-cta { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 18px 0 20px; border-radius: var(--btn-radius); background: var(--btn-bg); color: var(--btn-ink); font-size: .86rem; font-weight: 500; white-space: nowrap; transition: background-color .2s, transform .2s; }
 .header-cta:hover { background: color-mix(in srgb, var(--btn-bg) 90%, var(--btn-ink)); }
 .menu-btn { display: none; width: 44px; height: 44px; border-radius: 50%; place-items: center; color: var(--ink); transition: background-color .15s; }
 .menu-btn:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 .menu-sheet { position: absolute; right: 0; top: calc(100% + 10px); width: min(280px, 100%); padding: 8px; border-radius: calc(22px * var(--radius-scale, 1)); background: color-mix(in srgb, var(--surface) 95%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: inset 0 0 0 1px var(--line), 0 16px 40px rgba(0, 0, 0, .6); transform-origin: top right; }
 .menu-sheet a { display: block; padding: 12px 14px; border-radius: calc(14px * var(--radius-scale, 1)); font-size: 1rem; }
 .menu-sheet a:hover, .menu-sheet a[aria-current='page'] { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+/* active page: a short accent underline instead of a pill */
+.header-nav .nav-active { inset: auto 14px 3px; height: 1.5px; border-radius: 2px; background: var(--accent-ink); }
+.header-nav a { color: var(--ink-2); }
+/* theme switch: sun · track · moon */
+.theme-toggle { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 6px; border-radius: 999px; color: var(--ink-2); }
+.theme-toggle:hover { color: var(--ink); }
+.theme-track { position: relative; width: 38px; height: 22px; border-radius: 999px; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
+.theme-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: translate .3s var(--ease); }
+.theme-toggle[aria-checked='true'] .theme-knob { translate: 16px 0; }
+.theme-toggle[aria-checked='false'] .theme-sun, .theme-toggle[aria-checked='true'] .theme-moon { color: var(--accent-ink); }
+/* reading progress: a hairline along the header's bottom edge, driven by the page's scroll */
+.scroll-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent-ink); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .scroll-progress { animation: scroll-progress linear both; animation-timeline: scroll(root block); }
+  @keyframes scroll-progress { to { transform: scaleX(1); } }
+}
+@media (prefers-reduced-motion: reduce) { .scroll-progress { display: none; } }
 @media (max-width: 860px) {
-  .site-header { grid-template-columns: 1fr auto; padding-left: 18px; }
+  .site-header { grid-template-columns: 1fr auto; }
   .header-nav { display: none; }
   .menu-btn { display: grid; }
 }
@@ -180,14 +219,14 @@ main { padding-top: var(--header-h); }
 .contact-direct { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
 .form { display: flex; flex-direction: column; gap: 16px; padding: clamp(22px, 3vw, 32px); border-radius: var(--r-lg); background: var(--surface); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form label { display: flex; flex-direction: column; gap: 6px; font-size: .84rem; font-weight: 500; color: var(--ink-2); }
-.form input, .form select, .form textarea { width: 100%; padding: 12px 14px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); font-size: 1rem; color: var(--ink); transition: border-color .2s; }
-.form input:focus, .form select:focus, .form textarea:focus { outline: none; border-color: var(--ink); }
-.form textarea { resize: vertical; min-height: 120px; }
+.form label, .brief label:not(.brief-chip):not(.hp) { display: flex; flex-direction: column; gap: 6px; font-size: .84rem; font-weight: 500; color: var(--ink-2); }
+.form input, .form select, .form textarea, .brief input:not([type=radio]), .brief textarea { width: 100%; padding: 12px 14px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); font-size: 1rem; color: var(--ink); transition: border-color .2s; }
+.form input:focus, .form select:focus, .form textarea:focus, .brief input:not([type=radio]):focus, .brief textarea:focus { outline: none; border-color: var(--ink); }
+.form textarea, .brief textarea { resize: vertical; min-height: 120px; }
 .form .btn { align-self: flex-start; }
-.form .hp { position: absolute; left: -9999px; }
-.form-error { color: var(--red); font-size: .9rem; }
-.form [aria-invalid='true'] { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+.form .hp, .brief .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.form-error { color: var(--accent-text); font-size: .9rem; }
+.form [aria-invalid='true'] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .form-done { padding: 32px; border-radius: var(--r-lg); background: var(--surface); }
 .form-done .muted { margin-top: 6px; }
 @media (max-width: 800px) { .contact { grid-template-columns: 1fr; } }
@@ -206,7 +245,7 @@ main { padding-top: var(--header-h); }
 .case-cover { position: relative; aspect-ratio: 16 / 9; }
 .case-cover > img { border-radius: clamp(0px, 2vw, var(--r-lg)); }
 .case-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 4vw, 56px); padding-block: calc(clamp(48px, 7vw, 96px) * var(--space, 1)); }
-.case-overview h2 { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: 12px; }
+.case-overview h2 { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--accent-text); margin-bottom: 12px; }
 .case-overview p { color: var(--ink-2); line-height: 1.65; }
 @media (max-width: 800px) { .case-overview { grid-template-columns: 1fr; } .case-cover { aspect-ratio: 4 / 3; } }
 .case-note { font-size: .85rem; color: var(--ink-3); padding-block: 8px 32px; max-width: 80ch; }
@@ -269,49 +308,37 @@ main { padding-top: var(--header-h); }
 .ba-tag-l { left: 14px; } .ba-tag-r { right: 14px; }
 
 /* ───────────────────────── footer (components/Footer.tsx) ─────────────────────────
-   Inverted: a dark CTA card with rounded bottom corners over a light canvas; the white card
-   rises from behind it (FooterRise) over a giant watermark. */
+   Short: a dark call-to-action band, one row (name, tagline, social icons), then the copyright
+   line with the policy links. It follows the theme like the rest of the page. */
 .socials { display: flex; gap: 8px; margin-top: 20px; }
 .socials a { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition: transform .2s; }
 .socials a:hover { transform: translateY(-2px); }
-.fx { position: relative; margin-top: clamp(48px, 6vw, 88px); background: #F5F5F7; color: #0A0A0A; color-scheme: light; overflow: hidden; }
-/* the dark card is the page itself: the same black, with a copy of the fixed red glow painted at the
-   same place on screen (background-attachment: fixed), so nothing changes as the page flows into it */
-.fx-cta { position: relative; z-index: 2; overflow: hidden; border-radius: 0 0 calc(32px * var(--radius-scale, 1)) calc(32px * var(--radius-scale, 1));
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--red) calc(22% * var(--glow)), transparent), transparent) 10vw 70vh / 80vw 60vh no-repeat fixed, var(--bg);
-  color: #fff; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .55); }
-/* full width, and the ellipse ends inside the box on every side, so the glow has no edges */
-.fx-cta-glow { position: absolute; inset: 0; background: radial-gradient(40% 42% at 50% 46%, color-mix(in srgb, var(--red) 24%, transparent), transparent); opacity: var(--glow); pointer-events: none; }
-.fx-cta-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 18px; padding-block: clamp(64px, 9vw, 120px); text-align: center; }
-.fx-cta-title { max-width: 20ch; font-family: var(--font-heading); font-size: clamp(2rem, 4.6vw, 3.6rem); font-weight: 700; letter-spacing: -.04em; line-height: 1.04; text-wrap: balance; }
+.fx { position: relative; margin-top: clamp(32px, 4vw, 56px); }
+.fx-cta { position: relative; overflow: hidden; margin-inline: clamp(0px, 1.4vw, 20px); border-radius: calc(32px * var(--radius-scale, 1)); color: var(--ink); }
+.fx-cta-glow { position: absolute; inset: 0; background: radial-gradient(40% 42% at 50% 46%, color-mix(in srgb, var(--accent) 24%, transparent), transparent); opacity: var(--glow); pointer-events: none; }
+.fx-cta-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; padding-block: clamp(56px, 7vw, 96px); text-align: center; }
+.fx-cta-title { max-width: 20ch; font-family: var(--font-heading); font-size: clamp(2rem, 4.6vw, 3.6rem); font-weight: var(--heading-weight, 500); letter-spacing: var(--heading-tracking, -.04em); line-height: 1.04; text-wrap: balance; }
 .fx-cta-text { max-width: 52ch; font-size: 1.05rem; color: var(--ink-2); text-wrap: pretty; }
-.fx-cta-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; margin-top: 8px; padding: 0 28px; border-radius: 999px; background: #fff; color: #0A0A0A; font-weight: 600; transition-property: box-shadow, transform, scale; transition-duration: .2s; transition-timing-function: ease-out; }
-.fx-cta-btn:hover { transform: translateY(-3px); box-shadow: 0 0 0 6px rgba(255, 255, 255, .08), 0 0 44px -4px color-mix(in srgb, var(--red) 70%, transparent), 0 14px 30px -12px rgba(255, 255, 255, .35); }
+.fx-cta-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; margin-top: 8px; padding: 0 28px; border-radius: var(--btn-radius); background: var(--btn-bg); color: var(--btn-ink); font-weight: 600; transition: transform .2s ease-out, scale .2s ease-out; }
+.fx-cta-btn:hover { transform: translateY(-2px); }
 .fx-cta-btn:active { scale: .96; }
 .fx-cta-btn svg { transition: transform .2s ease; }
 .fx-cta-btn:hover svg { transform: translateX(3px); }
-.fx-canvas { position: relative; z-index: 1; padding-block: clamp(40px, 5vw, 64px) 0; }
-.fx-card { position: relative; z-index: 1; padding: clamp(28px, 4vw, 48px); border-radius: calc(24px * var(--radius-scale, 1)); background: #fff; box-shadow: 0 1px 2px rgba(10, 10, 10, .04), 0 24px 60px -30px rgba(10, 10, 10, .22); }
-.fx-grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(auto-fit, minmax(150px, 1fr)); gap: 32px clamp(24px, 4vw, 56px); }
-.fx-name { font-family: var(--font-heading); font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 800; letter-spacing: -.03em; }
-.fx-statement { max-width: 36ch; margin-top: 10px; font-size: .95rem; line-height: 1.6; color: #55555A; }
-.fx-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; font-size: .88rem; color: #3D3D42; }
+.fx-main { padding-block: clamp(36px, 5vw, 56px) calc(clamp(20px, 3vw, 28px) + env(safe-area-inset-bottom, 0px)); }
+.fx-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 24px 40px; }
+.fx-name { font-family: var(--font-heading); font-size: clamp(1.4rem, 2.2vw, 1.8rem); font-weight: var(--heading-weight, 500); letter-spacing: -.03em; }
+.fx-statement { max-width: 40ch; margin-top: 8px; font-size: .95rem; line-height: 1.6; color: var(--ink-2); }
+.fx-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-size: .88rem; color: var(--ink-2); }
 .fx-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #16A34A; }
-.fx-socials { display: flex; gap: 8px; margin-top: 20px; }
-.fx-socials a { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #0A0A0A; box-shadow: inset 0 0 0 1px rgba(10, 10, 10, .12); transition: transform .2s ease-out, background-color .2s ease-out, color .2s ease-out; }
-.fx-socials a:hover { transform: translateY(-3px); background: #0A0A0A; color: #fff; }
-.fx-col-title { margin-bottom: 14px; font-size: .74rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #6B6B70; }
-.fx-col ul { display: flex; flex-direction: column; gap: 10px; }
-.fx-link { display: inline-block; font-size: .95rem; color: #1C1C1F; overflow-wrap: anywhere; transition: transform .2s ease-out, color .2s ease-out; }
-.fx-link:hover { transform: translateY(-3px); color: var(--accent-strong); }
-.fx-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; margin-top: clamp(28px, 4vw, 40px); padding-top: 20px; border-top: 1px solid rgba(10, 10, 10, .1); font-size: .84rem; color: #55555A; }
-.fx-note { color: #6B6B70; }
-.fx-legal { display: flex; flex-wrap: wrap; gap: 20px; }
-.fx-legal .fx-link { font-size: .84rem; color: #55555A; }
-.fx :focus-visible { outline-color: var(--accent-strong); }
-.fx-watermark { position: relative; z-index: 0; margin-top: -0.12em; padding-bottom: env(safe-area-inset-bottom, 0px); font-family: var(--font-heading); font-size: clamp(5rem, 22vw, 22rem); font-weight: 800; letter-spacing: -.05em; line-height: .78; text-align: center; white-space: nowrap; color: rgba(10, 10, 10, .045); pointer-events: none; user-select: none; }
-@media (max-width: 760px) { .fx-grid { grid-template-columns: 1fr 1fr; } .fx-brand { grid-column: 1 / -1; } }
-@media (prefers-reduced-motion: reduce) { .fx-link:hover, .fx-socials a:hover, .fx-cta-btn:hover { transform: none; } }
+.fx-socials { display: flex; flex-wrap: wrap; gap: 8px; }
+.fx-socials a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); transition: transform .2s ease-out, background-color .2s ease-out, color .2s ease-out; }
+.fx-socials a:hover { transform: translateY(-2px); background: var(--inverse); color: var(--inverse-ink); }
+.fx-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; margin-top: clamp(24px, 3vw, 36px); padding-top: 18px; border-top: 1px solid var(--line); font-size: .84rem; color: var(--ink-2); }
+.fx-note { color: var(--ink-3); }
+.fx-legal { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.fx-link { display: inline-flex; align-items: center; min-height: 32px; color: var(--ink-2); transition: color .2s ease-out; }
+.fx-link:hover { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .fx-socials a:hover, .fx-cta-btn:hover { transform: none; } }
 
 /* ───────────────────────── scroll reveal (CSS only) ───────────────────────── */
 @supports (animation-timeline: view()) {
@@ -344,3 +371,10 @@ html[data-wa] .avail-badge { right: 90px; bottom: calc(34px + env(safe-area-inse
 .viewer[open] ~ .wa-float, html:has(.viewer[open]) .wa-float { display: none; }
 @media (hover: none) { .wa-float-label { display: none; } }
 @media (prefers-reduced-motion: reduce) { .wa-float { animation: none; } .wa-float-icon, .wa-float-label { transition: none; } }
+
+/* header on small screens: the menu button and theme switch stay; the quote button moves into the menu */
+@media (max-width: 560px) {
+  .header-cta { display: none; }
+  .menu-sheet { right: clamp(16px, 4vw, 48px); }
+}
+.accent-line { display: block; }
