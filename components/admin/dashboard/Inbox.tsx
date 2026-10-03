@@ -97,7 +97,7 @@ export function Inbox({ items, unread, admin }: { items: InboxItem[]; unread: nu
                     </span>
                   </OpenInModal>
                   <span className="cms-inbox-actions">
-                    <a className="cms-icon-btn" href={`mailto:${e.email}?subject=${subject}`} title={`Reply to ${e.email}`} aria-label={`Reply to ${e.name} by email`}><Icon name="mail" size={16} /></a>
+                    <a className="cms-icon-btn" href={`mailto:${encodeURIComponent(e.email)}?subject=${subject}`} title={`Reply to ${e.email}`} aria-label={`Reply to ${e.name} by email`}><Icon name="mail" size={16} /></a>
                     {s === 'new'
                       ? <button type="button" className="cms-icon-btn" onClick={() => change(e, 'replied')} title="Mark replied" aria-label={`Mark ${e.name}’s enquiry replied`}><Icon name="check" size={16} /></button>
                       : <button type="button" className="cms-icon-btn" onClick={() => change(e, 'new')} title="Mark unread" aria-label={`Mark ${e.name}’s enquiry unread`}><Icon name="undo" size={16} /></button>}

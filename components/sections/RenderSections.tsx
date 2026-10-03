@@ -641,7 +641,8 @@ function ProfileSection({ s, id, first }: { s: Of<'profile'>; id?: string; first
             {cv?.url && <a className="btn btn-soft" href={cv.url} download><Icon name="download" size={15} />Download CV</a>}
           </div>
         </div>
-        <aside className="about-side">
+        {/* a div, not an aside: a complementary landmark must not sit inside the section */}
+        <div className="about-side">
           {asMedia(s.photo) && <div className="about-photo"><Img media={s.photo} sizes="(max-width: 800px) 90vw, 440px" preload={first} /></div>}
           {!!s.experience?.length && (
             <div>

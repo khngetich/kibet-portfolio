@@ -492,6 +492,9 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 /* ── about banner ── */
 .about-banner { position: relative; display: flex; flex-direction: column; min-height: 118vh; padding-top: clamp(96px, 12vw, 150px); overflow: hidden; text-align: center; color: #fff; background: linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--accent) 22%, var(--bg)) 16%, color-mix(in srgb, var(--accent) 78%, var(--bg)) 42%, var(--accent) 64%, var(--accent) 100%); }
 .about-banner-photo { position: absolute; left: 0; right: 0; bottom: 0; width: min(760px, 100%); height: 90%; margin-inline: auto; transform-origin: bottom center; }
+/* the scroll parallax (inline transforms from AboutBanner) stops for reduced motion and Styles → Motion off */
+@media (prefers-reduced-motion: reduce) { .about-banner-photo, .about-name { transform: none !important; } }
+[data-motion='off'] :is(.about-banner-photo, .about-name) { transform: none !important; }
 /* A transparent cut-out portrait: shown whole, standing on the bottom edge. */
 .about-banner-photo img { object-fit: contain !important; object-position: center bottom !important; filter: drop-shadow(0 30px 60px rgba(0, 0, 0, .35)); }
 .about-banner-shade { position: absolute; inset: 0; background: linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 55%, transparent) 18%, transparent 42%); pointer-events: none; }
@@ -588,15 +591,19 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 .deck-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 22px; }
 .deck-actions .deck-cta { margin-top: 0; }
 .deck-page { font-size: .88rem; color: rgba(255, 255, 255, .86); }
-/* below 900px: the same cards as a list, each opening in place */
-.deck.is-list { height: auto; perspective: none; }
-.deck.is-list::before { inset: 0; }
-.deck.is-list .deck-stage { position: relative; display: flex; flex-direction: column; gap: 12px; }
-.deck.is-list .deck-slot { position: relative; left: auto; top: auto; width: auto; height: auto; }
-.deck.is-list .deck-card { position: relative; width: 100%; height: auto; min-height: 168px; transform: none; padding-right: 96px; }
-.deck.is-list .deck-num { font-size: 2.6rem; }
-/* list cards are wide and short: the scrim runs left to right, so the text side stays dark */
-.deck.is-list .deck-cover::after { background: linear-gradient(90deg, rgba(10, 10, 10, .96) 0%, rgba(10, 10, 10, .9) 58%, rgba(10, 10, 10, .5) 100%); }
+/* below 900px: the same cards as a list, each opening in place. Laid out by the media query, not
+   by the component's JS class, so a phone gets the list from the first paint (the server renders
+   the 3D deck, and its inline transforms and sizes are overridden here until hydration). */
+@media (max-width: 899.98px) {
+  .deck { height: auto; perspective: none; }
+  .deck::before { inset: 0; }
+  .deck-stage { position: relative; display: flex; flex-direction: column; gap: 12px; }
+  .deck-slot { position: relative; left: auto; top: auto; width: auto; height: auto; transform: none !important; opacity: 1 !important; }
+  .deck-card { position: relative; width: 100% !important; height: auto !important; min-height: 168px; transform: none; padding-right: 96px; }
+  .deck-num { font-size: 2.6rem; }
+  /* list cards are wide and short: the scrim runs left to right, so the text side stays dark */
+  .deck-cover::after { background: linear-gradient(90deg, rgba(10, 10, 10, .96) 0%, rgba(10, 10, 10, .9) 58%, rgba(10, 10, 10, .5) 100%); }
+}
 @media (max-width: 900px) {
   .services-deck-inner { grid-template-columns: 1fr; }
 }

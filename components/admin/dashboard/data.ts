@@ -55,14 +55,25 @@ export const getPages = cache(async (payload: Payload) => {
   }));
 });
 
+/**
+ * Every project field the dashboard uses, from the latest drafts, read once per request; the
+ * project views below (status, recent work, case studies, disciplines) all derive from it
+ * instead of each querying projects again.
+ */
+const projectRows = cache(async (payload: Payload) => (await payload.find({
+  collection: 'projects', draft: true, depth: 0, limit: 300, pagination: false, sort: '-updatedAt',
+  select: { title: true, slug: true, client: true, year: true, updatedAt: true, _status: true, featured: true, samples: true, liveUrl: true, cover: true, disciplines: true, brief: true, approach: true, outcome: true, tools: true, deliverables: true, timeline: true },
+})).docs);
+
 export const getProjects = cache(async (payload: Payload) => {
   const [latest, main] = await Promise.all([
-    payload.find({ collection: 'projects', draft: true, depth: 0, limit: 300, pagination: false, sort: '-updatedAt', select: { title: true, slug: true, client: true, updatedAt: true, _status: true, featured: true, samples: true, liveUrl: true } }),
+    projectRows(payload),
+    // the main rows say what's live; the latest drafts say whether edits are waiting
     payload.find({ collection: 'projects', depth: 0, limit: 300, pagination: false, select: { _status: true } }),
   ]);
   const live = new Map(main.docs.map((d) => [d.id, d._status]));
   const now = Date.now();
-  return latest.docs.map((p) => ({
+  return latest.map((p) => ({
     id: p.id,
     title: p.title || 'Untitled project',
     client: (p as { client?: string | null }).client ?? null,
@@ -130,17 +141,19 @@ export const getProfile = cache(async (payload: Payload) => {
 
 /** The latest four projects with their covers, for the visual "Recent work" strip. Status comes from getProjects (same rule). */
 export const getRecentWork = cache(async (payload: Payload) => {
-  const [latest, all] = await Promise.all([
-    payload.find({ collection: 'projects', draft: true, depth: 1, limit: 4, sort: '-updatedAt', select: { title: true, client: true, year: true, cover: true, samples: true } }),
-    getProjects(payload),
-  ]);
+  const [rows, all] = await Promise.all([projectRows(payload), getProjects(payload)]);
+  const latest = rows.slice(0, 4);
   const byId = new Map(all.map((p) => [p.id, p]));
-  return latest.docs.map((p) => ({
+  // the four covers in one small media query (the rows are depth 0)
+  const coverIds = latest.map((p) => (typeof p.cover === 'object' ? p.cover?.id : p.cover)).filter((c): c is number => c != null);
+  const covers = coverIds.length ? (await payload.find({ collection: 'media', depth: 0, limit: coverIds.length, pagination: false, where: { id: { in: coverIds } } })).docs : [];
+  const coverById = new Map(covers.map((m) => [m.id, m]));
+  return latest.map((p) => ({
     id: p.id,
     title: p.title || 'Untitled project',
     client: p.client ?? null,
     year: p.year ?? null,
-    cover: p.cover ?? null,
+    cover: coverById.get((typeof p.cover === 'object' ? p.cover?.id : p.cover) as number) ?? null,
     samples: (p.samples ?? []).length,
     status: byId.get(p.id)?.status ?? 'draft',
     ago: byId.get(p.id)?.ago ?? '',
@@ -163,12 +176,9 @@ export const CASE_STUDY_PARTS = [
 const filled = (v: unknown) => (Array.isArray(v) ? v.length > 0 : typeof v === 'string' ? v.trim().length > 0 : v != null);
 
 export const getCaseStudies = cache(async (payload: Payload) => {
-  const [rows, all] = await Promise.all([
-    payload.find({ collection: 'projects', draft: true, depth: 0, limit: 300, pagination: false, sort: '-updatedAt', select: { title: true, client: true, brief: true, approach: true, outcome: true, samples: true, tools: true, deliverables: true, timeline: true } }),
-    getProjects(payload),
-  ]);
+  const [rows, all] = await Promise.all([projectRows(payload), getProjects(payload)]);
   const byId = new Map(all.map((p) => [p.id, p]));
-  return rows.docs.map((p) => {
+  return rows.map((p) => {
     const has: Record<(typeof CASE_STUDY_PARTS)[number]['key'], boolean> = {
       brief: filled(p.brief), approach: filled(p.approach), outcome: filled(p.outcome), samples: filled(p.samples),
       tools: filled(p.tools) || filled(p.deliverables), timeline: filled(p.timeline),
@@ -190,13 +200,10 @@ export const getCaseStudies = cache(async (payload: Payload) => {
  * query for at most one cover per discipline). A project with several disciplines counts in each.
  */
 export const getDisciplines = cache(async (payload: Payload, options: readonly { label: string; value: string }[]) => {
-  const [rows, all] = await Promise.all([
-    payload.find({ collection: 'projects', draft: true, depth: 0, limit: 300, pagination: false, sort: '-updatedAt', select: { title: true, disciplines: true, cover: true } }),
-    getProjects(payload),
-  ]);
+  const [rows, all] = await Promise.all([projectRows(payload), getProjects(payload)]);
   const byId = new Map(all.map((p) => [p.id, p]));
   const groups = options.map((o) => {
-    const list = rows.docs.filter((p) => (p.disciplines ?? []).includes(o.value as never));
+    const list = rows.filter((p) => (p.disciplines ?? []).includes(o.value as never));
     const coverId = list.map((p) => (typeof p.cover === 'object' ? p.cover?.id : p.cover)).find((c) => c != null) ?? null;
     return { value: o.value, label: o.label, count: list.length, live: list.filter((p) => byId.get(p.id)?.status !== 'draft').length, latest: list[0]?.title ?? null, coverId };
   });

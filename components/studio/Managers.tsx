@@ -46,7 +46,7 @@ export function ProjectsManager({ fields, onChanged }: { fields: SField[]; onCha
       const r = await saveProject(editing.id, editing.value, publish);
       await refreshProjects();
       onChanged();
-      setEditing(publish ? null : { id: r.id, value: editing.value });
+      setEditing(publish ? null : { id: r.id, value: { ...editing.value, updatedAt: r.updatedAt } });
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   const remove = async () => {
@@ -167,7 +167,7 @@ export function PostsManager({ fields, onChanged }: { fields: SField[]; onChange
       const r = await savePost(editing.id, editing.value, publish);
       await load();
       onChanged();
-      setEditing(publish ? null : { id: r.id, value: editing.value });
+      setEditing(publish ? null : { id: r.id, value: { ...editing.value, updatedAt: r.updatedAt } });
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   const remove = async () => {
@@ -257,7 +257,7 @@ export function ServicesManager({ fields, onChanged }: { fields: SField[]; onCha
       const r = await saveService(editing.id, editing.value, publish);
       await load();
       onChanged();
-      setEditing(publish ? null : { id: r.id, value: editing.value });
+      setEditing(publish ? null : { id: r.id, value: { ...editing.value, updatedAt: r.updatedAt } });
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   const remove = async () => {

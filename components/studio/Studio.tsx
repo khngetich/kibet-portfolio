@@ -64,6 +64,11 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
   const frame = useRef<HTMLIFrameElement>(null);
   const saveTimer = useRef<number | null>(null);
   const latest = useRef<Rec | null>(null);
+  // the page's updatedAt as last read or saved: sent with each save so the server can refuse
+  // to overwrite someone else's newer change (see assertFresh in actions.ts). Saves run one
+  // at a time so each carries the stamp the previous one returned.
+  const stamp = useRef<string | null>(null);
+  const inflight = useRef<Promise<unknown>>(Promise.resolve());
 
   const blocks = useMemo(() => Object.fromEntries(schema.sections.map((b) => [b.slug, b])), [schema.sections]) as Record<string, SBlock>;
   const page = pages.find((p) => p.id === pageId) ?? null;
@@ -82,18 +87,24 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
   useEffect(() => {
     if (pageId == null) return;
     let live = true;
-    getPage(pageId).then((d) => { if (live) { setDoc(d as unknown as Rec); latest.current = d as unknown as Rec; } }).catch((e) => setError((e as Error).message));
+    getPage(pageId).then((d) => { if (live) { setDoc(d as unknown as Rec); latest.current = d as unknown as Rec; stamp.current = (d as { updatedAt?: string }).updatedAt ?? null; } }).catch((e) => setError((e as Error).message));
     return () => { live = false; };
   }, [pageId]);
 
   /* ── autosave drafts ── */
   const flush = useCallback(async () => {
     if (saveTimer.current) { window.clearTimeout(saveTimer.current); saveTimer.current = null; }
-    const d = latest.current;
-    if (!d || pageId == null) return;
+    if (!latest.current || pageId == null) return;
     setSave('saving');
+    let d = latest.current;
+    const job = inflight.current.then(async () => {
+      d = latest.current ?? d;
+      const r = await savePageDraft(pageId, { title: d.title, slug: d.slug, sections: d.sections, meta: d.meta, updatedAt: stamp.current });
+      stamp.current = r.updatedAt as string;
+    });
+    inflight.current = job.catch(() => {});
     try {
-      await savePageDraft(pageId, { title: d.title, slug: d.slug, sections: d.sections, meta: d.meta });
+      await job;
       setSave('saved');
       setPages((ps) => ps.map((p) => (p.id === pageId ? { ...p, title: d.title as string, slug: d.slug as string, _status: 'draft', updatedAt: new Date().toISOString() } : p)));
       post({ type: 'refresh' });
@@ -202,8 +213,10 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
     if (saveTimer.current) { window.clearTimeout(saveTimer.current); saveTimer.current = null; }
     setSave('saving');
     try {
-      const d = latest.current;
-      await publishPage(pageId, { title: d.title, slug: d.slug, sections: d.sections, meta: d.meta });
+      await inflight.current;
+      const d = latest.current!;
+      const r = await publishPage(pageId, { title: d.title, slug: d.slug, sections: d.sections, meta: d.meta, updatedAt: stamp.current });
+      stamp.current = (r as { updatedAt?: string }).updatedAt ?? stamp.current;
       setSave('saved');
       setPages((ps) => ps.map((p) => (p.id === pageId ? { ...p, _status: 'published', updatedAt: new Date().toISOString() } : p)));
       setStatus('Published — your changes are live.');
@@ -398,7 +411,7 @@ function StudioApp({ schema, initialPages, siteName, user, adminRoute }: Paramet
         </ul>
       </Modal>
       <NewPageModal open={modal === 'newPage'} onClose={() => setModal(null)} existing={pages.map((p) => p.slug ?? '')} onCreated={async (p) => { setModal(null); await refreshPages(); openPage(p.id); }} />
-      <VersionsModal open={modal === 'versions'} pageId={pageId} onClose={() => setModal(null)} onRestored={async () => { setModal(null); if (pageId != null) { const d = await getPage(pageId); setDoc(d as unknown as Rec); latest.current = d as unknown as Rec; post({ type: 'refresh' }); setStatus('Earlier version restored as a draft.'); } }} />
+      <VersionsModal open={modal === 'versions'} pageId={pageId} onClose={() => setModal(null)} onRestored={async () => { setModal(null); if (pageId != null) { const d = await getPage(pageId); setDoc(d as unknown as Rec); latest.current = d as unknown as Rec; stamp.current = (d as { updatedAt?: string }).updatedAt ?? null; post({ type: 'refresh' }); setStatus('Earlier version restored as a draft.'); } }} />
       <Modal open={modal === 'media'} onClose={() => setModal(null)} title="Media library" description="Drop files anywhere in this window to upload. Click a file to edit its description or delete it." size="xl"><MediaLibrary /></Modal>
       <Modal open={modal === 'projects'} onClose={() => setModal(null)} title="Projects" description="Case studies shown on Work and in the showcase sections." size="xl"><ProjectsManager fields={schema.project} onChanged={() => post({ type: 'refresh' })} /></Modal>
       <Modal open={modal === 'services'} onClose={() => setModal(null)} title="Services" description="Each service has a card in the Services section and its own page. The cover shows on both." size="xl"><ServicesManager fields={schema.service} onChanged={() => post({ type: 'refresh' })} /></Modal>

@@ -1,7 +1,7 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { getPayload, type Payload, type TypedUser, type Where } from 'payload';
+import { APIError, getPayload, ValidationError, type Payload, type TypedUser, type Where } from 'payload';
 import config from '@payload-config';
 
 /**
@@ -14,11 +14,31 @@ type Rec = Record<string, unknown>;
 type GlobalSlug = 'header' | 'footer' | 'theme' | 'site';
 const GLOBALS: GlobalSlug[] = ['header', 'footer', 'theme', 'site'];
 
+/** An error whose message is written for the editor, so it's safe to show as it is. */
+class Shown extends Error {}
+
 async function session(): Promise<{ payload: Payload; user: TypedUser }> {
   const payload = await getPayload({ config });
   const { user } = await payload.auth({ headers: await headers() });
-  if (!user) throw new Error('Your session has ended. Sign in again to keep editing.');
+  if (!user) throw new Shown('Your session has ended. Sign in again to keep editing.');
   return { payload, user };
+}
+
+/**
+ * Optimistic concurrency: the editor sends back the `updatedAt` it last saw. A newer stored one
+ * means someone saved in between (the admin, another tab or device), and writing now would
+ * silently undo their change. Payload returns the stored updatedAt from every save, so the
+ * editor's own consecutive saves always match. New documents have nothing to compare.
+ */
+function assertFresh(stored: string | null | undefined, seen: unknown) {
+  if (typeof seen !== 'string' || !stored) return;
+  if (new Date(stored).getTime() > new Date(seen).getTime()) {
+    throw new Shown('Someone else changed this since you opened it. Reload to see their changes, then make your edit again.');
+  }
+}
+async function freshDoc(payload: Payload, collection: 'pages' | 'projects' | 'posts' | 'services', id: number, seen: unknown) {
+  const cur = await payload.findByID({ collection, id, draft: true, depth: 0, select: { updatedAt: true } as never });
+  assertFresh((cur as { updatedAt?: string }).updatedAt, seen);
 }
 
 /** Plain JSON only: dates and Payload internals don't cross the server-action boundary well. */
@@ -29,6 +49,9 @@ const clean = (data: Rec) => { const { id: _i, createdAt: _c, updatedAt: _u, ...
  * Every action returns `{ ok, data }` or `{ ok: false, error }` instead of throwing:
  * Next.js replaces thrown server-action messages with a generic one in production, and
  * the editor should see the real reason ("Your session has ended", a validation error…).
+ * Only messages meant for people are passed on (ours, field validation, Payload's 4xx
+ * errors such as "locked" or "not allowed"); anything else (a database error can quote its
+ * SQL) is logged on the server and replaced with a generic line.
  * components/studio/api.ts unwraps these back into values / thrown Errors on the client.
  */
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -36,9 +59,13 @@ async function run<T>(fn: () => Promise<T>): Promise<Result<T>> {
   try {
     return { ok: true, data: await fn() };
   } catch (e) {
-    const err = e as { message?: string; data?: { errors?: { message?: string }[] } };
-    const detail = err.data?.errors?.map((x) => x.message).filter(Boolean).join(' ');
-    return { ok: false, error: detail || err.message || 'Something went wrong.' };
+    if (e instanceof ValidationError) {
+      const detail = (e.data?.errors ?? []).map((x) => x.message).filter(Boolean).join(' ');
+      return { ok: false, error: detail || e.message };
+    }
+    if (e instanceof Shown || (e instanceof APIError && e.status < 500)) return { ok: false, error: e.message };
+    console.error('[studio]', e);
+    return { ok: false, error: 'Something went wrong on the server. Try again; if it keeps happening, reload the Studio.' };
   }
 }
 
@@ -57,13 +84,15 @@ async function getPageImpl(id: number) {
 
 async function savePageDraftImpl(id: number, data: Rec) {
   const { payload, user } = await session();
-  const doc = await payload.update({ collection: 'pages', id, data: { ...clean(data), _status: 'draft' } as never, draft: true, autosave: true, context: { autosave: true }, user, overrideAccess: false, depth: 0 });
+  await freshDoc(payload, 'pages', id, data.updatedAt);
+  const doc = await payload.update({ collection: 'pages', id, data: { ...clean(data), _status: 'draft' } as never, draft: true, autosave: true, context: { autosave: true }, user, overrideAccess: false, overrideLock: false, depth: 0 });
   return json({ updatedAt: doc.updatedAt });
 }
 
 async function publishPageImpl(id: number, data: Rec) {
   const { payload, user } = await session();
-  const doc = await payload.update({ collection: 'pages', id, data: { ...clean(data), _status: 'published' } as never, user, overrideAccess: false, depth: 0 });
+  await freshDoc(payload, 'pages', id, data.updatedAt);
+  const doc = await payload.update({ collection: 'pages', id, data: { ...clean(data), _status: 'published' } as never, user, overrideAccess: false, overrideLock: false, depth: 0 });
   return json(doc);
 }
 
@@ -106,15 +135,16 @@ async function restorePageVersionImpl(versionId: number | string) {
 /* ── globals: header, footer, styles, site settings ── */
 
 async function getGlobalImpl(slug: GlobalSlug) {
-  if (!GLOBALS.includes(slug)) throw new Error('Unknown settings');
+  if (!GLOBALS.includes(slug)) throw new Shown('Unknown settings');
   const { payload, user } = await session();
   return json(await payload.findGlobal({ slug, user, overrideAccess: false, depth: 0 }));
 }
 
 async function saveGlobalImpl(slug: GlobalSlug, data: Rec) {
-  if (!GLOBALS.includes(slug)) throw new Error('Unknown settings');
+  if (!GLOBALS.includes(slug)) throw new Shown('Unknown settings');
   const { payload, user } = await session();
-  return json(await payload.updateGlobal({ slug, data: clean(data) as never, user, overrideAccess: false, depth: 0 }));
+  assertFresh((await payload.findGlobal({ slug, depth: 0, select: { updatedAt: true } as never })).updatedAt as string | undefined, data.updatedAt);
+  return json(await payload.updateGlobal({ slug, data: clean(data) as never, user, overrideAccess: false, overrideLock: false, depth: 0 }));
 }
 
 /* ── media library ── */
@@ -129,7 +159,7 @@ async function listMediaImpl(opts: { search?: string; page?: number; ids?: numbe
 async function uploadMediaImpl(form: FormData) {
   const { payload, user } = await session();
   const file = form.get('file');
-  if (!(file instanceof File)) throw new Error('Choose a file to upload.');
+  if (!(file instanceof File)) throw new Shown('Choose a file to upload.');
   const alt = String(form.get('alt') || file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '));
   const data = Buffer.from(await file.arrayBuffer());
   const doc = await payload.create({ collection: 'media', data: { alt }, file: { data, name: file.name, mimetype: file.type, size: file.size }, user, overrideAccess: false });
@@ -182,11 +212,12 @@ async function getProjectImpl(id: number) {
 
 async function saveProjectImpl(id: number | null, data: Rec, publish: boolean) {
   const { payload, user } = await session();
+  if (id) await freshDoc(payload, 'projects', id, data.updatedAt);
   const body = { ...clean(data), _status: publish ? 'published' : 'draft' } as never;
   const doc = id
-    ? await payload.update({ collection: 'projects', id, data: body, draft: !publish, user, overrideAccess: false, depth: 0 })
+    ? await payload.update({ collection: 'projects', id, data: body, draft: !publish, user, overrideAccess: false, overrideLock: false, depth: 0 })
     : await payload.create({ collection: 'projects', data: body, draft: !publish, user, overrideAccess: false, depth: 0 });
-  return json({ id: doc.id, title: doc.title });
+  return json({ id: doc.id, title: doc.title, updatedAt: doc.updatedAt });
 }
 
 async function deleteProjectImpl(id: number) {
@@ -208,11 +239,12 @@ async function getPostImpl(id: number) {
 
 async function savePostImpl(id: number | null, data: Rec, publish: boolean) {
   const { payload, user } = await session();
+  if (id) await freshDoc(payload, 'posts', id, data.updatedAt);
   const body = { ...clean(data), _status: publish ? 'published' : 'draft' } as never;
   const doc = id
-    ? await payload.update({ collection: 'posts', id, data: body, draft: !publish, user, overrideAccess: false, depth: 0 })
+    ? await payload.update({ collection: 'posts', id, data: body, draft: !publish, user, overrideAccess: false, overrideLock: false, depth: 0 })
     : await payload.create({ collection: 'posts', data: body, draft: !publish, user, overrideAccess: false, depth: 0 });
-  return json({ id: doc.id, title: doc.title });
+  return json({ id: doc.id, title: doc.title, updatedAt: doc.updatedAt });
 }
 
 async function deletePostImpl(id: number) {
@@ -234,11 +266,12 @@ async function getServiceImpl(id: number) {
 
 async function saveServiceImpl(id: number | null, data: Rec, publish: boolean) {
   const { payload, user } = await session();
+  if (id) await freshDoc(payload, 'services', id, data.updatedAt);
   const body = { ...clean(data), _status: publish ? 'published' : 'draft' } as never;
   const doc = id
-    ? await payload.update({ collection: 'services', id, data: body, draft: !publish, user, overrideAccess: false, depth: 0 })
+    ? await payload.update({ collection: 'services', id, data: body, draft: !publish, user, overrideAccess: false, overrideLock: false, depth: 0 })
     : await payload.create({ collection: 'services', data: body, draft: !publish, user, overrideAccess: false, depth: 0 });
-  return json({ id: doc.id, title: doc.title });
+  return json({ id: doc.id, title: doc.title, updatedAt: doc.updatedAt });
 }
 
 async function deleteServiceImpl(id: number) {

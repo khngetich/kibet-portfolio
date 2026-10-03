@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useReducedMotionConfig } from 'motion/react';
-import { useEffect, useId, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/Icon';
 import { Img } from '@/components/Img';
@@ -20,7 +20,9 @@ const subscribe = (cb: () => void) => { const mq = window.matchMedia(WIDE); mq.a
  * tilt and opens its deliverables and an "Inquire" button while the rest sink back, dimmed.
  * Each card carries its service's cover under a dark scrim, faded back once the card is open.
  * Escape, the close button or a click beside the cards puts it back. Below 900px the deck
- * becomes a plain list of the same cards, each opening in place.
+ * becomes a plain list of the same cards, each opening in place (laid out by a CSS media query,
+ * so phones never see the 3D deck first). Opening a card moves focus to its close button, and
+ * closing returns it to the card, so keyboard users never land on the page body.
  */
 export function ServiceDeck({ services, ctaLabel, pageLabel = 'See the service' }: { services: DeckService[]; ctaLabel: string; pageLabel?: string }) {
   const base = useId();
@@ -29,6 +31,15 @@ export function ServiceDeck({ services, ctaLabel, pageLabel = 'See the service' 
   const [active, setActive] = useState<number | null>(null);
   const [hover, setHover] = useState<number | null>(null);
   const n = services.length;
+  const openers = useRef<(HTMLButtonElement | null)[]>([]);
+  const closer = useRef<HTMLButtonElement>(null);
+  const last = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (active != null) closer.current?.focus({ preventScroll: true });
+    else if (last.current != null) openers.current[last.current]?.focus({ preventScroll: true });
+    last.current = active;
+  }, [active]);
 
   useEffect(() => {
     if (active == null) return;
@@ -61,7 +72,7 @@ export function ServiceDeck({ services, ctaLabel, pageLabel = 'See the service' 
             >
               {!!s.image && <span className="deck-cover" aria-hidden="true"><Img media={s.image} sizes="380px" /></span>}
               {!on && (
-                <button type="button" className="deck-hit" aria-expanded={false} aria-controls={`${id}-more`} onClick={() => setActive(i)}
+                <button ref={(el) => { openers.current[i] = el; }} type="button" className="deck-hit" aria-expanded={false} onClick={() => setActive(i)}
                   onFocus={() => setHover(i)} onBlur={() => setHover(null)}>
                   <span className="sr-only">Open {s.title}</span>
                 </button>
@@ -87,7 +98,7 @@ export function ServiceDeck({ services, ctaLabel, pageLabel = 'See the service' 
                   </motion.div>
                 )}
               </AnimatePresence>
-              {on && <button type="button" className="deck-close" onClick={() => setActive(null)} aria-label={`Close ${s.title}`} aria-expanded={true} aria-controls={`${id}-more`}><Icon name="close" size={16} /></button>}
+              {on && <button ref={closer} type="button" className="deck-close" onClick={() => setActive(null)} aria-label={`Close ${s.title}`} aria-expanded={true} aria-controls={`${id}-more`}><Icon name="close" size={16} /></button>}
               <span className="deck-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             </motion.article>
           );

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useReducedMotionConfig, useScroll, useTransform } from 'motion/react';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { useRef, type ReactNode } from 'react';
 import { Img } from '@/components/Img';
 import { Icon } from '@/components/Icon';
@@ -26,18 +26,20 @@ export function AboutBanner(props: {
 }) {
   const { id, headingId, chapter, greeting, name, bigName, headline, photo, intro, expertise, servicesHeading, services, stats, cta, link } = props;
   const ref = useRef<HTMLElement>(null);
-  const reduce = useReducedMotionConfig();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end end'] });
   const nameY = useTransform(scrollYProgress, [0.25, 1], ['55%', '0%']);
   const nameScale = useTransform(scrollYProgress, [0.25, 1], [0.86, 1]);
   const photoY = useTransform(scrollYProgress, [0, 1], ['12%', '0%']);
   const photoScale = useTransform(scrollYProgress, [0, 1], [1.15, 1]);
   const hasColumns = !!(intro || expertise.length || services.length);
-  const rise = (i: number) => (reduce ? {} : { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '0px 0px -10% 0px' }, transition: { duration: 0.9, delay: i * 0.1, ease: EASE } });
+  // The same props on the server and the client (no branching on reduced motion during render,
+  // which would mismatch on hydration): MotionConfig drops the movement for reduced motion and
+  // keeps the fade, and CSS stops the scroll parallax (sections.css, about banner).
+  const rise = (i: number) => ({ initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '0px 0px -10% 0px' }, transition: { duration: 0.9, delay: i * 0.1, ease: EASE } });
 
   return (
     <section ref={ref} className={`about-banner${hasColumns ? ' has-columns' : ''}`} id={id} {...(headline ? { 'aria-labelledby': headingId } : { 'aria-label': 'About' })}>
-      <motion.div className="about-banner-photo" style={reduce ? undefined : { y: photoY, scale: photoScale }} aria-hidden="true">
+      <motion.div className="about-banner-photo" style={{ y: photoY, scale: photoScale }} aria-hidden="true">
         <Img media={photo} sizes="(max-width: 800px) 100vw, 60vw" />
       </motion.div>
       <div className="about-banner-shade" aria-hidden="true" />
@@ -81,7 +83,7 @@ export function AboutBanner(props: {
             <motion.div
               key={s.value + s.label}
               className="about-stat"
-              initial={reduce ? false : { opacity: 0, x: (i - (stats.length - 1) / 2) * 80 }}
+              initial={{ opacity: 0, x: (i - (stats.length - 1) / 2) * 80 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '0px 0px -10% 0px' }}
               transition={{ duration: 1, delay: i * 0.1, ease: EASE }}
@@ -94,7 +96,7 @@ export function AboutBanner(props: {
       )}
 
       {/* Sized by letter count so any name spans the width without overflowing. */}
-      <motion.p className="about-name" style={{ fontSize: `min(23rem, ${Math.round(158 / Math.max(bigName.length, 4))}vw)`, ...(reduce ? {} : { y: nameY, scale: nameScale }) }} aria-hidden="true">{bigName}</motion.p>
+      <motion.p className="about-name" style={{ fontSize: `min(23rem, ${Math.round(158 / Math.max(bigName.length, 4))}vw)`, y: nameY, scale: nameScale }} aria-hidden="true">{bigName}</motion.p>
     </section>
   );
 }

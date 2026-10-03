@@ -49,7 +49,8 @@ function templates(e: Enquiry, site: { name: string; availability: string | null
   ];
 }
 
-const mailto = (to: string, subject: string, body: string) => `mailto:${to}?${new URLSearchParams({ subject, body }).toString().replace(/\+/g, '%20')}`;
+// the address comes from a public form: encoded, so a crafted one ("a@b.c?cc=…&body=…") can't add recipients or text
+const mailto = (to: string, subject?: string, body?: string) => `mailto:${encodeURIComponent(to)}${subject == null ? '' : `?${new URLSearchParams({ subject, body: body ?? '' }).toString().replace(/\+/g, '%20')}`}`;
 const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 const when = (iso: string) => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
@@ -137,7 +138,7 @@ export function EnquiriesManager() {
           <h3 className="st-mail-title">{open.service || 'General enquiry'}</h3>
           <div className="st-mail-from">
             <span className="st-mail-avatar is-lg" aria-hidden="true">{initials(open.name)}</span>
-            <span><b>{open.name}</b> <a href={`mailto:${open.email}`}>{open.email}</a></span>
+            <span><b>{open.name}</b> <a href={mailto(open.email)}>{open.email}</a></span>
             <small>{when(open.createdAt)}</small>
           </div>
           {(open.budget || open.timeline) && (
