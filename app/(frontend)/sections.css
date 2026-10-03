@@ -1035,8 +1035,21 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .about-mood[aria-pressed='true'] .about-mood-switch i { translate: 16px 0; background: var(--bg); }
 .about-pt-caption { margin: 0; font-family: var(--font-accent); font-style: italic; font-size: .95rem; color: var(--ink-3); text-align: center; }
 .about-pt-heading { max-width: 13ch; margin: 0; }
-.about-pt .about-ed-right > .lede { max-width: 46ch; margin: 0; }
-.about-pt .about-folder { margin-top: 10px; }
+/* the heading row spans both columns (heading left, intro and link right, on the same column
+   split as below), so the print and the folder start on one line: the print's top edge meets
+   the top of the folder tabs */
+.about-pt .about-ed-grid { row-gap: clamp(40px, 5vw, 64px); }
+.about-pt-intro { grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); column-gap: clamp(36px, 6vw, 96px); align-items: end; }
+.about-pt-intro > .chapter { grid-column: 1 / -1; justify-self: start; }
+.about-pt-intro-text { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.about-pt-intro-text .lede { max-width: 46ch; margin: 0; }
+.about-pt .about-proof { grid-column: 1; grid-row: 2; padding-top: 0; }
+.about-pt .about-ed-right { grid-column: 2; grid-row: 2; }
+@media (max-width: 900px) {
+  .about-pt .about-ed-grid { row-gap: 36px; }
+  .about-pt-intro { grid-template-columns: minmax(0, 1fr); row-gap: 18px; }
+  .about-pt .about-proof, .about-pt .about-ed-right { grid-column: 1; grid-row: auto; }
+}
 .about-ed-heading.is-sub { font-size: clamp(1.3rem, 2.2vw, 1.7rem); }
 @media (max-width: 900px) {
   .about-sticker.is-top { right: -6%; }

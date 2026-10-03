@@ -9,10 +9,10 @@ import { AboutFolder, ProofPrint, type AboutTab } from './AboutEditorial';
 /**
  * About, as a portrait with personality, on the proof-sheet look: the photo is a tilted print
  * (crop marks, colour bar, "Proof" label) with sticker labels stuck on its edges, and (with a
- * second photo) a "Change the mood" switch that cross-fades between the two. On the right: the
- * label, a two-line heading with the accent, a short intro and a link, then the folder with the
- * section's tabs (figures, a numbered list, stamped notes). The stickers are plain text, so they
- * read in order for screen readers.
+ * second photo) a "Change the mood" switch that cross-fades between the two. Above both columns:
+ * the label, a two-line heading with the accent, a short intro and a link; below it the print and
+ * the folder with the section's tabs (figures, a numbered list, stamped notes) start on the same
+ * line. The stickers are plain text, so they read in order for screen readers.
  */
 export function AboutPortrait({ id, headingId, chapter, heading, intro, photo, moodPhoto, stickers, caption, link, name, tabs }: {
   id?: string; headingId: string; chapter?: ReactNode; heading: ReactNode; intro?: string | null;
@@ -26,6 +26,17 @@ export function AboutPortrait({ id, headingId, chapter, heading, intro, photo, m
   return (
     <section ref={ref} className={`about-pt about-ed${seen ? ' is-seen' : ''}`} id={id} aria-labelledby={headingId}>
       <div className="wrap about-ed-grid">
+        <div className="about-pt-intro">
+          {chapter}
+          <h2 className="h-xl about-pt-heading" id={headingId}>{heading}</h2>
+          {(intro || link) && (
+            <div className="about-pt-intro-text">
+              {/* the intro is written to follow "Hi, I'm Name," (the banner layout); here it stands alone */}
+              {intro && <p className="lede">{intro.charAt(0).toUpperCase() + intro.slice(1)}</p>}
+              {link && <Link className="link-under" href={link.url}>{link.label} <Icon name="arrow" size={14} /></Link>}
+            </div>
+          )}
+        </div>
         <div className="about-proof">
           <ProofPrint photo={photo} moodPhoto={moodPhoto} mood={mood} name={name}>
             {top && <span className="about-sticker is-top"><Icon name="spark" size={13} />{top}</span>}
@@ -39,14 +50,7 @@ export function AboutPortrait({ id, headingId, chapter, heading, intro, photo, m
           )}
           {caption && <p className="about-pt-caption">{caption}</p>}
         </div>
-        <div className="about-ed-right">
-          {chapter}
-          <h2 className="h-xl about-pt-heading" id={headingId}>{heading}</h2>
-          {/* the intro is written to follow "Hi, I'm Name," (the banner layout); here it stands alone */}
-          {intro && <p className="lede">{intro.charAt(0).toUpperCase() + intro.slice(1)}</p>}
-          {link && <Link className="link-under" href={link.url}>{link.label} <Icon name="arrow" size={14} /></Link>}
-          {!!tabs.length && <AboutFolder tabs={tabs} seen={seen} />}
-        </div>
+        {!!tabs.length && <div className="about-ed-right"><AboutFolder tabs={tabs} seen={seen} /></div>}
       </div>
     </section>
   );
