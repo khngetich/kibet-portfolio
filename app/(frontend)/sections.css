@@ -426,6 +426,21 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 .about-ed-heading { margin: 0; font-family: var(--font-heading); font-size: clamp(1.7rem, 3.2vw, 2.6rem); font-weight: var(--heading-weight); letter-spacing: var(--heading-tracking); line-height: 1.08; text-wrap: balance; }
 .about-ed-text { margin: 14px 0 0; max-width: 52ch; color: var(--ink-2); line-height: 1.65; text-wrap: pretty; }
 .about-folder-card .link-under { display: inline-flex; margin-top: 24px; }
+/* the glass-folder effects (as .gf): a solid back in the accent with a tab on the right, peeking
+   above the card and seen blurred through it; a frosted card; a soft cast shadow in the accent.
+   Pointing at the folder lifts the back, as if pulling it out. */
+.about-folder { isolation: isolate; }
+.about-folder::before { content: ''; position: absolute; right: clamp(8px, 2vw, 24px); top: 26px; width: min(42%, 380px); height: 72px; z-index: -1; border-radius: 18px 18px 0 0; background: color-mix(in oklab, var(--accent) 78%, var(--surface)); transition: translate .55s cubic-bezier(0.2, 0, 0, 1); }
+.about-folder::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: -14px; height: 40px; z-index: -2; border-radius: 50%; background: color-mix(in srgb, var(--accent) 30%, rgba(0, 0, 0, .28)); filter: blur(22px); opacity: .4; transition-property: opacity, scale; transition-duration: .5s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.about-folder-card { background: linear-gradient(170deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, .14) 45%), color-mix(in oklab, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+.about-folder-tabs button.is-on { background: linear-gradient(rgba(255, 255, 255, .55), rgba(255, 255, 255, .55)), color-mix(in oklab, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); }
+html[data-theme='dark'] .about-folder-card { background: linear-gradient(170deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .02) 45%), color-mix(in oklab, var(--surface) 80%, transparent); }
+html[data-theme='dark'] .about-folder-tabs button.is-on { background: linear-gradient(rgba(255, 255, 255, .1), rgba(255, 255, 255, .1)), color-mix(in oklab, var(--surface) 80%, transparent); }
+@media (hover: hover) {
+  .about-folder:hover::before { translate: 0 -8px; }
+  .about-folder:hover::after { opacity: .65; scale: 1.04 1; }
+}
+@media (prefers-reduced-motion: reduce) { .about-folder::before, .about-folder::after { transition: none; } .about-folder:hover::before { translate: none; } }
 /* full width: the card's heading and text on the left, its figures, list or stamps on the right */
 @media (min-width: 901px) {
   .about-folder-card { min-height: 0; }

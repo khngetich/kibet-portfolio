@@ -59,8 +59,20 @@ html[data-theme='dark'] .cpg-way.is-wa .cpg-way-ic { color: #5BE58A; }
 
 /* what happens next: three small folders */
 .cpg-next { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.cpg-step { position: relative; display: flex; gap: 14px; padding: 16px 18px; border-radius: 0 16px 16px 16px; background: color-mix(in oklab, var(--h) 12%, var(--surface)); margin-top: 12px; }
+/* each with the glass-folder effects (as .gf in sections.css): a frosted front, a solid back in
+   the step's hue whose tab peeks out on the right, and a soft cast shadow; pointing at one lifts it */
+.cpg-step { position: relative; isolation: isolate; display: flex; gap: 14px; padding: 16px 18px; border-radius: 0 16px 16px 16px; margin-top: 16px;
+  background: linear-gradient(170deg, rgba(255, 255, 255, .6), rgba(255, 255, 255, .2) 55%), color-mix(in oklab, var(--h) 16%, rgba(255, 255, 255, .55));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5), 0 16px 26px -20px color-mix(in srgb, var(--h) 70%, #000);
+  transition: translate .45s cubic-bezier(0.2, 0, 0, 1), box-shadow .45s cubic-bezier(0.2, 0, 0, 1); }
 .cpg-step::before { content: ''; position: absolute; left: 0; bottom: 100%; width: 38%; height: 12px; border-radius: 10px 14px 0 0; background: inherit; }
+.cpg-step::after { content: ''; position: absolute; right: 10px; bottom: 100%; width: 30%; height: 9px; z-index: -1; border-radius: 9px 9px 0 0; background: color-mix(in oklab, var(--h) 75%, var(--surface)); transition: translate .45s cubic-bezier(0.2, 0, 0, 1); }
+html[data-theme='dark'] .cpg-step { background: linear-gradient(170deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .02) 55%), color-mix(in oklab, var(--h) 24%, rgba(14, 14, 14, .62)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 16px 26px -20px color-mix(in srgb, var(--h) 70%, #000); }
+@media (hover: hover) {
+  .cpg-step:hover { translate: 0 -2px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .5), 0 22px 30px -18px color-mix(in srgb, var(--h) 75%, #000); }
+  .cpg-step:hover::after { translate: 0 -4px; }
+}
+@media (prefers-reduced-motion: reduce) { .cpg-step, .cpg-step::after { transition: none; } .cpg-step:hover, .cpg-step:hover::after { translate: none; } }
 .cpg-step-n { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--h); color: #FFFFFF; font-size: .82rem; font-weight: 700; }
 .cpg-step > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .cpg-step b { font-weight: 600; color: color-mix(in oklab, var(--h) 70%, var(--ink)); }

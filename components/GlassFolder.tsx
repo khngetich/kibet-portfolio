@@ -15,7 +15,7 @@ import { Icon } from './Icon';
  * The cover keeps the case study's view-transition name, so opening the folder still morphs it
  * into the case study's header image (see ProjectFolder and the `case-open` styles).
  */
-export function GlassFolder({ project: p, n, sizes, level = 3 }: { project: ProjectCard; n: number; sizes: string; level?: 2 | 3 }) {
+export function GlassFolder({ project: p, n, sizes, preload, level = 3 }: { project: ProjectCard; n: number; sizes: string; preload?: boolean; level?: 2 | 3 }) {
   const Name = `h${level}` as 'h2' | 'h3';
   const what = disciplineList(p.disciplines?.slice(0, 2)) || 'Case study';
   const samples = (p.samples ?? []).map((s) => asMedia(s.file)).filter((m) => !!m).slice(0, 2);
@@ -27,7 +27,7 @@ export function GlassFolder({ project: p, n, sizes, level = 3 }: { project: Proj
         {left && <span className="gf-sheet is-l"><Img media={left} sizes="(max-width: 760px) 40vw, 220px" /></span>}
         {right && <span className="gf-sheet is-r"><Img media={right} sizes="(max-width: 760px) 40vw, 220px" /></span>}
         <ViewTransition name={`case-cover-${p.slug}`} share="case-cover" default="none">
-          <span className="gf-sheet is-c"><Img media={p.cover} sizes={sizes} /></span>
+          <span className="gf-sheet is-c"><Img media={p.cover} sizes={sizes} preload={preload} /></span>
         </ViewTransition>
       </span>
       <span className="gf-front">

@@ -381,7 +381,7 @@ function ProcessSection({ s, ctx, id, hid, chapter }: P<'process'>) {
             </div>
             {!ctx.contact && <Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>}
           </Reveal>
-          <ProcessFolders steps={steps.map((step) => ({ id: (step as { id?: string }).id, title: step.title, description: step.description, points: step.points, duration: (step as { duration?: string | null }).duration, icon: (step as { icon?: string | null }).icon, image: step.image }))} />
+          <ProcessFolders steps={steps.map((step) => ({ id: (step as { id?: string }).id, title: step.title, description: step.description, points: step.points, duration: (step as { duration?: string | null }).duration }))} />
         </div>
       </section>
     );
@@ -590,12 +590,12 @@ function ProjectGridSection({ s, ctx, id, first }: { s: Of<'projectGrid'>; ctx: 
               studio={ctx.site.name}
               items={projects.map((p, i) => ({
                 disciplines: p.disciplines ?? [],
-                node: <ProjectCard project={p} level={level} sizes="(max-width: 800px) 100vw, 600px" preload={i < 2} />,
+                node: <ProjectCard project={p} n={i + 1} level={level} sizes="(max-width: 760px) 60vw, 340px" preload={i < 2} />,
                 proof: { title: p.title, slug: p.slug, client: p.client, year: p.year, cover: p.cover, featured: p.featured },
               }))}
             />
           ) : (
-            <div className="grid-work">{projects.map((p, i) => <div key={p.id} className="grid-cell"><ProjectCard project={p} level={level} sizes="(max-width: 800px) 100vw, 600px" preload={i < 2} /></div>)}</div>
+            <div className="grid-work">{projects.map((p, i) => <div key={p.id} className="grid-cell"><ProjectCard project={p} n={i + 1} level={level} sizes="(max-width: 760px) 60vw, 340px" preload={i < 2} /></div>)}</div>
           )
         ) : (
           <p className="muted">No projects published yet.</p>
