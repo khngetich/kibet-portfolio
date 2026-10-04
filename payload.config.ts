@@ -87,7 +87,13 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   graphQL: { disable: true },
   db: postgresAdapter({
-    pool: { connectionString: process.env.DATABASE_URL || '' },
+    pool: {
+      connectionString: process.env.DATABASE_URL || '',
+      // `next build` prerenders in about one worker per CPU, each with its own pool, and Supabase's
+      // session pooler allows 15 clients in all ("EMAXCONNSESSION"). While building, each worker
+      // keeps a single connection and lets it go when idle; the running site keeps pg's default.
+      ...(process.env.NEXT_PHASE === 'phase-production-build' ? { max: 1, idleTimeoutMillis: 1000 } : {}),
+    },
     migrationDir: path.resolve(dirname, 'migrations'),
     // Dev mode would otherwise push schema changes straight into whatever database it's pointed
     // at. Only a database on this machine may be changed that way; Supabase (production) only

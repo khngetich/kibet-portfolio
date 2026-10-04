@@ -20,7 +20,7 @@
 .svr-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; min-height: 0; }
 .svr-flag { margin: 0 0 10px; padding: 4px 10px; border-radius: 999px; background: var(--inverse); color: var(--inverse-ink); font-size: .72rem; font-weight: 600; }
 .svr-title { margin: 0; font-size: clamp(1.2rem, 1.7vw, 1.45rem); font-weight: 500; line-height: 1.2; letter-spacing: -.025em; text-wrap: balance; }
-.svr-title button { display: block; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; }
+.svr-title button { display: block; padding: 10px 0; margin: -10px 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; }
 .svr-title button:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 6px; }
 
 /* the open card's details unfold downwards (0fr → 1fr), so phones get the same motion */

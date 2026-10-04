@@ -40,6 +40,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // a separate output folder for a local preview build (NEXT_DIST_DIR=.next-preview), so it
+  // doesn't collide with `next dev` or another build writing to .next at the same time
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   reactStrictMode: true,
   poweredByHeader: false,
   async headers() {

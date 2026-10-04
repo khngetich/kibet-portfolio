@@ -1173,8 +1173,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .svx-head { max-width: 760px; margin-bottom: clamp(28px, 4vw, 48px); }
 .svx-head .h-xl { margin-top: 10px; }
 .svx-head .lede { margin-top: 16px; }
-.svx-foot { margin-top: clamp(28px, 4vw, 48px); }
-.svx-foot .lede { max-width: 48ch; }
+.svx-note { margin: 14px 0 0; color: var(--ink-2); }
 
 /* ── contact (section 6): the pitch left, the form right ── */
 .contact-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 80px); align-items: start; }

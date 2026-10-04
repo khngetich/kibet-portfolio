@@ -26,7 +26,7 @@ export function HeroCards({ projects }: { projects: ProjectCard[] }) {
     <motion.div ref={ref} className="hero-cards" style={reduce ? undefined : { scale, y }}>
       {projects.map((p, i) => (
         <div key={p.id} className="hero-card intro-card" style={{ '--i': i, ...paletteVars(p.palette) } as React.CSSProperties}>
-          <Link href={`/work/${p.slug}`} className="hero-card-link">
+          <Link href={`/work/${p.slug}`} className="hero-card-link" aria-label={`${p.title}. View the case study`}>
             <div className="hero-card-media">
               <Img media={p.cover} sizes="(max-width: 700px) 70vw, 28vw" preload={i === 0} />
             </div>

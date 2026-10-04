@@ -12,7 +12,7 @@ import { Reveal } from '@/components/motion/Reveal';
  */
 const FILES = 5;
 
-export function CaseStudies({ projects }: { projects: ProjectCard[] }) {
+export function CaseStudies({ projects, allHref = '/work' }: { projects: ProjectCard[]; allHref?: string | null }) {
   if (!projects.length) return null;
   const files = projects.slice(0, FILES);
   const more = projects.slice(FILES);
@@ -26,7 +26,7 @@ export function CaseStudies({ projects }: { projects: ProjectCard[] }) {
           </li>
         ))}
       </ol>
-      <MoreWork projects={more} />
+      <MoreWork projects={more} allHref={allHref} />
     </div>
   );
 }

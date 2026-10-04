@@ -2856,6 +2856,16 @@ export interface Footer {
    */
   copyright?: string | null;
   /**
+   * Who made the site, shown as a link on the last line. When the name already appears in the copyright text, that part becomes the link; otherwise "Site by …" is added.
+   */
+  credit?: {
+    label?: string | null;
+    /**
+     * Their website or profile (https://…). Opens in a new tab.
+     */
+    url?: string | null;
+  };
+  /**
    * Shown beside the copyright, e.g. Terms → /terms. The pages themselves are in Pages; link only to ones that exist.
    */
   legal?:
@@ -3056,6 +3066,12 @@ export interface FooterSelect<T extends boolean = true> {
         buttonUrl?: T;
       };
   copyright?: T;
+  credit?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
   legal?:
     | T
     | {
