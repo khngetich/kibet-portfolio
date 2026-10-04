@@ -1,5 +1,5 @@
 /* ── the About page as a hello (components/sections/Profile.tsx) ──
-   A portrait card on grid paper with floating chips and thin connector lines; the story; skills as
+   A portrait card on grid paper; the story; skills as
    a pile of tilted stickers; tools as notched tags; experience on a dial. Sticker and tag colours
    come from --h (set per item), with the text in the same hue deepened towards ink. */
 
@@ -13,13 +13,6 @@
   background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 56px 56px; background-position: center -1px;
   -webkit-mask-image: radial-gradient(ellipse 75% 70% at 55% 45%, #000 30%, transparent 100%); mask-image: radial-gradient(ellipse 75% 70% at 55% 45%, #000 30%, transparent 100%); }
-.pf-lines { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; fill: none; pointer-events: none; }
-.pf-lines path { stroke: var(--ink); stroke-width: 1.25; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1; animation: pf-draw 1.8s var(--ease) .35s forwards; }
-.pf-lines path + path { animation-delay: .6s; }
-@keyframes pf-draw { to { stroke-dashoffset: 0; } }
-.pf-dot { position: absolute; z-index: -1; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); }
-.pf-dot.is-a { left: 22.5%; top: 65.6%; }
-.pf-dot.is-b { left: 66.7%; top: 51.6%; }
 
 .pf-hello-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); gap: clamp(32px, 6vw, 96px); align-items: center; }
 .pf-hello-copy .eyebrow { margin-bottom: 0; }
@@ -33,18 +26,6 @@
 .pf-card-blank { display: grid; place-items: center; height: 100%; font-family: var(--font-heading); font-size: 2rem; font-weight: 700; color: var(--ink-3); }
 .pf-badge { position: absolute; top: -20px; left: -24px; display: grid; place-items: center; width: 66px; height: 66px; border-radius: 50%; background: var(--accent); color: #FFFFFF; rotate: -8deg;
   box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 20%, transparent), 0 14px 30px -10px var(--accent); }
-
-/* chips floating round the card */
-.pf-chips { position: absolute; inset: 0; margin: 0; pointer-events: none; }
-.pf-chip { position: absolute; display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 999px; font-size: .95rem; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; pointer-events: auto;
-  background: var(--h); color: color-mix(in oklab, var(--h) 22%, #0A0A0A);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 14px 30px -14px color-mix(in srgb, var(--h) 85%, transparent); }
-.pf-chip.is-open { top: 12%; right: -22%; rotate: 3deg; --h: var(--accent-strong); color: #FFFFFF; }
-.pf-chip.is-open i { width: 8px; height: 8px; border-radius: 50%; background: #34D399; box-shadow: 0 0 0 3px rgba(52, 211, 153, .3); }
-.pf-chip.is-role { top: 60%; right: -30%; rotate: -2deg; }
-.pf-chip.is-place { bottom: -5%; left: -22%; rotate: 2deg; }
-/* a cursor arrow pointing at the card, as if someone is about to drag the chip */
-.pf-pointer { position: absolute; top: -18px; right: -12px; width: 22px; height: 22px; fill: var(--h); rotate: 90deg; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .18)); }
 
 /* ── the story ── */
 .pf-story { display: grid; grid-template-columns: minmax(0, .32fr) minmax(0, 1fr); gap: clamp(20px, 5vw, 72px); padding-top: var(--section-y); }
@@ -77,15 +58,16 @@
 .pf-dial { position: relative; margin-top: var(--section-y); padding-block: clamp(64px, 9vw, 120px); overflow: clip; background: var(--bg); color: var(--ink); }
 .pf-dial-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 40px; align-items: center; }
 .pf-dial-line { max-width: 11ch; margin: 16px 0 0; }
-.pf-wheel { --x0: clamp(40px, 10%, 120px); position: relative; height: 380px; }
+.pf-wheel { --x0: clamp(40px, 10%, 120px); --gap: 64px; position: relative; height: max(380px, calc(var(--n, 3) * var(--gap) + 72px)); }
 /* three dashed rings sharing a centre off to the right; the middle one's left edge sits at --x0,
    where the roles hang, so only the rings' left arcs show */
 .pf-ring { position: absolute; top: 50%; left: calc(var(--x0) + 570px); width: 1500px; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; border: 1px dashed color-mix(in srgb, var(--ink) 26%, transparent); pointer-events: none; }
 .pf-ring.is-2 { width: 1140px; }
 .pf-ring.is-3 { width: 780px; }
-/* the roles sit along the middle ring, the current one centred in the pill */
+/* the roles sit along the middle ring, newest at the top and the current one in the pill; the
+   list is centred on the ring's middle (--j runs from -half to +half), so any number of roles fits */
 .pf-wheel ol { position: absolute; top: 50%; left: var(--x0); margin: 0; padding: 0; list-style: none; }
-.pf-wheel li { position: absolute; left: 0; top: calc(var(--k) * 76px); display: flex; align-items: center; gap: 14px; translate: calc(var(--k) * var(--k) * 5px - 18px) -50%; width: max-content; max-width: min(440px, 80vw); color: var(--ink-2); }
+.pf-wheel li { --j: calc(var(--k) - (var(--n, 1) - 1) / 2); position: absolute; left: 0; top: calc(var(--j) * var(--gap)); display: flex; align-items: center; gap: 14px; translate: calc(var(--j) * var(--j) * 4px - 18px) -50%; width: max-content; max-width: min(440px, 80vw); color: var(--ink-2); }
 .pf-years { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .pf-job { display: flex; flex-direction: column; gap: 2px; font-size: .95rem; }
 .pf-job b { font-weight: 600; color: var(--ink); }
@@ -95,17 +77,32 @@
 .pf-wheel li.is-now .pf-job b { color: var(--inverse-ink); }
 .pf-wheel li.is-now .pf-job span { color: color-mix(in srgb, var(--inverse-ink) 65%, transparent); }
 
+/* ── how I work: the first card in the accent, the last in ink, the rest on the surface ── */
+.pf-ways { padding-top: var(--section-y); }
+.pf-ways-title { max-width: 16ch; margin: 0 0 clamp(24px, 3vw, 40px); }
+.pf-ways-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 20px); margin: 0; padding: 0; list-style: none; }
+.pf-way { position: relative; display: flex; flex-direction: column; gap: 12px; min-height: clamp(180px, 16vw, 220px); padding: clamp(22px, 2.6vw, 32px); border-radius: 28px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.pf-way-n { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pf-way-title { margin: auto 0 0; max-width: 18ch; font-size: clamp(1.4rem, 2.4vw, 1.9rem); font-weight: 600; line-height: 1.12; letter-spacing: -.03em; }
+.pf-way-title span { color: var(--ink-3); }
+.pf-way-text { margin: 0; max-width: 46ch; color: var(--ink-2); line-height: 1.55; }
+.pf-way:first-child { background: var(--accent-strong); color: #FFFFFF; box-shadow: none; }
+.pf-way:first-child .pf-way-title span { color: rgba(255, 255, 255, .62); }
+.pf-way:first-child .pf-way-text { color: rgba(255, 255, 255, .86); }
+.pf-way:first-child .pf-way-n { background: #FFFFFF; color: var(--accent-strong); }
+.pf-way:last-child:not(:first-child) { background: var(--inverse); color: var(--inverse-ink); box-shadow: none; }
+.pf-way:last-child:not(:first-child) .pf-way-title span { color: color-mix(in srgb, var(--inverse-ink) 55%, transparent); }
+.pf-way:last-child:not(:first-child) .pf-way-text { color: color-mix(in srgb, var(--inverse-ink) 80%, transparent); }
+.pf-way:last-child:not(:first-child) .pf-way-n { background: var(--inverse-ink); color: var(--inverse); }
+/* a soft glow in the corner of the coloured cards */
+.pf-way:first-child::after, .pf-way:last-child:not(:first-child)::after { content: ''; position: absolute; right: -60px; top: -60px; width: 200px; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, .22), transparent 70%); pointer-events: none; }
+
 /* ── tablets and phones ── */
 @media (max-width: 900px) {
   .pf-hello-grid, .pf-dial-grid { grid-template-columns: minmax(0, 1fr); }
-  .pf-lines, .pf-dot { display: none; }
   .pf-card { width: min(320px, 82%); margin-top: 12px; }
-  /* the chips leave the card and line up under it */
-  .pf-chips { position: static; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 28px; }
-  .pf-chip { position: static; rotate: 0deg; max-width: 100%; white-space: normal; text-align: center; }
-  .pf-chip.is-open { rotate: 0deg; }
-  .pf-pointer { display: none; }
   .pf-story { grid-template-columns: minmax(0, 1fr); }
+  .pf-ways-grid { grid-template-columns: minmax(0, 1fr); }
   .pf-wheel { height: auto; }
   .pf-ring { display: none; }
   .pf-wheel ol { position: static; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -120,8 +117,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pf-lines path { animation: none; stroke-dashoffset: 0; }
   .pf-sticker { transition: none; }
 }
-[data-motion='off'] .pf-lines path { animation: none; stroke-dashoffset: 0; }
 [data-motion='off'] .pf-sticker { transition: none; }

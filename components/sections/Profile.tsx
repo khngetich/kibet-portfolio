@@ -24,11 +24,18 @@ const MARKS: Record<string, string> = {
   illustrator: 'Ai', photoshop: 'Ps', indesign: 'Id', 'premiere pro': 'Pr', premiere: 'Pr', 'after effects': 'Ae',
   lightroom: 'Lr', xd: 'Xd', figma: 'Fg', canva: 'Cv', blender: 'Bl', procreate: 'Pc', 'davinci resolve': 'Dr', framer: 'Fr', webflow: 'Wf',
 };
+// "Brief first, pixels second" → ["Brief first,", "pixels second"]: the title's first half in ink, the rest muted
+const split = (title: string): [string, string] => {
+  const at = title.search(/[,:;.–—]\s/);
+  if (at > 0) return [title.slice(0, at + 1), title.slice(at + 2)];
+  const words = title.split(' ');
+  const half = Math.ceil(words.length / 2);
+  return [words.slice(0, half).join(' '), words.slice(half).join(' ')];
+};
 const mark = (tool: string) => MARKS[tool.trim().toLowerCase()] ?? tool.replace(/[^A-Za-z]/g, '').slice(0, 2).replace(/^./, (c) => c.toUpperCase());
 
 /**
- * The About page, as a hello. A portrait card on grid paper with chips floating around it (role,
- * place, availability) and thin connector lines drawn across the page; the story; what you're good
+ * The About page, as a hello. A portrait card on grid paper; the story; how I like to work; what you're good
  * at as a pile of tilted stickers; the tools as notched tags; and the experience on a dial, the
  * current role in the dark pill. Every part comes from the Profile section and Site settings, and
  * a part with nothing in it is left out.
@@ -39,26 +46,18 @@ export function ProfileSection({ s, site, id, first }: { s: Block; site: Site; i
   const Heading = first ? 'h1' : 'h2';
   const skills = (s.skills ?? []).filter(Boolean);
   const tools = (s.tools ?? []).filter(Boolean);
+  const principles = (s.principles ?? []).filter((p) => p.title);
   const jobs = s.experience ?? [];
-  const role = jobs[0]?.role || site.role;
   const cta = s.button?.label && s.button?.url ? s.button : null;
 
   return (
     <div className="pf" id={id}>
-      {/* ── hello: headline, portrait card, floating chips ── */}
+      {/* ── hello: headline and portrait card ── */}
       <section className="pf-hello" aria-labelledby="pf-title">
-        {/* thin connector lines across the page, each ending in a dot (the dots are HTML, so the
-            stretched SVG doesn't squash them into ovals) */}
-        <svg className="pf-lines" viewBox="0 0 1200 640" preserveAspectRatio="none" aria-hidden="true">
-          <path pathLength={1} d="M-20 560 C 140 560, 250 600, 268 500 S 270 430, 270 420" />
-          <path pathLength={1} d="M800 330 C 960 330, 1010 360, 1040 470 S 1120 600, 1220 600" />
-        </svg>
-        <span className="pf-dot is-a" aria-hidden="true" />
-        <span className="pf-dot is-b" aria-hidden="true" />
         <div className="wrap pf-hello-grid">
           <div className="pf-hello-copy">
             {s.eyebrow && <p className="eyebrow">{s.eyebrow}</p>}
-            <Heading className="h-xl pf-title" id="pf-title"><Accent text={s.heading} /></Heading>
+            <Heading className="h-xl pf-title" id="pf-title"><Accent text={s.heading} highlight={first} /></Heading>
             {(cta || cv?.url) && (
               <div className="pf-ctas">
                 {cta && <Link className={btn(cta.variant, 'btn-dark')} href={cta.url!}>{cta.label} <Icon name="arrow" size={15} /></Link>}
@@ -70,11 +69,6 @@ export function ProfileSection({ s, site, id, first }: { s: Block; site: Site; i
             <span className="pf-aura" aria-hidden="true" />
             <span className="pf-card-photo">{photo ? <Img media={photo} sizes="(max-width: 760px) 80vw, 380px" preload={first} /> : <span className="pf-card-blank">{site.name}</span>}</span>
             <span className="pf-badge" aria-hidden="true"><Icon name="spark" size={26} /></span>
-            <figcaption className="pf-chips">
-              {role && <span className="pf-chip is-role" style={hue(1)}>{role}</span>}
-              {site.availability && <span className="pf-chip is-open"><i aria-hidden="true" />{site.availability}</span>}
-              {site.location && <span className="pf-chip is-place" style={hue(3)}><svg className="pf-pointer" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1l14 5-6 2-2 6z" /></svg>{site.location}</span>}
-            </figcaption>
           </figure>
         </div>
       </section>
@@ -84,6 +78,25 @@ export function ProfileSection({ s, site, id, first }: { s: Block; site: Site; i
         <section className="wrap pf-story" aria-labelledby="pf-story-title">
           <h2 className="pf-kicker" id="pf-story-title">The story</h2>
           <RichText data={s.body} className="prose pf-prose" />
+        </section>
+      )}
+
+      {/* ── how I work: cards with a two-tone title (the first half in ink, the rest muted) ── */}
+      {!!principles.length && (
+        <section className="wrap pf-ways" aria-labelledby="pf-ways-title">
+          <h2 className="h-lg pf-ways-title" id="pf-ways-title"><Accent text={s.principlesHeading || 'How I like to *work*'} /></h2>
+          <ol className="pf-ways-grid">
+            {principles.map((p, i) => {
+              const [lead, rest] = split(p.title);
+              return (
+                <li key={p.id ?? i} className="pf-way">
+                  <span className="pf-way-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                  <h3 className="pf-way-title">{lead}{rest && <> <span>{rest}</span></>}</h3>
+                  {p.text && <p className="pf-way-text">{p.text}</p>}
+                </li>
+              );
+            })}
+          </ol>
         </section>
       )}
 
@@ -122,7 +135,7 @@ export function ProfileSection({ s, site, id, first }: { s: Block; site: Site; i
               <h2 className="pf-kicker" id="pf-dial-title">Experience</h2>
               <p className="h-lg pf-dial-line"><Accent text="Doing it *daily*." /></p>
             </div>
-            <div className="pf-wheel">
+            <div className="pf-wheel" style={{ '--n': jobs.length } as CSSProperties}>
               <span className="pf-ring" aria-hidden="true" /><span className="pf-ring is-2" aria-hidden="true" /><span className="pf-ring is-3" aria-hidden="true" />
               <ol>
                 {jobs.map((j, i) => (

@@ -19,6 +19,8 @@ const eslintConfig = defineConfig([
   },
   globalIgnores([
     '.next/**',
+    // preview and local builds (NEXT_DIST_DIR in next.config.ts)
+    '.next-*/**',
     'out/**',
     'build/**',
     'next-env.d.ts',

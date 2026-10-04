@@ -20,6 +20,7 @@ import * as migration_20261003_153100_resume_section from './20261003_153100_res
 import * as migration_20261003_153200_seed_resume_page from './20261003_153200_seed_resume_page';
 import * as migration_20261003_200937_review_fixes from './20261003_200937_review_fixes';
 import * as migration_20261004_113105_footer_credit from './20261004_113105_footer_credit';
+import * as migration_20261004_134452_profile_principles from './20261004_134452_profile_principles';
 
 export const migrations = [
   {
@@ -130,6 +131,11 @@ export const migrations = [
   {
     up: migration_20261004_113105_footer_credit.up,
     down: migration_20261004_113105_footer_credit.down,
-    name: '20261004_113105_footer_credit'
+    name: '20261004_113105_footer_credit',
+  },
+  {
+    up: migration_20261004_134452_profile_principles.up,
+    down: migration_20261004_134452_profile_principles.down,
+    name: '20261004_134452_profile_principles'
   },
 ];

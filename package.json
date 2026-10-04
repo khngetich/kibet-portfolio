@@ -18,7 +18,8 @@
     "check": "npm run lint && npm run typecheck",
     "backup": "bash scripts/backup.sh",
     "fix-content": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/fix-content.ts",
-    "review-content": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/review-content.ts"
+    "review-content": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/review-content.ts",
+    "humanize-content": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/humanize-content.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.90.1",

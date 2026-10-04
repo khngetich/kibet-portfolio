@@ -1,0 +1,77 @@
+/* ── the contact page (components/sections/ContactPage.tsx) ──
+   A glowing card holding a browser window that runs off its right edge, with two cursors round
+   the headline; then the form beside the quicker ways to reach out and "what happens next". */
+.cpg { padding-block: clamp(24px, 4vw, 48px) var(--section-y); }
+
+/* the card: the accent glows down from the top and fades into the page colour */
+.cpg-glow { position: relative; overflow: hidden; isolation: isolate; padding: clamp(28px, 4vw, 56px) 0 0 clamp(20px, 5vw, 72px); border-radius: clamp(28px, 3.4vw, 44px);
+  background: radial-gradient(120% 90% at 0% 0%, var(--red-2, #FF6A2B), transparent 60%), radial-gradient(90% 80% at 70% -10%, var(--accent), transparent 65%), linear-gradient(to bottom, color-mix(in oklab, var(--accent) 50%, var(--bg)) 0%, var(--surface) 72%);
+  box-shadow: 0 30px 60px -40px color-mix(in srgb, var(--accent) 60%, transparent), inset 0 0 0 1px var(--line); }
+.cpg-win { position: relative; border-radius: 22px 0 0 22px; background: color-mix(in oklab, var(--bg) 94%, var(--accent)); box-shadow: 0 0 0 1px rgba(255, 255, 255, .5), 0 24px 50px -24px rgba(0, 0, 0, .35); }
+.cpg-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.cpg-dots { display: flex; gap: 8px; }
+.cpg-dots i { width: 12px; height: 12px; border-radius: 50%; background: #FF5F57; }
+.cpg-dots i:nth-child(2) { background: #FEBC2E; }
+.cpg-dots i:nth-child(3) { background: #28C840; }
+.cpg-url { display: inline-flex; align-items: center; gap: 6px; margin-right: clamp(0px, 4vw, 48px); font-size: .82rem; color: var(--ink-3); }
+
+.cpg-canvas { position: relative; padding: clamp(20px, 3vw, 36px) clamp(20px, 6vw, 96px) clamp(48px, 7vw, 96px) clamp(20px, 3vw, 36px); background-image: radial-gradient(color-mix(in srgb, var(--ink) 14%, transparent) 1px, transparent 1.2px); background-size: 22px 22px; }
+.cpg-people { display: flex; margin: 0 0 clamp(20px, 3vw, 32px); }
+.cpg-avatar { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; font-size: .8rem; font-weight: 700; box-shadow: 0 0 0 3px var(--bg); }
+.cpg-avatar.is-me { background: var(--accent); color: #FFFFFF; }
+.cpg-avatar.is-you { margin-left: -4px; background: var(--surface); color: var(--ink-2); box-shadow: 0 0 0 3px var(--bg), inset 0 0 0 1.5px var(--line); border: 1.5px dashed color-mix(in srgb, var(--ink) 35%, transparent); }
+.cpg-eyebrow { margin: 0 0 12px; }
+.cpg-head { position: relative; max-width: min(100%, 20ch); }
+.cpg-title { margin: 0; font-size: clamp(2.5rem, 6.2vw, 5.4rem); }
+/* the cursors: "You" points at the start of the line, the designer at the highlighted word */
+.cpg-cur.is-you { right: 4%; top: -40px; animation: cpg-drift 7s ease-in-out infinite; }
+.cpg-cur.is-me { right: -34px; bottom: -44px; animation: cpg-drift 8s ease-in-out -3s infinite reverse; }
+@keyframes cpg-drift { 50% { translate: 10px -6px; } }
+@media (prefers-reduced-motion: reduce) { .cpg-cur { animation: none !important; } }
+[data-motion='off'] .cpg-cur { animation: none !important; }
+
+.cpg-caption { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; padding: clamp(22px, 3vw, 32px) clamp(20px, 5vw, 72px) clamp(24px, 3vw, 36px) 0; }
+.cpg-intro { margin: 0; max-width: 52ch; font-size: clamp(1.05rem, 1.5vw, 1.25rem); line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
+.cpg-status { margin: 0; }
+
+/* the form and the quick ways */
+.cpg-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); margin-top: clamp(24px, 3vw, 40px); align-items: start; }
+.cpg-form { padding: clamp(20px, 2.6vw, 32px); border-radius: 28px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.cpg-aside { display: flex; flex-direction: column; gap: 14px; }
+.cpg-kicker { margin: 0; font-size: .82rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.cpg-next-title { margin-top: 18px; }
+.cpg-ways { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.cpg-way { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 20px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition-property: background-color, box-shadow, translate; transition-duration: .15s; }
+.cpg-way > span:nth-child(2) { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.cpg-way b { font-weight: 600; }
+.cpg-way small { overflow: hidden; color: var(--ink-3); font-size: .86rem; text-overflow: ellipsis; white-space: nowrap; }
+.cpg-way > svg:last-child { rotate: -45deg; color: var(--ink-3); transition: rotate .3s cubic-bezier(0.2, 0, 0, 1); }
+.cpg-way-ic { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px; background: color-mix(in oklab, var(--accent) 12%, var(--bg)); color: var(--accent-ink); }
+.cpg-way.is-wa .cpg-way-ic { background: color-mix(in oklab, #25D366 16%, var(--bg)); color: #128C3E; }
+html[data-theme='dark'] .cpg-way.is-wa .cpg-way-ic { color: #5BE58A; }
+.cpg-way:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 30%, transparent); }
+.cpg-way:hover > svg:last-child { rotate: 0deg; color: var(--ink); }
+.cpg-way:active { scale: .96; }
+.cpg-way:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.cpg-socials { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.cpg-socials a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); transition-property: color, background-color; transition-duration: .15s; }
+.cpg-socials a:hover { color: var(--ink); background: var(--surface-2); }
+
+/* what happens next: three small folders */
+.cpg-next { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.cpg-step { position: relative; display: flex; gap: 14px; padding: 16px 18px; border-radius: 0 16px 16px 16px; background: color-mix(in oklab, var(--h) 12%, var(--surface)); margin-top: 12px; }
+.cpg-step::before { content: ''; position: absolute; left: 0; bottom: 100%; width: 38%; height: 12px; border-radius: 10px 14px 0 0; background: inherit; }
+.cpg-step-n { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--h); color: #FFFFFF; font-size: .82rem; font-weight: 700; }
+.cpg-step > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.cpg-step b { font-weight: 600; color: color-mix(in oklab, var(--h) 70%, var(--ink)); }
+.cpg-step small { font-size: .88rem; line-height: 1.45; color: var(--ink-2); }
+
+@media (max-width: 900px) {
+  .cpg-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .cpg-glow { padding-left: 14px; }
+  .cpg-url { display: none; }
+  .cpg-cur.is-me { right: 8px; bottom: -48px; }
+  .cpg-caption { padding-right: 14px; }
+}

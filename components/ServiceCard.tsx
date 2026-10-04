@@ -7,6 +7,12 @@ import { Icon } from './Icon';
 import { Reveal } from './motion/Reveal';
 import { ServiceLink } from './motion/ServiceLink';
 
+/** "Graphic Design & Social Assets" → "Graphic" in ink, "Design & Social Assets" muted (as on the reference's tiles). */
+function twoTone(title: string) {
+  const [first, ...rest] = title.split(' ');
+  return rest.length ? <>{first} <span className="svc-title-rest">{rest.join(' ')}</span></> : title;
+}
+
 type Item = Omit<Service, 'id' | 'slug'> & { id?: string | number | null; slug?: string | null };
 
 /**
@@ -27,7 +33,7 @@ export function ServiceCardItem({ item, index, labels = {} }: { item: Item; inde
       </figure>
       <div className="svc-body">
         {item.starter && <p className="svc-starter"><Icon name="spark" size={12} /> A good first project</p>}
-        <h3 className="svc-title">{item.title}</h3>
+        <h3 className="svc-title">{twoTone(item.title)}</h3>
         {item.description && <p className="svc-desc">{item.description}</p>}
         {item.priceFrom != null && <p className="svc-price"><small>From</small> {price(item.priceFrom, item.currency)}<small>{item.unit}</small></p>}
         {!!item.deliverables?.length && (
@@ -37,8 +43,8 @@ export function ServiceCardItem({ item, index, labels = {} }: { item: Item; inde
           </div>
         )}
         {item.slug
-          ? <Link className="link-under svc-cta" href={`/services/${item.slug}`}>{labels.pageLink || 'See the service'} <Icon name="arrow" size={14} /></Link>
-          : <ServiceLink className="link-under svc-cta" service={item.title}>{labels.inquire || 'Inquire for this service'} <Icon name="arrow" size={14} /></ServiceLink>}
+          ? <Link className="svc-cta" href={`/services/${item.slug}`}><span className="svc-cta-ic" aria-hidden="true"><Icon name="arrow" size={14} /></span>{labels.pageLink || 'What’s included'}</Link>
+          : <ServiceLink className="svc-cta" service={item.title}><span className="svc-cta-ic" aria-hidden="true"><Icon name="arrow" size={14} /></span>{labels.inquire || 'Ask about this one'}</ServiceLink>}
       </div>
     </Reveal>
   );

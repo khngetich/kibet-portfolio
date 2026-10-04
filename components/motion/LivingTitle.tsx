@@ -2,6 +2,7 @@
 
 import { useReducedMotionConfig } from 'motion/react';
 import { Fragment, useEffect, useRef } from 'react';
+import { SelectionMarks } from '@/components/Highlight';
 
 /**
  * The hero headline as living type: each letter's ink spreads as the cursor comes near and
@@ -12,8 +13,9 @@ import { Fragment, useEffect, useRef } from 'react';
  * Words keep the `.word` spans and `--i` of the CSS entrance (sections.css), so the first paint
  * is unchanged; screen readers get the plain sentence.
  *
- * Marker: words wrapped in asterisks (`I craft *experiences*`) get a hand-drawn underline that
- * draws itself in after the words land. The asterisks never show, in the title or to screen readers.
+ * Marker: words wrapped in asterisks (`I craft *experiences*`) are "selected", as in a design
+ * tool: a tinted box with a caret and handle at each end and a few sparkles, dragged across once
+ * the words land. The asterisks never show, in the title or to screen readers.
  */
 
 /**
@@ -113,8 +115,9 @@ export function LivingTitle({ text }: { text: string }) {
           <Fragment key={gi}>
             {gi > 0 && g.space && ' '}
             {g.marked ? (
-              <span className="marker" style={{ '--mi': n + g.words.length } as React.CSSProperties}>
+              <span className="marker hl" style={{ '--mi': n + g.words.length } as React.CSSProperties}>
                 {g.words.map((w, wi) => <Fragment key={wi}>{wi > 0 && ' '}{word(w)}</Fragment>)}
+                <SelectionMarks />
               </span>
             ) : g.words.map((w, wi) => <Fragment key={wi}>{wi > 0 && ' '}{word(w)}</Fragment>)}
           </Fragment>

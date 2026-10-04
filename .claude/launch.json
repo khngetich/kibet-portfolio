@@ -24,6 +24,7 @@
       "runtimeArgs": [
         "DATABASE_URL=postgres://localhost/portfolio_preview",
         "NEXT_PUBLIC_SERVER_URL=http://localhost:3200",
+        "NEXT_DIST_DIR=.next-preview",
         "npx",
         "next",
         "start",
@@ -42,6 +43,42 @@
         "dev"
       ],
       "port": 3100
+    },
+    {
+      "name": "portfolio (resume preview)",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-humphreyngetich-Downloads-portfolio/6e7a547a-8392-4b76-b88b-8439b300e6e3/scratchpad/site && DATABASE_URL=postgres://localhost/portfolio_preview NEXT_PUBLIC_SERVER_URL=http://localhost:3300 npx next dev --webpack -p 3300"
+      ],
+      "port": 3300,
+      "autoPort": false
+    },
+    {
+      "name": "portfolio (about preview)",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd /private/tmp/claude-501/-Users-humphreyngetich-Downloads-portfolio/6a84b0b1-c255-4e94-8f00-3849d204aea6/scratchpad/site && DATABASE_URL=postgres://localhost/about_test NEXT_PUBLIC_SERVER_URL=http://localhost:3400 npx next dev --webpack -p 3400"
+      ],
+      "port": 3400,
+      "autoPort": false
+    },
+    {
+      "name": "portfolio (local dev)",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=postgres://localhost/portfolio_preview",
+        "NEXT_PUBLIC_SERVER_URL=http://localhost:3500",
+        "NEXT_DIST_DIR=.next-local",
+        "npx",
+        "next",
+        "dev",
+        "-p",
+        "3500"
+      ],
+      "port": 3500,
+      "autoPort": false
     }
   ]
 }

@@ -41,13 +41,13 @@ export default async function ServicesIndex() {
       <div className="wrap">
         <header className="svx-head">
           <p className="eyebrow">{s?.eyebrow || 'Services'}</p>
-          <h1 className="h-xl" id="svx-title"><Accent text={heading} /></h1>
+          <h1 className="h-xl" id="svx-title"><Accent text={heading} highlight /></h1>
           {s?.intro && <p className="lede">{s.intro}</p>}
           {/* the page ends on the site-wide call to action (components/Footer.tsx), so the nudge lives up here */}
-          <p className="svx-note">Not sure which fits? <Link className="link-under" href="/#contact">Tell me what you’re working on</Link> and I’ll suggest one.</p>
+          <p className="svx-note">Not sure which fits? <Link className="link-under" href="/contact">Tell me what you’re working on</Link> and I’ll suggest one.</p>
         </header>
         {services.length ? (
-          <ul className="svc-grid">
+          <ul className="svc-grid" data-count={services.length}>
             {services.map((item, i) => (
               <li key={item.id}>
                 <ServiceCardItem item={item} index={i} labels={{ featured: s?.labels?.featured || '', pageLink: s?.pageLinkLabel || '' }} />
@@ -55,7 +55,7 @@ export default async function ServicesIndex() {
             ))}
           </ul>
         ) : (
-          <p className="insights-empty">Services are on their way. In the meantime, <Link className="link-under" href="/#contact">tell me what you need</Link>.</p>
+          <p className="insights-empty">Services are on their way. In the meantime, <Link className="link-under" href="/contact">tell me what you need</Link>.</p>
         )}
       </div>
     </section>

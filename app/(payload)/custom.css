@@ -1083,3 +1083,38 @@ html.cms-nav-collapsed .cms-nav-body { gap: 12px; }
 .cms-rail-tip::before { content: ''; position: absolute; left: -4px; top: 50%; width: 8px; height: 8px; background: inherit; translate: 0 -50%; rotate: 45deg; border-radius: 1px; }
 @keyframes cms-tip-in { from { opacity: 0; translate: -4px -50%; } }
 @media (prefers-reduced-motion: reduce) { .cms-rail-tip { animation: none; } }
+
+/* ── October 2026: the site's inspiration pieces in the dashboard ──
+   The greeting's name is "selected" as in a design tool (components/Highlight.tsx, mirrored from
+   the site's globals.css on admin tokens), and the site-wide shortcuts are service-style tiles:
+   a two-tone label, a round arrow, the first tile in the brand red and the last in ink. */
+.cms-dash .hl { position: relative; display: inline-block; isolation: isolate; padding-inline: .1em; --hl: var(--brand); }
+.cms-dash .hl::before { content: ''; position: absolute; inset: .1em 0 .02em; z-index: -1; border-radius: 4px; background: color-mix(in oklab, var(--hl) 16%, transparent); transform-origin: left center; animation: cms-hl-drag .6s cubic-bezier(0.2, 0, 0, 1) .2s both; }
+.cms-dash .hl-caret { position: absolute; top: .08em; bottom: 0; width: 2px; border-radius: 2px; background: var(--hl); animation: cms-hl-fade .3s ease-out .2s both; }
+.cms-dash .hl-caret::after { content: ''; position: absolute; left: 50%; width: 8px; height: 8px; border-radius: 50%; background: var(--hl); translate: -50% 0; box-shadow: 0 0 0 2px var(--page); }
+.cms-dash .hl-caret.is-start { left: 0; }
+.cms-dash .hl-caret.is-start::after { top: 0; translate: -50% -60%; }
+.cms-dash .hl-caret.is-end { right: 0; animation-delay: .75s; }
+.cms-dash .hl-caret.is-end::after { bottom: 0; translate: -50% 60%; }
+.cms-dash .hl-spark { position: absolute; right: -.62em; top: -.3em; width: .58em; height: .58em; fill: #F5B83D; animation: cms-hl-pop .5s cubic-bezier(0.2, 0, 0, 1) .9s both; }
+@keyframes cms-hl-drag { from { scale: 0 1; } }
+@keyframes cms-hl-fade { from { opacity: 0; } }
+@keyframes cms-hl-pop { from { opacity: 0; scale: .25; filter: blur(4px); } }
+@media (prefers-reduced-motion: reduce) { .cms-dash .hl::before, .cms-dash .hl-caret, .cms-dash .hl-spark { animation: none; } }
+
+.cms-shortcuts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cms-shortcuts a { position: relative; gap: 16px; min-height: 128px; padding: 16px; border-radius: 12px; background: var(--card); }
+.cms-shortcuts b.cms-two-tone { font-size: 17px; line-height: 20px; font-weight: 600; letter-spacing: -.01em; }
+.cms-two-tone span { color: var(--ink-2); }
+.cms-shortcuts .cms-shortcut-go { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--inverse); color: var(--on-inverse); rotate: -45deg; transition: rotate .2s cubic-bezier(0.2, 0, 0, 1); }
+.cms-shortcuts a:hover .cms-shortcut-go { rotate: 0deg; }
+.cms-shortcuts a > span:nth-child(2) { padding-right: 32px; }
+.cms-shortcuts > li:first-child a { background: var(--brand); color: #FFFFFF; box-shadow: none; }
+.cms-shortcuts > li:first-child :is(small, .cms-two-tone span) { color: rgba(255, 255, 255, .78); }
+.cms-shortcuts > li:first-child .cms-shortcut-icon { background: rgba(255, 255, 255, .18); color: #FFFFFF; }
+.cms-shortcuts > li:first-child .cms-shortcut-go { background: #FFFFFF; color: #B92A22; }
+.cms-shortcuts > li:last-child a { background: var(--inverse); color: var(--on-inverse); box-shadow: none; }
+.cms-shortcuts > li:last-child :is(small, .cms-two-tone span) { color: var(--on-inverse-2); }
+.cms-shortcuts > li:last-child .cms-shortcut-icon { background: color-mix(in srgb, var(--on-inverse) 14%, transparent); color: var(--on-inverse); }
+.cms-shortcuts > li:last-child .cms-shortcut-go { background: var(--on-inverse); color: var(--inverse); }
+.cms-shortcuts > li:is(:first-child, :last-child) a:hover { filter: brightness(1.06); }

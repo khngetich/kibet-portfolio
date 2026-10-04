@@ -89,10 +89,12 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
-      // `next build` prerenders in about one worker per CPU, each with its own pool, and Supabase's
+      // `next build` runs four workers (next.config.ts `cpus`), each with its own pool, and Supabase's
       // session pooler allows 15 clients in all ("EMAXCONNSESSION"). While building, each worker
-      // keeps a single connection and lets it go when idle; the running site keeps pg's default.
-      ...(process.env.NEXT_PHASE === 'phase-production-build' ? { max: 1, idleTimeoutMillis: 1000 } : {}),
+      // keeps up to three connections and lets them go when idle; the running site keeps pg's
+      // default. Not one: a query that needs a second connection while holding the only one waits
+      // forever, and the build hangs at "Collecting page data".
+      ...(process.env.NEXT_PHASE === 'phase-production-build' ? { max: 3, idleTimeoutMillis: 1000 } : {}),
     },
     migrationDir: path.resolve(dirname, 'migrations'),
     // Dev mode would otherwise push schema changes straight into whatever database it's pointed

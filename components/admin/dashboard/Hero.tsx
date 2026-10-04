@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from 'react';
 import { Icon } from '@/components/ui/Icon';
+import { SelectionMarks } from '@/components/Highlight';
 
 const never = () => () => {};
 
@@ -19,11 +20,11 @@ export function Greeting({ name, children }: { name?: string; children?: React.R
   );
   const [h, date] = now ? now.split('|') : [null, null];
   const hour = h == null ? null : Number(h);
-  const hello = hour == null ? 'Welcome back' : hour < 5 ? 'Working late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const hello = hour == null ? 'Welcome back' : hour < 5 ? 'Night shift' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   return (
     <div className="cms-hero-hello">
-      <h1>{hello}{name && <>, <em className="cms-accent">{name}</em></>}</h1>
-      <p className="cms-hero-sub"><span>{date ? `${date} · ` : ''}Here’s what needs your attention on the site.</span>{children}</p>
+      <h1>{hello}{name && <>, <em className="cms-accent hl">{name}<SelectionMarks /></em></>}</h1>
+      <p className="cms-hero-sub"><span>{date ? `${date} · ` : ''}Here’s what the site needs from you today.</span>{children}</p>
     </div>
   );
 }
