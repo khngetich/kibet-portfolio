@@ -17,7 +17,8 @@ const self = new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:300
 const csp = [
   "default-src 'self'",
   // Next streams page data in inline scripts, and the theme boot script runs before paint
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+  // (development only: Next's dev runtime and fast refresh evaluate code, so they need 'unsafe-eval')
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"} https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   `img-src 'self' data: blob:${storage ? ` ${storage.origin}` : ''} https://i.ytimg.com https://i.vimeocdn.com`,
   `media-src 'self' blob:${storage ? ` ${storage.origin}` : ''}`,
