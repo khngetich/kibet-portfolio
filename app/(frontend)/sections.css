@@ -378,22 +378,22 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 }
 
 /* ── about: a designer's proof sheet (components/motion/AboutEditorial.tsx) ──
-   The portrait is a print with crop marks, a colour bar and a "Proof" label; the right is a
-   folder whose index tabs rise when chosen and whose card lays each tab out for its content. */
+   The portrait is a print with crop marks, a colour bar and a "Proof" label; beside it the
+   headline, and below both a folder whose index tabs rise when chosen and whose card lays each
+   tab out for its content. */
 .about-ed { position: relative; padding-block: var(--section-y); overflow-x: clip; isolation: isolate; }
 .about-ed-watermark { position: absolute; z-index: -1; left: 50%; top: 50%; translate: -50% -50%; margin: 0; font-family: var(--font-heading); font-size: clamp(6rem, 21vw, 21rem); font-weight: 800; letter-spacing: -.05em; line-height: .8; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.5px color-mix(in srgb, var(--ink) 9%, transparent); pointer-events: none; user-select: none; }
-.about-ed-grid { position: relative; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: clamp(36px, 6vw, 96px); align-items: start; }
-/* editorial layout: the label sits in its own row over the folder, and the print and the folder
-   share the next row, so the print's top edge lines up with the top of the folder tabs */
-.about-ed:not(.about-pt) .about-ed-grid { row-gap: 22px; }
-.about-ed-label { grid-column: 2; grid-row: 1; }
-.about-ed:not(.about-pt) .about-proof { grid-column: 1; grid-row: 2; padding-top: 0; }
-.about-ed:not(.about-pt) .about-ed-right { grid-column: 2; grid-row: 2; }
+/* both layouts: the print on the left, the headline block on the right (centred against it),
+   and the folder across the full width below; stacked on phones (headline, print, folder) */
+.about-ed-grid { position: relative; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); grid-template-areas: "proof head" "folder folder"; column-gap: clamp(36px, 6vw, 96px); row-gap: clamp(48px, 6vw, 80px); align-items: center; }
+.about-ed-head { grid-area: head; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; min-width: 0; }
+.about-ed-head > .chapter { margin-bottom: 0; }
+.about-ed-headline { max-width: 14ch; margin: 0; }
+.about-ed-head .lede { max-width: 46ch; margin: 0; }
+.about-ed-folder { grid-area: folder; min-width: 0; }
 
 /* the print */
-.about-proof { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 24px; }
-/* on wide, tall-enough screens the print stays in view while the folder beside it is read */
-@media (min-width: 901px) and (min-height: 700px) { .about-proof { position: sticky; top: calc(var(--header-h) + 32px); } }
+.about-proof { grid-area: proof; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 18px; }
 .about-proof-sheet { position: relative; width: min(440px, 88%); padding: 22px 22px 54px; background: var(--surface); rotate: -2deg; box-shadow: var(--shadow), inset 0 0 0 1px var(--line); transition: rotate .6s var(--ease); }
 .about-proof-sheet:hover { rotate: -.5deg; }
 .about-proof-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--bg-2); }
@@ -424,8 +424,6 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 .about-ed-role { font-family: var(--font-accent); font-style: italic; font-size: 1.05rem; color: var(--accent-text); }
 
 /* the folder */
-.about-ed-right { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; min-width: 0; }
-.about-ed-right > .about-folder { align-self: stretch; }
 .about-folder { position: relative; }
 .about-folder-tabs { display: flex; gap: 4px; padding-left: 18px; overflow-x: auto; scrollbar-width: none; }
 .about-folder-tabs::-webkit-scrollbar { display: none; }
@@ -441,6 +439,13 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 .about-ed-heading { margin: 0; font-family: var(--font-heading); font-size: clamp(1.7rem, 3.2vw, 2.6rem); font-weight: var(--heading-weight); letter-spacing: var(--heading-tracking); line-height: 1.08; text-wrap: balance; }
 .about-ed-text { margin: 14px 0 0; max-width: 52ch; color: var(--ink-2); line-height: 1.65; text-wrap: pretty; }
 .about-folder-card .link-under { display: inline-flex; margin-top: 24px; }
+/* full width: the card's heading and text on the left, its figures, list or stamps on the right */
+@media (min-width: 901px) {
+  .about-folder-card { min-height: 0; }
+  .about-folder-body { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); grid-template-rows: auto auto 1fr; column-gap: clamp(32px, 5vw, 72px); align-items: start; }
+  .about-folder-body > * { grid-column: 1; }
+  .about-folder-body > :is(.about-figures, .about-list, .about-stamps) { grid-column: 2; grid-row: 1 / -1; margin-top: 0; }
+}
 
 /* figures: specimen numbers */
 .about-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 26px 0 0; }
@@ -465,10 +470,7 @@ html:active-view-transition-type(case-next)::view-transition-new(root) { animati
 .about-stamp-row dd { margin: 0; color: var(--ink-2); line-height: 1.5; }
 
 @media (max-width: 900px) {
-  .about-ed-grid { grid-template-columns: minmax(0, 1fr); }
-  /* stacked: label, print, folder */
-  .about-ed:not(.about-pt) .about-ed-grid { row-gap: 36px; }
-  .about-ed-label, .about-ed:not(.about-pt) .about-proof, .about-ed:not(.about-pt) .about-ed-right { grid-column: 1; grid-row: auto; }
+  .about-ed-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "proof" "folder"; row-gap: 36px; }
   .about-proof-sheet { width: min(360px, 84%); }
   .about-folder-card { min-height: 0; }
 }
@@ -1021,7 +1023,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 
 /* ── About: portrait with stickers (components/motion/AboutPortrait.tsx) ──
    The proof-sheet print and folder from the editorial layout (above), plus stickers on the
-   print, a mood switch that cross-fades to the second photo, and the heading over the folder. */
+   print and a mood switch that cross-fades to the second photo. Same grid: print left, headline right, folder below. */
 .about-proof-layer { position: absolute; inset: 0; transition: opacity .5s var(--ease); }
 .about-proof-layer.is-hidden { opacity: 0; }
 .about-pt .about-proof-sheet { rotate: -3deg; }
@@ -1040,22 +1042,6 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .about-mood[aria-pressed='true'] .about-mood-switch { background: var(--accent); }
 .about-mood[aria-pressed='true'] .about-mood-switch i { translate: 16px 0; background: var(--bg); }
 .about-pt-caption { margin: 0; font-family: var(--font-accent); font-style: italic; font-size: .95rem; color: var(--ink-3); text-align: center; }
-.about-pt-heading { max-width: 13ch; margin: 0; }
-/* the heading row spans both columns (heading left, intro and link right, on the same column
-   split as below), so the print and the folder start on one line: the print's top edge meets
-   the top of the folder tabs */
-.about-pt .about-ed-grid { row-gap: clamp(40px, 5vw, 64px); }
-.about-pt-intro { grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); column-gap: clamp(36px, 6vw, 96px); align-items: end; }
-.about-pt-intro > .chapter { grid-column: 1 / -1; justify-self: start; }
-.about-pt-intro-text { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
-.about-pt-intro-text .lede { max-width: 46ch; margin: 0; }
-.about-pt .about-proof { grid-column: 1; grid-row: 2; padding-top: 0; }
-.about-pt .about-ed-right { grid-column: 2; grid-row: 2; }
-@media (max-width: 900px) {
-  .about-pt .about-ed-grid { row-gap: 36px; }
-  .about-pt-intro { grid-template-columns: minmax(0, 1fr); row-gap: 18px; }
-  .about-pt .about-proof, .about-pt .about-ed-right { grid-column: 1; grid-row: auto; }
-}
 .about-ed-heading.is-sub { font-size: clamp(1.3rem, 2.2vw, 1.7rem); }
 @media (max-width: 900px) {
   .about-sticker.is-top { right: -6%; }

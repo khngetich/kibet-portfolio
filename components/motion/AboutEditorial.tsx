@@ -110,6 +110,7 @@ export function AboutFolder({ tabs, seen, link, headingId }: { tabs: AboutTab[];
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}
+            className="about-folder-body"
             initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8, filter: 'blur(4px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, filter: 'blur(4px)', transition: { duration: 0.15, ease: 'easeOut' } }}
@@ -152,14 +153,30 @@ export function AboutFolder({ tabs, seen, link, headingId }: { tabs: AboutTab[];
 }
 
 /**
- * About, as a designer's proof sheet: the portrait as a print (ProofPrint) with the name and
- * role beneath, and on the right the folder (AboutFolder) carrying the section's heading. The
- * figures count up the first time the section is seen. Same props as before, so every page
- * using this layout keeps its content.
+ * The section's heading block, beside the print: the label, the headline, a short intro and a
+ * link. The intro is written to follow "Hi, I'm Name," (the red banner layout), so here, standing
+ * alone, its first letter is capitalised.
  */
-export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs, watermark, link }: {
+export function AboutHead({ chapter, headingId, heading, intro, link }: { chapter?: ReactNode; headingId: string; heading: ReactNode; intro?: string | null; link?: { label: string; url: string } | null }) {
+  return (
+    <div className="about-ed-head">
+      {chapter}
+      <h2 className="h-xl about-ed-headline" id={headingId}>{heading}</h2>
+      {intro && <p className="lede">{intro.charAt(0).toUpperCase() + intro.slice(1)}</p>}
+      {link && <Link className="link-under" href={link.url}>{link.label} <Icon name="arrow" size={14} /></Link>}
+    </div>
+  );
+}
+
+/**
+ * About, as a designer's proof sheet: the portrait as a print (ProofPrint) with the name and
+ * role beneath on the left, the headline block on the right, and the folder (AboutFolder) across
+ * the full width below. Without a headline the folder carries the section's heading, as before.
+ * The figures count up the first time the section is seen.
+ */
+export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs, watermark, heading, intro, link }: {
   id?: string; headingId: string; chapter?: ReactNode; name: string; role?: string | null; photo: unknown;
-  tabs: AboutTab[]; watermark: string; link?: { label: string; url: string } | null;
+  tabs: AboutTab[]; watermark: string; heading?: ReactNode; intro?: string | null; link?: { label: string; url: string } | null;
 }) {
   const ref = useRef<HTMLElement>(null);
   const seen = useInView(ref, { once: true, margin: '0px 0px -20% 0px' });
@@ -167,8 +184,9 @@ export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs
     <section ref={ref} className={`about-ed${seen ? ' is-seen' : ''}`} id={id} aria-labelledby={headingId}>
       <p className="about-ed-watermark" aria-hidden="true">{watermark}</p>
       <div className="wrap about-ed-grid">
-        {/* the label gets its own row, so the print's top edge lines up with the folder tabs */}
-        {chapter && <div className="about-ed-label">{chapter}</div>}
+        {heading
+          ? <AboutHead chapter={chapter} headingId={headingId} heading={heading} intro={intro} link={link} />
+          : chapter && <div className="about-ed-head">{chapter}</div>}
         <figure className="about-proof">
           <ProofPrint photo={photo} name={name} />
           <figcaption className="about-proof-caption">
@@ -176,9 +194,11 @@ export function AboutEditorial({ id, headingId, chapter, name, role, photo, tabs
             {role && <span className="about-ed-role">{role}</span>}
           </figcaption>
         </figure>
-        <div className="about-ed-right">
-          <AboutFolder tabs={tabs} seen={seen} link={link} headingId={headingId} />
-        </div>
+        {!!tabs.length && (
+          <div className="about-ed-folder">
+            <AboutFolder tabs={tabs} seen={seen} link={heading ? null : link} headingId={heading ? undefined : headingId} />
+          </div>
+        )}
       </div>
     </section>
   );

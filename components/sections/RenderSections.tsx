@@ -312,8 +312,9 @@ function AboutBannerSection({ s, ctx, id, hid, chapter }: P<'aboutBanner'>) {
     );
   }
   if (s.layout !== 'banner') {
-    // no tabs yet: one panel from the heading and stats
-    const panels = tabs.length ? tabs : [{ label: 'Overview', heading: s.heading, text: s.intro ?? null, rows: (s.stats ?? []).map((r) => ({ value: r.value, label: r.label })) }];
+    // the headline sits beside the print, the folder below; no tabs yet: the stats alone
+    const stats = (s.stats ?? []).map((r) => ({ value: r.value, label: r.label }));
+    const panels = tabs.length ? tabs : stats.length ? [{ label: 'Overview', heading: 'In numbers', text: null, rows: stats }] : [];
     return (
       <AboutEditorial
         id={id}
@@ -324,6 +325,8 @@ function AboutBannerSection({ s, ctx, id, hid, chapter }: P<'aboutBanner'>) {
         photo={s.photo}
         tabs={panels}
         watermark={text(s.bigName, first).toUpperCase()}
+        heading={s.heading ? <Accent text={s.heading} /> : null}
+        intro={s.intro}
         link={link}
       />
     );
