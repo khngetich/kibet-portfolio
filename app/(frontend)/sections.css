@@ -24,6 +24,8 @@
 .hero-inner { position: relative; display: flex; flex-direction: column; align-items: center; }
 .hero-proof { font-size: .8rem; color: var(--ink-3); }
 .hero-title { margin-top: 18px; max-width: 15ch; font-size: clamp(2.5rem, 6.2vw, 4.8rem); font-weight: 500; letter-spacing: -.05em; line-height: 1.02; text-wrap: balance; }
+/* the smallest phones: a size down, so the highlighted words and their selection handles keep clear of the screen edges */
+@media (max-width: 380px) { .hero-title { font-size: 2.15rem; } }
 .hero-intro { max-width: 50ch; margin-top: 20px; color: var(--ink-2); font-size: 1.02rem; text-wrap: pretty; }
 .marquee { width: min(620px, 100%); margin-top: 40px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
 .marquee-track { display: flex; gap: 40px; width: max-content; animation: marquee 30s linear infinite; }
@@ -923,6 +925,9 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 
 /* underlined text link with a small arrow */
 .link-under { display: inline-flex; align-items: center; gap: 10px; padding-bottom: 6px; font-size: .9rem; font-weight: 500; color: var(--ink); box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ink) 45%, transparent); transition: box-shadow .2s ease, color .2s ease; }
+/* a 44px touch target around the 28px-tall link, without moving the underline */
+.link-under { position: relative; }
+.link-under::before { content: ''; position: absolute; inset: -8px -6px -8px; }
 .link-under:hover { box-shadow: inset 0 -2px 0 var(--accent-ink); }
 .link-under svg { transition: transform .2s ease; }
 .link-under:hover svg { transform: translate(2px, -2px); }
@@ -1028,7 +1033,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .svc-cta:active .svc-cta-ic { scale: .96; }
 .svc-cta:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 999px; }
 @media (max-width: 1000px) { .svc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .svc-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .svc-grid, .svc-grid[data-count='4'] { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .svc-card { transition: none; } .svc-card:hover { transform: none; } }
 
 /* ── Case study, editorial: back link, numbered title, contribution, a 2×2 story, "up next" ──
@@ -1102,6 +1107,27 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .svp-get li:first-child { border-top: 0; }
 .svp-get svg { flex: none; margin-top: 2px; }
 .svp-steps { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr); gap: clamp(24px, 6vw, 96px); align-items: start; padding-bottom: clamp(48px, 7vw, 96px); }
+/* the steps as a timeline (these styles went with the homepage's old process layout, which the
+   service pages still use): a rule down the left that fills as you scroll, a serif-italic number
+   beside each step; on phones the number sits above its title */
+.tl-steps { position: relative; margin: 0; padding: 0; list-style: none; }
+.tl-steps::before, .tl-steps::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.tl-steps::after { background: var(--ink); transform-origin: top; transform: scaleY(1); }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .tl-steps::after { animation: tl-fill linear both; animation-timeline: view(); animation-range: entry 40% exit 60%; }
+  }
+}
+@keyframes tl-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.tl-step { display: grid; grid-template-columns: clamp(64px, 8vw, 104px) minmax(0, 1fr); gap: 4px clamp(16px, 2.4vw, 32px); padding: clamp(22px, 3vw, 34px) 0 clamp(22px, 3vw, 34px) clamp(20px, 3vw, 36px); border-top: 1px solid var(--line); }
+.tl-step:first-child { border-top: 0; padding-top: 0; }
+.tl-num { font-family: var(--font-accent); font-style: italic; font-size: clamp(2.6rem, 5vw, 4rem); line-height: .85; letter-spacing: -.04em; color: var(--accent-ink); font-variant-numeric: lining-nums; }
+.tl-title { margin: 0; font-size: clamp(1.25rem, 2vw, 1.6rem); font-weight: 500; letter-spacing: -.025em; }
+.tl-desc { margin: 10px 0 0; max-width: 58ch; color: var(--ink-2); line-height: 1.65; }
+@media (max-width: 520px) {
+  .tl-step { grid-template-columns: 1fr; padding-left: 20px; }
+  .tl-num { font-size: 2.2rem; }
+}
 .svp-work { padding-block: clamp(48px, 7vw, 96px); background: var(--bg-2); border-radius: calc(48px * var(--radius-scale, 1)) calc(48px * var(--radius-scale, 1)) 0 0; }
 .svp-work .h-md { margin-bottom: clamp(20px, 3vw, 32px); }
 .svp-faq { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr); gap: clamp(24px, 6vw, 96px); align-items: start; padding-block: clamp(48px, 7vw, 96px) 0; }
@@ -1188,6 +1214,6 @@ html[data-theme='dark'] .gf-go { background: #FFFFFF; color: #0A0A0A; }
 @media (prefers-reduced-motion: reduce) { .gf-sheet, .gf-front, .gf::after { transition: none; } }
 @media (max-width: 760px) {
   .gf-shelf { grid-template-columns: minmax(0, 1fr); }
-  .gf-shelf > li:last-child:nth-child(odd):not(:first-child) { width: auto; }
+  .gf-shelf > li:last-child:nth-child(odd):not(:first-child) { width: auto; justify-self: stretch; }
   .gf { aspect-ratio: 6 / 5.4; }
 }

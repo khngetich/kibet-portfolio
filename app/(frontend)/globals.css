@@ -320,9 +320,10 @@ body:has(main #contact) .fx-cta-alt { height: 52px; padding: 0 28px; border-radi
 .fx-credit-roll > span { display: block; transition: transform .4s cubic-bezier(.2, .8, .2, 1); }
 .fx-credit-roll > span::after { content: attr(data-text); display: block; color: var(--accent-text); }
 .fx-credit:hover .fx-credit-roll > span, .fx-credit:focus-visible .fx-credit-roll > span { transform: translateY(-50%); }
-.fx-credit svg { align-self: center; opacity: 0; translate: -4px 2px; transition: opacity .25s ease-out, translate .3s ease-out; }
+.fx-credit svg { align-self: center; margin-left: -15px; opacity: 0; translate: -4px 2px; transition: opacity .25s ease-out, translate .3s ease-out, margin-left .3s ease-out; }
 .fx-credit:hover, .fx-credit:focus-visible { background-size: 100% 1.5px; }
-.fx-credit:hover svg, .fx-credit:focus-visible svg { opacity: 1; translate: 0 0; color: var(--accent-text); }
+.fx-credit:hover svg, .fx-credit:focus-visible svg { margin-left: 0; opacity: 1; translate: 0 0; color: var(--accent-text); }
+/* the arrow takes no room until it shows, so the name sits flush against the full stop (phones never hover) */
 /* the sign-off: the name across the full width, its lower half tucked under the page edge */
 .fx { overflow: clip; }
 .fx-word { container-type: inline-size; display: flex; justify-content: center; margin: 0; padding-inline: clamp(8px, 1.4vw, 20px); font-family: var(--font-heading); font-weight: var(--heading-weight, 600); font-size: min(calc(100vw / (var(--chars) * .56)), 15rem); letter-spacing: -.06em; line-height: .78; color: var(--ink); white-space: nowrap; user-select: none; height: .52lh; overflow: hidden; }

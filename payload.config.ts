@@ -90,7 +90,12 @@ export default buildConfig({
   graphQL: { disable: true },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL || '',
+      // DB_POOLER=transaction moves a Supabase pooler address from session mode (port 5432, 15
+      // clients in all, shared with the live site) to transaction mode (6543, many more). For a
+      // local dev server or build when the session pooler is full; .env stays as it is.
+      connectionString: process.env.DB_POOLER === 'transaction'
+        ? (process.env.DATABASE_URL || '').replace(/(pooler\.supabase\.com):5432\b/, '$1:6543')
+        : process.env.DATABASE_URL || '',
       // `next build` runs two workers (next.config.ts `cpus`), each with its own pool, and Supabase's
       // session pooler allows 15 clients in all ("EMAXCONNSESSION"). While building, each worker
       // keeps up to three connections and lets them go when idle; the running site keeps pg's

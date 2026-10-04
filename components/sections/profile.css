@@ -105,8 +105,10 @@
   .pf-ways-grid { grid-template-columns: minmax(0, 1fr); }
   .pf-wheel { height: auto; }
   .pf-ring { display: none; }
-  .pf-wheel ol { position: static; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
-  .pf-wheel li { position: static; translate: none; white-space: normal; }
+  .pf-wheel ol { position: static; display: flex; flex-direction: column; gap: 12px; }
+  /* a list on phones: the years in one column, the role in the other, so every title starts at the same line */
+  .pf-wheel li { position: static; display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 14px; width: auto; max-width: none; translate: none; white-space: normal; }
+  .pf-wheel li.is-now { padding: 14px 20px; border-radius: 22px; }
 }
 @media (max-width: 520px) {
   .pf-badge { top: -14px; left: -14px; width: 54px; height: 54px; }

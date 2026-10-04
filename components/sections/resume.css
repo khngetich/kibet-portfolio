@@ -3,7 +3,8 @@
    sticky “At a glance” menu down the side, and a closing panel. Site tokens only. */
 
 .cv { padding-block: clamp(32px, 5vw, 72px) var(--section-y); }
-.cv ol { margin: 0; padding: 0; list-style: none; }
+/* :where() keeps this reset at zero specificity, so the lists' own spacing (.cv-pillars, .cv-jobs) wins */
+:where(.cv) ol { margin: 0; padding: 0; list-style: none; }
 
 /* ── intro ── */
 .cv-hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 430px); align-items: center; gap: clamp(40px, 6vw, 96px); padding-bottom: clamp(40px, 6vw, 72px); }
