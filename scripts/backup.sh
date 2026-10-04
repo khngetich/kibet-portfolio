@@ -10,10 +10,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-if [[ -z "${DATABASE_URL:-}" && -f .env ]]; then
-  DATABASE_URL="$(grep -E '^DATABASE_URL=' .env | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//')"
-fi
+# .env wins over whatever happens to be exported in this terminal (an old DATABASE_URL left in the
+# shell is the usual cause of "password authentication failed"); BACKUP_DATABASE_URL overrides both.
+from_env_file="$( [[ -f .env ]] && grep -E '^DATABASE_URL=' .env | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' || true )"
+DATABASE_URL="${BACKUP_DATABASE_URL:-${from_env_file:-${DATABASE_URL:-}}}"
 [[ -n "${DATABASE_URL:-}" ]] || { echo "DATABASE_URL is not set (and not found in .env)." >&2; exit 1; }
+# say which database, never the password
+echo "→ Backing up $(node -e 'const u=new URL(process.argv[1]); console.log(decodeURIComponent(u.username)+"@"+u.hostname)' "$DATABASE_URL")"
 
 # pg_dump must be at least as new as the server
 server_major="$(psql "$DATABASE_URL" -tAc 'show server_version' | cut -d. -f1 | tr -d ' ')"
