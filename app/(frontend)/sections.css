@@ -71,8 +71,11 @@
 }
 
 /* ── for who (role wheel) ── */
-.roles { position: relative; --row: clamp(1.7rem, 3.6vw, 3rem); }
-.roles-pin { position: sticky; top: 0; height: 100vh; height: 100svh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(16px, 3vw, 40px); max-width: 1120px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 48px); overflow: hidden; }
+.roles { position: relative; --row: clamp(1.7rem, 3.6vw, 3rem);
+  /* the pinned stage is only as tall as the wheel needs, centred in the screen, so the section
+     doesn't open and close with half a screen of empty space */
+  --roles-stage: min(60svh, 440px); }
+.roles-pin { position: sticky; top: calc(50svh - var(--roles-stage) / 2); height: var(--roles-stage); display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(16px, 3vw, 40px); max-width: 1120px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 48px); overflow: hidden; }
 .roles-head { position: relative; justify-self: end; text-align: right; }
 .roles-title { font-size: var(--row); font-weight: 500; letter-spacing: -.04em; line-height: 1.25; }
 .roles-if { position: absolute; right: 0; bottom: 100%; font-size: .85rem; color: var(--ink-3); }
@@ -1053,7 +1056,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 /* ── Services as products: real work on top, "What you get", extras (services → "cards") ── */
 .svc { padding-block: var(--section-y) calc(var(--section-y) * .45); }
 /* the 3D deck and the contact section that follows share a background: one gap, not two stacked */
-.sec:has(> .services-deck) + .sec > .contact-section, .sec:has(> .svc) + .sec > .contact-section { padding-top: calc(var(--section-y) * .7); }
+.sec:has(> .services-deck) + .sec > .contact-section, .sec:has(> .svc) + .sec > .contact-section, .sec:has(> .roles) + .sec > .contact-section { padding-top: calc(var(--section-y) * .6); }
 .svc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 24px); }
 .svc-grid > li, .svc-grid > li > div { display: flex; height: 100%; }
 .svc-card { display: flex; flex-direction: column; width: 100%; padding: 10px; border-radius: var(--r-lg); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .3s var(--ease), transform .3s var(--ease); }
@@ -1172,3 +1175,33 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .svx-head .lede { margin-top: 16px; }
 .svx-foot { margin-top: clamp(28px, 4vw, 48px); }
 .svx-foot .lede { max-width: 48ch; }
+
+/* ── contact (section 6): the pitch left, the form right ── */
+.contact-grid { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
+.contact-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+@media (min-width: 900px) and (min-height: 640px) { .contact-copy { position: sticky; top: calc(var(--header-h) + 32px); } }
+.contact-copy .h-lg { text-wrap: balance; }
+.contact-copy .lede { max-width: 42ch; margin: 0; }
+.contact-split .contact-roles { align-items: flex-start; margin-top: 4px; }
+.contact-split .contact-roles ul { justify-content: flex-start; }
+.contact-split .status { margin: 0; }
+.contact-split .contact-book { margin: 0; }
+.contact-card { padding: clamp(20px, 3vw, 36px); border-radius: calc(28px * var(--radius-scale, 1)); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+@media (max-width: 767px) {
+  .contact-grid { grid-template-columns: minmax(0, 1fr); }
+  .contact-card { padding: 18px; }
+}
+
+/* ── projects under the hero: a file drawer (components/sections/CaseStudies.tsx) ──
+   Each file pins 26px lower than the one before, so the earlier files stay visible as a stack
+   of edges while the next slides over them. */
+.drawer { display: flex; flex-direction: column; gap: clamp(28px, 4vw, 48px); margin: 0; padding: 0; list-style: none; }
+.drawer-file { display: grid; grid-template-columns: clamp(56px, 7vw, 96px) minmax(0, 1fr); gap: clamp(12px, 2vw, 24px); align-items: start; }
+.drawer-num { padding-top: 14px; font-family: var(--font-accent); font-style: italic; font-size: clamp(2.4rem, 4.6vw, 3.8rem); line-height: .8; letter-spacing: -.04em; color: var(--accent-ink); font-variant-numeric: lining-nums; }
+@media (min-width: 900px) and (min-height: 700px) {
+  .drawer-file { position: sticky; top: calc(var(--header-h) + 20px + var(--i) * 26px); }
+}
+@media (max-width: 640px) {
+  .drawer-file { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .drawer-num { padding-top: 0; font-size: 2.2rem; }
+}

@@ -903,6 +903,8 @@ html.cms-embed body::after { display: none; }
    shortcut tiles get colour that adapts to either theme on its own. */
 html[data-theme] {
   --brand: #E8352B; --brand-2: #FF6A2B;
+  /* the brand as a fill under small white text (badges): deepened to 5.6:1 */
+  --brand-strong: #C42D24;
   --hue-red: #E8352B; --hue-orange: #FF6A2B; --hue-amber: #E9A23B; --hue-green: #22A06B; --hue-violet: #7C5CFC; --hue-blue: #2F80ED; --hue-pink: #E5508F;
 }
 html[data-theme='light'] {
@@ -952,7 +954,7 @@ html[data-theme='dark'] {
 @media (max-width: 640px) { .cms-tabbar { background: color-mix(in srgb, var(--card) 95%, transparent); } }
 .btn--style-primary { --color: var(--on-accent); --hover-color: var(--on-accent); }
 :is(.cms-btn-primary, .sf-btn-primary) { color: var(--on-accent); }
-.sf-insert span { background: var(--brand); color: #FFFFFF; }
+.sf-insert span { background: var(--brand-strong); color: #FFFFFF; }
 .cms-tooltip { background: var(--inverse); color: var(--on-inverse); }
 .cms-tooltip small { color: var(--on-inverse-2); }
 :is(.cms-task-mark.is-done, .cms-profile-row.is-ok .cms-task-mark) { color: var(--card); }
@@ -965,8 +967,8 @@ html[data-theme='dark'] :is(.cms-ph-cover, .cms-work-cover img, .cms-folder-shee
 .cms-nav-link.is-active { background: var(--brand-soft); color: var(--brand-ink); box-shadow: none; }
 .cms-nav-link.is-active .cms-nav-count { background: var(--card); color: var(--brand-ink); }
 /* small white text on the brand: a deepened red keeps it at 4.5:1+ (the plain brand red is ~4.2:1) */
-:is(.cms-nav-badge, .cms-count.is-new, .cms-tab-badge) { background: color-mix(in srgb, var(--brand) 85%, #000); color: #FFFFFF; }
-.cms-nav-link.is-active .cms-nav-badge { background: color-mix(in srgb, var(--brand) 85%, #000); color: #FFFFFF; }
+:is(.cms-nav-badge, .cms-count.is-new, .cms-tab-badge) { background: var(--brand-strong); color: #FFFFFF; }
+.cms-nav-link.is-active .cms-nav-badge { background: var(--brand-strong); color: #FFFFFF; }
 .cms-new-dot { background: var(--brand); }
 .cms-inbox-row.is-new .cms-avatar { background: var(--brand-soft); color: var(--brand-ink); }
 .cms-wordmark i { color: var(--brand); }

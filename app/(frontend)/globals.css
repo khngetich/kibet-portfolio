@@ -188,18 +188,6 @@ main { padding-top: var(--header-h); }
 .filters button[aria-pressed='true'] { background: var(--inverse); color: var(--inverse-ink); }
 .filters button[aria-pressed='true'] span { color: inherit; opacity: .7; }
 
-/* ───────────────────────── about ───────────────────────── */
-.about-photo { position: relative; aspect-ratio: 4 / 5; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-2); }
-.about { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(32px, 6vw, 88px); align-items: start; }
-.about-body { margin-top: 28px; }
-.about-side { display: flex; flex-direction: column; gap: 32px; position: sticky; top: calc(var(--header-h) + 24px); }
-.xp li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: .92rem; }
-.xp span { color: var(--ink-2); grid-row: 2; }
-.xp small { color: var(--ink-3); grid-row: 1 / span 2; grid-column: 2; align-self: center; }
-@media (max-width: 800px) {
-      .about-side { position: static; }
-}
-
 /* ───────────────────────── contact ───────────────────────── */
 .contact { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 6vw, 88px); align-items: start; }
 .contact .lede { margin-top: 16px; }

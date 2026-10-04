@@ -528,32 +528,30 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
   const heading = copy(s.heading, COPY.contactHeading);
   const roles = s.roles ?? [];
   return (
-    <section className="contact-section contact-full dark" id={id} {...labelled(heading, hid, 'Contact')}>
+    <section className="contact-section contact-split" id={id} {...labelled(heading, hid, 'Contact')}>
       <div className="contact-glow" aria-hidden="true" />
-      <div className="wrap">
-        <Reveal className="section-intro contact-head">
+      <div className="wrap contact-grid">
+        {/* the pitch on the left (stays in view beside the form on wider screens), the form on the right */}
+        <Reveal className="contact-copy">
           <Chapter n={chapter} label={s.eyebrow} />
           {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
+          {s.intro && <p className="lede">{s.intro}</p>}
           {!!roles.length && (
             <div className="contact-roles">
               {s.rolesLead && <p>{s.rolesLead}</p>}
               <ul aria-label="Who it’s for">{roles.map((r) => <li key={r}>{r}</li>)}</ul>
             </div>
           )}
+          {s.showAvailability !== false && site.availability && <p className="status"><span className="dot" aria-hidden="true" />{site.availability}</p>}
+          {site.bookingUrl && (
+            <a className="btn btn-light contact-book" href={site.bookingUrl} target="_blank" rel="noopener noreferrer">
+              <Icon name="calendar" size={18} /> {text(s.bookLabel, 'Book a 15-minute call')}
+            </a>
+          )}
         </Reveal>
-        <div className="contact">
-          <Reveal className="contact-aside">
-            {s.intro && <p className="lede">{s.intro}</p>}
-            {s.showAvailability !== false && site.availability && <p className="status"><span className="dot" aria-hidden="true" />{site.availability}</p>}
-            {site.bookingUrl && (
-              <a className="btn btn-light contact-book" href={site.bookingUrl} target="_blank" rel="noopener noreferrer">
-                <Icon name="calendar" size={18} /> {text(s.bookLabel, 'Book a 15-minute call')}
-              </a>
-            )}
-            {/* email, WhatsApp and socials live in the footer, on every page */}
-          </Reveal>
-          <Reveal delay={0.1}><ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} chatUrl={ctx.whatsapp} copy={s.form ?? {}} /></Reveal>
-        </div>
+        <Reveal className="contact-card" delay={0.1}>
+          <ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} chatUrl={ctx.whatsapp} copy={s.form ?? {}} />
+        </Reveal>
       </div>
     </section>
   );

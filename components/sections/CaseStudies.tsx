@@ -4,28 +4,28 @@ import { MoreWork } from '@/components/EditorialProject';
 import { Reveal } from '@/components/motion/Reveal';
 
 /**
- * Selected projects as an editorial spread of project files: the first as a large file, then
- * up to four files in pairs (every second pair inset, so the grid breathes), then the rest as
- * a light row of text links. Every file opens its case study with the "file extraction"
- * transition.
+ * Selected projects as a file drawer: each project is a full project file with its number beside
+ * it, and as you scroll each file pins a little lower than the one before and slides over it, so
+ * the earlier files stay visible as a stack of tabs (CSS position: sticky; no script). Phones get
+ * the files one after another. Every file still opens its case study with the "file extraction"
+ * transition; the rest of the projects follow as a row of text links.
  */
-const FILES = 4;
+const FILES = 5;
 
 export function CaseStudies({ projects }: { projects: ProjectCard[] }) {
   if (!projects.length) return null;
-  const [lead, ...rest] = projects;
-  const files = rest.slice(0, FILES);
-  const more = rest.slice(FILES);
+  const files = projects.slice(0, FILES);
+  const more = projects.slice(FILES);
   return (
     <div className="ed-work">
-      <Reveal y={24}><ProjectFolder project={lead} size="lg" sizes="(max-width: 900px) 94vw, 1200px" /></Reveal>
-      {!!files.length && (
-        <ul className="ed-grid">
-          {files.map((p, i) => (
-            <li key={p.id}><Reveal delay={(i % 2) * 0.08} y={20}><ProjectFolder project={p} sizes="(max-width: 760px) 92vw, 600px" /></Reveal></li>
-          ))}
-        </ul>
-      )}
+      <ol className="drawer" style={{ '--files': files.length } as React.CSSProperties}>
+        {files.map((p, i) => (
+          <li key={p.id} className="drawer-file" style={{ '--i': i } as React.CSSProperties}>
+            <span className="drawer-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <Reveal y={20}><ProjectFolder project={p} size="lg" sizes="(max-width: 900px) 94vw, 1060px" level={3} /></Reveal>
+          </li>
+        ))}
+      </ol>
       <MoreWork projects={more} />
     </div>
   );

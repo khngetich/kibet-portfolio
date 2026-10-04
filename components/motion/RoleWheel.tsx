@@ -23,7 +23,7 @@ export function RoleWheel({ heading, lead, roles, id, headingId }: { heading: st
   });
 
   return (
-    <section ref={ref} className="roles" id={id} aria-labelledby={headingId} style={{ height: reduce ? 'auto' : `${100 + roles.length * 28}vh` }}>
+    <section ref={ref} className="roles" id={id} aria-labelledby={headingId} style={{ height: reduce ? 'auto' : `calc(var(--roles-stage) + ${roles.length * 14}vh)` }}>
       <div className="roles-pin">
         <div className="roles-head">
           <h2 className="roles-title" id={headingId}>{heading}</h2>

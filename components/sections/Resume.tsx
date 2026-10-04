@@ -9,6 +9,7 @@ import { Img } from '@/components/Img';
 import { Reveal } from '@/components/motion/Reveal';
 import { ResumeNav } from '@/components/motion/ResumeNav';
 import { DISCIPLINES } from '@/collections/Projects';
+import { isToolGroup, toolMark } from './ToolMarks';
 
 /**
  * The Résumé section (blocks/sections.ts → ResumeSection): a full CV on one page, after the
@@ -45,6 +46,7 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
   const workLink = { label: text(s.workLink?.label, 'See all work'), url: text(s.workLink?.url, '/work') };
   const closing = { label: text(s.closingLink?.label, 'Let’s talk about it'), url: text(s.closingLink?.url, '/#contact'), variant: s.closingLink?.variant };
   const cardLink = s.cardLink?.label && s.cardLink?.url ? s.cardLink : null;
+  const [place, zone] = (card?.place ?? '').split('·').map((x) => x.trim());
 
   const parts = [
     { id: `${p}profile`, label: 'Profile', show: !!(s.profile || s.quote || s.pillars?.length) },
@@ -55,6 +57,13 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
   ].filter((x) => x.show);
   const [profileId, xpId, workId, skillsId, eduId] = ['profile', 'experience', 'work', 'skills', 'education'].map((k) => `${p}${k}`);
   const has = (partId: string) => parts.some((x) => x.id === partId);
+  // start years for the year strip: the first year in each role's dates, newest first, each
+  // pointing at the first role that began then
+  const years: { year: string; job: number }[] = [];
+  (s.jobs ?? []).forEach((j, i) => {
+    const year = j.dates?.match(/\b(19|20)\d{2}\b/)?.[0];
+    if (year && !years.some((y) => y.year === year)) years.push({ year, job: i });
+  });
 
   return (
     <section className="cv" id={id} aria-label={`Résumé: ${s.name.replace(/\*/g, '')}`}>
@@ -76,23 +85,40 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
           </div>
         </div>
         {card?.heading && (
-          <div className="cv-card-wrap">
-          {/* floating stickers (decoration: the same facts are in the text) */}
-          {s.role && <span className="cv-sticker is-role" aria-hidden="true">{s.role}<CursorIcon /></span>}
-          {s.stats?.[0] && <span className="cv-sticker is-stat" aria-hidden="true"><b>{s.stats[0].value}</b><small>{s.stats[0].label}</small></span>}
-          <aside className="cv-card band-dark" aria-label="Availability">
-            {card.kicker && <p className="cv-card-kicker">{card.kicker}</p>}
-            <p className="cv-card-heading"><Accent text={card.heading} /></p>
-            {card.text && <p className="cv-card-text">{card.text}</p>}
-            {!!card.topics?.length && (
-              <div className="cv-card-block">
-                <p className="cv-card-label">{text(card.topicsLabel, 'Let’s talk about')}</p>
-                <ul className="cv-card-topics">{card.topics.map((t) => <li key={t}>{t}</li>)}</ul>
-              </div>
-            )}
-            {!!card.workTypes?.length && <ul className="cv-card-chips" aria-label="Ways of working">{card.workTypes.map((t) => <li key={t}>{t}</li>)}</ul>}
-            {card.place && <p className="cv-card-place"><PinIcon />{card.place}</p>}
-            {cardLink && <a className="cv-card-link" href={cardLink.url!}>{cardLink.label}<Icon name="external" size={16} /></a>}
+          <div className="cv-pass-wrap">
+          <aside className="cv-pass" aria-label="Availability">
+            <div className="cv-pass-band">
+              <span>{card.kicker || 'Open to work'}</span>
+              <span className="cv-pass-no">Nº {new Date().getFullYear()}</span>
+            </div>
+            <div className="cv-pass-main">
+              <p className="cv-pass-heading"><Accent text={card.heading} /></p>
+              {card.text && <p className="cv-pass-text">{card.text}</p>}
+              {(place || zone) && (
+                <dl className="cv-pass-fields">
+                  {place && <div><dt>Based in</dt><dd>{place}</dd></div>}
+                  {zone && <div><dt>Time zone</dt><dd>{zone}</dd></div>}
+                </dl>
+              )}
+              {!!card.workTypes?.length && (
+                <ul className="cv-pass-stamps" aria-label="Ways of working">{card.workTypes.map((t) => <li key={t}>{t}</li>)}</ul>
+              )}
+            </div>
+            <div className="cv-pass-perf" aria-hidden="true" />
+            <div className="cv-pass-stub">
+              {!!card.topics?.length && (
+                <>
+                  <p className="cv-pass-label">{text(card.topicsLabel, 'Let’s talk about')}</p>
+                  <ul className="cv-card-topics">{card.topics.map((t) => <li key={t}>{t}</li>)}</ul>
+                </>
+              )}
+              {cardLink && (
+                <a className="cv-pass-link" href={cardLink.url!}>
+                  <span>{cardLink.label}<Icon name="arrow" size={15} /></span>
+                  <Barcode seed={s.name} />
+                </a>
+              )}
+            </div>
           </aside>
           </div>
         )}
@@ -148,9 +174,18 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
               <section className="cv-part" id={xpId} aria-labelledby={`${xpId}-h`}>
                 <p className="ed-kicker">Professional experience</p>
                 <Sub className="h-lg cv-h" id={`${xpId}-h`}><Accent text={text(s.xpHeading, 'Experience')} /></Sub>
+                {years.length > 1 && (
+                  <nav className="cv-years" aria-label="Jump to a year">
+                    <ol>
+                      {years.map((y, k) => (
+                        <li key={y.year}><a href={`#${p}job-${y.job}`} className={k === 0 ? 'is-now' : undefined} aria-label={k === 0 ? `${y.year}, current role` : `From ${y.year}`}>{k === 0 && <span className="cv-years-tag">Now</span>}{y.year}</a></li>
+                      ))}
+                    </ol>
+                  </nav>
+                )}
                 <ol className="cv-jobs">
                   {s.jobs!.map((j, i) => (
-                    <li key={j.id}>
+                    <li key={j.id} id={`${p}job-${i}`} className="cv-job-item">
                       <Reveal className={`cv-job${i === 0 ? ' is-current' : ''}`} y={20}>
                         <div className="cv-job-meta">
                           {j.dates && <span>{j.dates}</span>}
@@ -202,7 +237,11 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
                   {s.skillGroups!.map((g, i) => (
                     <div key={g.id} className="cv-skill-row">
                       <dt><span className="cv-tag"><span className="cv-tag-no">{String(i + 1).padStart(2, '0')}</span><span className="cv-tag-label">{g.label}</span></span></dt>
-                      <dd><ul className="cv-chips">{(g.items ?? []).map((t) => <li key={t}>{t}</li>)}</ul></dd>
+                      <dd>
+                        {isToolGroup(g.items ?? [])
+                          ? <ul className="cv-tools">{(g.items ?? []).map((t) => <li key={t}>{toolMark(t) ?? <span className="cv-tool-blank" aria-hidden="true">{t.slice(0, 2)}</span>}<span>{t.replace(/^Adobe\s+/, '')}</span></li>)}</ul>
+                          : <ul className="cv-chips">{(g.items ?? []).map((t) => <li key={t}>{t}</li>)}</ul>}
+                      </dd>
                     </div>
                   ))}
                 </dl>
@@ -272,19 +311,14 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
   );
 }
 
-/** The pointer on the role sticker, as if someone just dropped it there. */
-function CursorIcon() {
+/** Decorative bars on the pass's stub, the same for the same name. */
+function Barcode({ seed }: { seed: string }) {
+  const widths = Array.from({ length: 22 }, (_, i) => 1 + ((seed.charCodeAt(i % seed.length) + i * 7) % 3));
+  const xs = widths.map((_, i) => widths.slice(0, i).reduce((sum, w) => sum + w + 2, 0));
+  const total = xs[xs.length - 1] + widths[widths.length - 1];
   return (
-    <svg className="cv-cursor" viewBox="0 0 24 24" width={22} height={22} aria-hidden="true">
-      <path d="M4.5 3.5 19 10.2l-6.3 1.9-2.6 6.4z" fill="currentColor" stroke="var(--bg)" strokeWidth={1.5} strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function PinIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width={16} height={16} aria-hidden="true">
-      <g fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.3" /></g>
+    <svg className="cv-barcode" viewBox={`0 0 ${total} 28`} height="28" aria-hidden="true">
+      {widths.map((w, i) => <rect key={i} x={xs[i]} y="0" width={w} height="28" fill="currentColor" />)}
     </svg>
   );
 }
