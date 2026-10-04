@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────
    Admin panel theme.
 
-   Inside the CMS: the "Web & Dashboards" design system with a near-black accent. The
+   Inside the CMS: the "Web & Dashboards" layout in the public site's palette (see the end). The
    palette itself lives in styles/cms-tokens.css (shared with the Studio); this file maps
    it onto Payload's own variables and restyles Payload's chrome around it.
    The login / forgot-password screens keep the public site's dark style.
@@ -9,12 +9,6 @@
    Payload's own styles live in CSS layers, so these unlayered rules win.
    ───────────────────────────────────────────────────────────── */
 
-@font-face {
-  font-family: 'Geist';
-  src: url('../../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
-  font-weight: 100 900;
-  font-display: swap;
-}
 @font-face {
   font-family: 'Geist Mono';
   src: url('../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2') format('woff2');
@@ -31,8 +25,13 @@ html[data-theme='light'] {
   --theme-elevation-800: #1A1A1E; --theme-elevation-850: #151517; --theme-elevation-900: #111113; --theme-elevation-950: #0C0C0E; --theme-elevation-1000: #000000;
   --theme-bg: var(--page); --theme-input-bg: #FFFFFF; --theme-text: var(--ink); --theme-border-color: var(--line);
   --theme-success-500: var(--green);
-
-  --font-body: 'Geist', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+/* type, radii and focus: the same in both themes */
+html[data-theme] {
+  /* the site's pairing: Manrope for everything (components/admin/FontProvider.tsx), a classic
+     serif italic for the accent words (.cms-accent); Geist Mono stays for keys and code */
+  --font-body: var(--font-manrope), 'Manrope', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-accent: Georgia, 'Times New Roman', Times, serif;
   /* radius-md 8 (buttons, inputs), radius-lg 12 (cards, menus), radius-xl 16 (drawers) */
   --style-radius-s: 8px; --style-radius-m: 12px; --style-radius-l: 16px;
   --accessibility-outline: 2px solid var(--accent);
@@ -43,7 +42,8 @@ html[data-theme='light'] {
 }
 
 body { letter-spacing: 0; }
-h1, h2, h3, h4, h5, h6 { letter-spacing: -.015em; font-weight: 600; text-wrap: balance; }
+/* headings as on the site: medium weight, tight tracking (tighter as they grow) */
+h1, h2, h3, h4, h5, h6 { letter-spacing: -.02em; font-weight: 500; text-wrap: balance; }
 /* Payload's base styles underline every link, so cards, rows, icon buttons and menu items
    that are links all came out underlined. In the CMS a link is UI unless it sits in running
    text: only prose links (rich text, field help, notices) keep an underline, so they're
@@ -105,7 +105,7 @@ a { transition: color .15s; text-decoration: none; }
 .cms-nav { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-block: 12px 16px; }
 .cms-nav ul { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
 .cms-nav-group p { margin: 0 0 4px 12px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
-.cms-nav-link { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 8px 12px; border-radius: 8px; color: var(--ink-2); text-decoration: none; font-size: 14px; line-height: 20px; font-weight: 500; transition-property: background-color, color; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-nav-link { display: flex; align-items: center; gap: 12px; min-height: 40px; padding: 0 12px; border-radius: 8px; color: var(--ink-2); text-decoration: none; font-size: 14px; line-height: 20px; font-weight: 500; transition-property: background-color, color; transition-duration: .15s; transition-timing-function: ease-out; }
 .cms-nav-link svg { flex: none; color: currentColor; }
 /* outline icons at rest; the current page's icon is filled */
 .cms-nav-link.is-active svg :is(rect, path, circle) { fill: currentColor; fill-opacity: .14; }
@@ -127,7 +127,7 @@ a { transition: color .15s; text-decoration: none; }
 .cms-nav-kbd { flex: none; padding: 2px 6px; border-radius: 6px; background: var(--card); color: var(--ink-2); font: 500 12px/16px var(--font-mono); box-shadow: inset 0 0 0 1px var(--line); }
 
 /* Studio card: the inverse surface, like a plan card in a SaaS sidebar */
-.cms-nav-promo { margin-top: auto; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; padding: 12px; border-radius: 12px; background: var(--inverse); color: var(--on-inverse); }
+.cms-nav-promo { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; padding: 12px; border-radius: 12px; background: var(--inverse); color: var(--on-inverse); }
 .cms-nav-promo-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--card); color: var(--ink); }
 .cms-nav-promo b { font-size: 14px; line-height: 20px; font-weight: 600; }
 .cms-nav-promo p { grid-column: 1 / -1; margin: 4px 0 8px; font-size: 12px; line-height: 16px; color: var(--on-inverse-2); white-space: normal; }
@@ -173,7 +173,9 @@ html:not(:has(.template-default--nav-open)) .cms-nav-resizer { display: none; }
 }
 .cms-nav-resizing, .cms-nav-resizing * { cursor: col-resize !important; user-select: none !important; }
 .cms-nav-resizing .template-default, .cms-nav-resizing .nav { transition: none !important; }
-html.cms-nav-collapsed .cms-nav-label, html.cms-nav-collapsed .cms-nav-count, html.cms-nav-collapsed .cms-nav-group p { display: none; }
+html.cms-nav-collapsed .cms-nav-count, html.cms-nav-collapsed .cms-nav-group p { display: none; }
+/* the rail hides labels visually only: links keep their names for screen readers, and the tooltip shows them */
+html.cms-nav-collapsed .cms-nav-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 html.cms-nav-collapsed .cms-nav-kbd, html.cms-nav-collapsed .cms-nav-promo-mark, html.cms-nav-collapsed .cms-nav-recent { display: none; }
 .cms-nav-recent-link { min-height: 32px; font-weight: 400; }
 html.cms-nav-collapsed .cms-nav-search { justify-content: center; padding: 0; }
@@ -182,7 +184,7 @@ html.cms-nav-collapsed .cms-nav-promo-btn { min-height: 40px; padding: 0; border
 html.cms-nav-collapsed .cms-nav-promo-icon { display: block; }
 html.cms-nav-collapsed .cms-nav-group { padding-top: 10px; border-top: 1px solid var(--line); }
 html.cms-nav-collapsed .cms-nav-link, html.cms-nav-collapsed .cms-nav-collapse { justify-content: center; padding-inline: 0; position: relative; }
-html.cms-nav-collapsed .cms-nav-badge { position: absolute; top: 4px; right: 6px; width: 8px; height: 8px; padding: 0; font-size: 0; }
+html.cms-nav-collapsed .cms-nav-badge { position: absolute; top: calc(50% - 16px); left: calc(50% + 7px); width: 9px; height: 9px; padding: 0; overflow: hidden; color: transparent; font-size: 0; box-shadow: 0 0 0 2px var(--card); }
 html.cms-nav-collapsed .nav__controls { align-items: center; }
 /* Payload pads both .nav__scroll and .nav__wrap and aligns the wrap's items to the start, which
    squeezed every rail item to its 18px icon. One 12px gutter, items stretched: each icon sits
@@ -888,3 +890,193 @@ html.cms-embed body::after { display: none; }
 }
 
 .cms-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ═════════════════════════ the public site's palette, light and dark ═════════════════════════
+   The admin wears the website's colours: white and #F7F7F5 with ink #0A0A0A in light, black and
+   #131313 with ink #F5F5F4 in dark, and the orange-red brand (#E8352B, second #FF6A2B) for what
+   is current or new: the open page in the sidebar, "new" badges, the chart's series. Primary
+   buttons stay ink, like the site's dark buttons. Overrides styles/cms-tokens.css for the admin
+   only; the Studio keeps that file's values. Each editor picks a theme with the switch in the
+   top bar (components/admin/ThemeSwitch.tsx).
+
+   Tints: a set of hues (--hue-*) mixed into the card colour, so the folders, stat chips and
+   shortcut tiles get colour that adapts to either theme on its own. */
+html[data-theme] {
+  --brand: #E8352B; --brand-2: #FF6A2B;
+  --hue-red: #E8352B; --hue-orange: #FF6A2B; --hue-amber: #E9A23B; --hue-green: #22A06B; --hue-violet: #7C5CFC; --hue-blue: #2F80ED; --hue-pink: #E5508F;
+}
+html[data-theme='light'] {
+  --page: #F7F7F5; --card: #FFFFFF; --sub: #F0F0ED; --inverse: #0A0A0A;
+  --ink: #0A0A0A; --ink-2: #5A5A63; --line: #E6E6E2; --line-2: #8A8A8F;
+  --on-inverse: #FFFFFF; --on-inverse-2: #A6A6B0;
+  --accent: #0A0A0A; --accent-hover: #2C2C32; --on-accent: #FFFFFF; --accent-soft: #ECECE8;
+  /* brand text: deepened to 4.5:1 on white, as the site does for small accent text */
+  --brand-ink: #B92A22; --brand-soft: #FDEBE9;
+  --chart-1: var(--brand); --chart-3: var(--brand-2); --chart-grid: #ECECEA;
+  color-scheme: light;
+}
+html[data-theme='dark'] {
+  /* Payload's elevation scale, 0 = page black, 1000 = brightest ink */
+  --theme-elevation-0: #000000; --theme-elevation-50: #0B0B0B; --theme-elevation-100: #131313; --theme-elevation-150: #1C1C1E;
+  --theme-elevation-200: #26262A; --theme-elevation-250: #303034; --theme-elevation-300: #3C3C42; --theme-elevation-350: #4A4A50;
+  --theme-elevation-400: #5E5E66; --theme-elevation-450: #707078; --theme-elevation-500: #84848C; --theme-elevation-550: #96969E;
+  --theme-elevation-600: #A6A6B0; --theme-elevation-650: #B8B8C0; --theme-elevation-700: #C8C8CE; --theme-elevation-750: #D6D6DA;
+  --theme-elevation-800: #E2E2E4; --theme-elevation-850: #EBEBEA; --theme-elevation-900: #F0F0EF; --theme-elevation-950: #F5F5F4; --theme-elevation-1000: #FFFFFF;
+  --theme-bg: var(--page); --theme-input-bg: var(--card); --theme-text: var(--ink); --theme-border-color: var(--line);
+  --theme-success-500: var(--green);
+
+  --page: #000000; --card: #131313; --sub: #1C1C1E; --inverse: #F5F5F4;
+  --ink: #F5F5F4; --ink-2: #A6A6B0; --line: #26262A; --line-2: #5E5E66;
+  --on-inverse: #0A0A0A; --on-inverse-2: #5A5A63;
+  --accent: #F5F5F4; --accent-hover: #D9D9D7; --on-accent: #0A0A0A; --accent-soft: #26262A;
+  --brand-ink: #F2766C; --brand-soft: #2A1311;
+  --green: #34D399; --green-soft: #0E2A20;
+  --amber: #FBBF24; --amber-soft: #2B210C;
+  --coral: #F87171; --coral-soft: #2E1515;
+  --info: #2DD4BF; --info-soft: #0B2623;
+  /* status marks on --inverse, which is light here */
+  --inverse-success: #047857; --inverse-warning: #B45309; --inverse-danger: #B91C1C;
+  --chart-1: var(--brand); --chart-2: #2DD4BF; --chart-3: var(--brand-2); --chart-4: #5E5E66; --chart-grid: #222226;
+  --shadow-sm: 0 1px 2px #00000066;
+  --shadow-md: 0 4px 12px #00000080, 0 1px 3px #00000066;
+  --shadow-lg: 0 16px 48px #000000CC, 0 4px 12px #00000080;
+  --scrim: #000000A6;
+  color-scheme: dark;
+  ::selection { background: var(--brand-soft); color: var(--ink); }
+}
+
+/* surfaces that were written as light colours */
+.app-header { background: color-mix(in srgb, var(--card) 88%, transparent); }
+.cms-hero.is-stuck { background: color-mix(in srgb, var(--page) 96%, transparent); }
+.sf-panel-head { background: color-mix(in srgb, var(--card) 92%, transparent); }
+@media (max-width: 640px) { .cms-tabbar { background: color-mix(in srgb, var(--card) 95%, transparent); } }
+.btn--style-primary { --color: var(--on-accent); --hover-color: var(--on-accent); }
+:is(.cms-btn-primary, .sf-btn-primary) { color: var(--on-accent); }
+.sf-insert span { background: var(--brand); color: #FFFFFF; }
+.cms-tooltip { background: var(--inverse); color: var(--on-inverse); }
+.cms-tooltip small { color: var(--on-inverse-2); }
+:is(.cms-task-mark.is-done, .cms-profile-row.is-ok .cms-task-mark) { color: var(--card); }
+.cms-avail:hover { background: color-mix(in oklab, var(--green-soft), var(--green) 14%); }
+html[data-theme='dark'] .sf-drawer .drawer__close { background: var(--sub); }
+/* image edges: black hairline on light, white on dark */
+html[data-theme='dark'] :is(.cms-ph-cover, .cms-work-cover img, .cms-folder-sheet img, .thumbnail img, .file-details img, .upload img) { outline-color: oklch(1 0 0 / .1); }
+
+/* the brand at work: current page, new things, the wordmark */
+.cms-nav-link.is-active { background: var(--brand-soft); color: var(--brand-ink); box-shadow: none; }
+.cms-nav-link.is-active .cms-nav-count { background: var(--card); color: var(--brand-ink); }
+:is(.cms-nav-badge, .cms-count.is-new, .cms-tab-badge) { background: var(--brand); color: #FFFFFF; }
+.cms-nav-link.is-active .cms-nav-badge { background: var(--brand); color: #FFFFFF; }
+.cms-new-dot { background: var(--brand); }
+.cms-inbox-row.is-new .cms-avatar { background: var(--brand-soft); color: var(--brand-ink); }
+.cms-wordmark i { color: var(--brand); }
+@media (max-width: 640px) { .cms-tab.is-active .cms-tab-icon { background: var(--brand-soft); color: var(--brand-ink); } }
+
+/* stat cards: each label gets its own tint; the headline card is ink with the site's red glow */
+.cms-insights > :nth-child(4n + 1) { --hue: var(--hue-red); }
+.cms-insights > :nth-child(4n + 2) { --hue: var(--hue-orange); }
+.cms-insights > :nth-child(4n + 3) { --hue: var(--hue-violet); }
+.cms-insights > :nth-child(4n + 4) { --hue: var(--hue-green); }
+.cms-insight-icon { background: color-mix(in oklab, var(--hue, var(--ink)) 14%, var(--card)); color: color-mix(in oklab, var(--hue, var(--ink)) 72%, var(--ink)); box-shadow: none; }
+.cms-insight.is-feature { position: relative; overflow: hidden; isolation: isolate; }
+.cms-insight.is-feature::before { content: ''; position: absolute; inset: auto -20% -60% -20%; height: 120%; z-index: -1; pointer-events: none; background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--brand) 42%, transparent), transparent 70%); }
+.cms-insight.is-feature .cms-insight-icon { background: var(--brand); color: #FFFFFF; }
+
+/* site-wide shortcuts: tinted icon tiles, like a set of app icons */
+.cms-shortcuts > :nth-child(6n + 1) { --hue: var(--hue-red); }
+.cms-shortcuts > :nth-child(6n + 2) { --hue: var(--hue-orange); }
+.cms-shortcuts > :nth-child(6n + 3) { --hue: var(--hue-amber); }
+.cms-shortcuts > :nth-child(6n + 4) { --hue: var(--hue-green); }
+.cms-shortcuts > :nth-child(6n + 5) { --hue: var(--hue-blue); }
+.cms-shortcuts > :nth-child(6n + 6) { --hue: var(--hue-violet); }
+.cms-shortcut-icon { background: color-mix(in oklab, var(--hue, var(--ink)) 16%, var(--card)); color: color-mix(in oklab, var(--hue, var(--ink)) 72%, var(--ink)); }
+.cms-shortcuts a:hover { background: color-mix(in oklab, var(--hue, var(--ink)) 6%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--hue, var(--ink)) 28%, var(--line)); }
+
+/* your work: glass folders, one hue per discipline, with a soft glow of that hue behind
+   (after the "glass folder" reference). The newest cover still lifts out on hover. */
+.cms-folder-grid > :nth-child(7n + 1) { --hue: var(--hue-red); }
+.cms-folder-grid > :nth-child(7n + 2) { --hue: var(--hue-orange); }
+.cms-folder-grid > :nth-child(7n + 3) { --hue: var(--hue-green); }
+.cms-folder-grid > :nth-child(7n + 4) { --hue: var(--hue-violet); }
+.cms-folder-grid > :nth-child(7n + 5) { --hue: var(--hue-blue); }
+.cms-folder-grid > :nth-child(7n + 6) { --hue: var(--hue-amber); }
+.cms-folder-grid > :nth-child(7n + 7) { --hue: var(--hue-pink); }
+.cms-folder-art::before { content: ''; position: absolute; inset: 18% 6% -4%; border-radius: 50%; background: var(--hue, var(--ink-2)); filter: blur(28px); opacity: .22; transition-property: opacity; transition-duration: .3s; transition-timing-function: ease-out; }
+.cms-folder:hover .cms-folder-art::before, .cms-folder:focus-visible .cms-folder-art::before { opacity: .38; }
+.cms-folder-back, .cms-folder-back::before { background: color-mix(in oklab, var(--hue, var(--ink-2)) 62%, var(--card)); }
+.cms-folder-front {
+  background: linear-gradient(170deg, color-mix(in srgb, var(--card) 62%, transparent), color-mix(in srgb, color-mix(in oklab, var(--hue, var(--ink-2)) 30%, var(--card)) 70%, transparent));
+  backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / .55), inset 0 0 0 1px color-mix(in srgb, var(--hue, var(--ink-2)) 30%, transparent), 0 14px 28px -16px color-mix(in srgb, var(--hue, var(--ink-2)) 70%, transparent);
+}
+html[data-theme='dark'] .cms-folder-front { box-shadow: inset 0 1px 0 oklch(1 0 0 / .14), inset 0 0 0 1px color-mix(in srgb, var(--hue, var(--ink-2)) 40%, transparent), 0 14px 28px -16px color-mix(in srgb, var(--hue, var(--ink-2)) 80%, transparent); }
+html[data-theme='dark'] .cms-folder-art::before { opacity: .3; }
+html[data-theme='dark'] .cms-folder:hover .cms-folder-art::before { opacity: .5; }
+
+/* the theme switch (top bar) */
+.cms-theme-switch { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 9999px; background: none; color: var(--ink-2); cursor: pointer; transition-property: background-color, color, scale; transition-duration: .15s; transition-timing-function: ease-out; }
+.cms-theme-switch:hover { background: var(--sub); color: var(--ink); }
+.cms-theme-switch:active { scale: .96; }
+.cms-theme-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── the site's typography: Manrope, medium-weight headings with tight tracking, and the serif
+   italic accent (Georgia) for names and headline figures, as the site sets *accent* words ── */
+body { font-family: var(--font-body); }
+:is(.list-header__title, .doc-header__title, .cms-hero-hello h1, .cms-ph-title h2) { font-weight: 500; letter-spacing: -.035em; }
+:is(.cms-card-head h2, .cms-section-head h2) { font-weight: 500; letter-spacing: -.025em; }
+/* small labels keep their weight: Manrope reads lighter than Geist at 12-14px */
+:is(.cms-btn, .btn, .cms-tabs button, .cms-chip) { font-weight: 600; }
+.cms-accent { font-family: var(--font-accent); font-style: italic; font-weight: 400; letter-spacing: -.02em; color: var(--brand-ink); }
+/* headline figures in the serif italic, like the site's stats; tabular so they don't jitter */
+:is(.cms-insight-value, .cms-ring-value b, .cms-profile-ring > b) { font-family: var(--font-accent); font-style: italic; font-weight: 400; letter-spacing: -.03em; font-variant-numeric: lining-nums tabular-nums; }
+.cms-insight-value { font-size: 40px; line-height: 44px; }
+.cms-insight.is-feature .cms-insight-value { color: var(--on-inverse); }
+
+/* enquiry avatars: each sender gets a tint, like the avatars in a customer list */
+.cms-inbox > :nth-child(5n + 1) { --hue: var(--hue-orange); }
+.cms-inbox > :nth-child(5n + 2) { --hue: var(--hue-violet); }
+.cms-inbox > :nth-child(5n + 3) { --hue: var(--hue-green); }
+.cms-inbox > :nth-child(5n + 4) { --hue: var(--hue-blue); }
+.cms-inbox > :nth-child(5n + 5) { --hue: var(--hue-pink); }
+.cms-avatar { background: color-mix(in oklab, var(--hue, var(--ink-2)) 18%, var(--card)); color: color-mix(in oklab, var(--hue, var(--ink-2)) 75%, var(--ink)); box-shadow: none; }
+
+
+/* ── sidebar layout and rail (components/admin/NavMenuClient.tsx) ──
+   Standard sidebar rules: one icon family at 20px with a 1.5 stroke, 40px rows (44px targets in
+   the rail), search fixed at the top, the links scrolling on their own, and the Studio card,
+   collapse and sign-out pinned at the foot so nothing overlaps or drops out of reach. */
+.cms-nav-body { display: flex; flex-direction: column; gap: 16px; }
+.cms-nav-foot { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+@media (min-width: 641px) {
+  .nav__scroll { overflow: hidden; padding-bottom: 12px; }
+  .nav__wrap { min-height: 0; }
+  .cms-nav { min-height: 0; padding-bottom: 8px; }
+  .cms-nav-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin-inline: -8px; padding: 2px 8px 8px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+    /* a soft fade where the list scrolls under the pinned parts */
+    mask-image: linear-gradient(transparent, #000 8px, #000 calc(100% - 16px), transparent); }
+  .cms-nav-foot { flex: none; padding-top: 12px; border-top: 1px solid var(--line); }
+  .nav__controls { flex: none; padding-top: 8px; }
+}
+.cms-nav-group p { margin-left: 12px; }
+.nav__log-out { display: flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; border-radius: 8px; color: var(--ink-2); }
+.nav__log-out:hover { background: var(--sub); color: var(--ink); }
+.nav__log-out svg { width: 20px; height: 20px; }
+
+/* the rail: every target 44px tall, centred icons, groups split by a hairline */
+html.cms-nav-collapsed :is(.cms-nav-link, .cms-nav-search, .cms-nav-collapse, .cms-nav-promo-btn) { min-height: 44px; }
+html.cms-nav-collapsed .cms-nav-group { padding-top: 12px; border-top: 1px solid var(--line-2, var(--line)); }
+html.cms-nav-collapsed .cms-nav-body { gap: 12px; }
+
+.cms-nav-collapse { text-align: left; }
+/* shorter screens: the Studio card shrinks to its button, so the links keep the room */
+@media (min-width: 641px) and (max-height: 860px) {
+  html:not(.cms-nav-collapsed) .cms-nav-promo { display: block; padding: 0; background: none; }
+  html:not(.cms-nav-collapsed) :is(.cms-nav-promo-mark, .cms-nav-promo > b, .cms-nav-promo > p) { display: none; }
+  html:not(.cms-nav-collapsed) .cms-nav-promo-btn { width: 100%; min-height: 40px; justify-content: flex-start; gap: 12px; padding: 0 12px; border-radius: 8px; background: var(--inverse); color: var(--on-inverse); }
+  html:not(.cms-nav-collapsed) .cms-nav-promo-icon { display: block; }
+}
+
+/* rail tooltip (RailTips) */
+.cms-rail-tip { position: fixed; z-index: 1000; translate: 0 -50%; padding: 6px 10px; border-radius: 8px; background: var(--inverse); color: var(--on-inverse); font-size: 12px; line-height: 16px; font-weight: 500; white-space: nowrap; pointer-events: none; box-shadow: var(--shadow-md); animation: cms-tip-in .12s ease-out; }
+.cms-rail-tip::before { content: ''; position: absolute; left: -4px; top: 50%; width: 8px; height: 8px; background: inherit; translate: 0 -50%; rotate: 45deg; border-radius: 1px; }
+@keyframes cms-tip-in { from { opacity: 0; translate: -4px -50%; } }
+@media (prefers-reduced-motion: reduce) { .cms-rail-tip { animation: none; } }

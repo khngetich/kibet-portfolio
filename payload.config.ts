@@ -39,15 +39,18 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' — Kaptured CMS' },
-    // Light, following the reference dashboard (the login screen keeps the site's dark look);
-    // colours and type are set in app/(payload)/custom.css.
-    theme: 'light',
+    // Light or dark, in the public site's palette: each editor picks with the switch in the top
+    // bar (components/admin/ThemeSwitch.tsx), remembered in a cookie; until then it follows the
+    // device. Colours and type are set in app/(payload)/custom.css.
+    theme: 'all',
     components: {
       graphics: {
         Logo: '/components/admin/Brand#Logo',
         Icon: '/components/admin/Brand#Icon',
       },
       beforeNavLinks: ['/components/admin/NavMenu#NavMenu'],
+      actions: ['/components/admin/ThemeSwitch#ThemeSwitch'],
+      providers: ['/components/admin/FontProvider#FontProvider'],
       views: {
         dashboard: { Component: '/components/admin/Dashboard#Dashboard' },
       },
@@ -92,6 +95,9 @@ export default buildConfig({
     push: /@(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//.test(process.env.DATABASE_URL || ''),
   }),
   sharp,
+  // biggest file anyone can upload (images, PDFs, portfolio videos); also signed into direct-to-storage
+  // upload URLs, so the bucket refuses anything larger
+  upload: { limits: { fileSize: 100 * 1024 * 1024 } },
   plugins: [
     // SEO fields are placed by hand in Pages (Page settings tab); the plugin supplies the
     // generate buttons and the Google-style preview.

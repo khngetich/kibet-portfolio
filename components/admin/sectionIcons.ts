@@ -7,11 +7,11 @@ import type { IconName } from '@/components/ui/Icon';
  */
 export const SECTION_ICON: Record<string, IconName> = {
   dashboard: 'dashboard',
-  pages: 'file',
-  projects: 'portfolio',
-  services: 'tag',
-  posts: 'pen',
-  media: 'image',
+  pages: 'fileText',
+  projects: 'briefcase',
+  services: 'box',
+  posts: 'bookOpen',
+  media: 'photo',
   inquiries: 'inbox',
   users: 'users',
   header: 'layoutTop',

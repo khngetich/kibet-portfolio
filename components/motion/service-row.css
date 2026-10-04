@@ -1,0 +1,81 @@
+/* ── Services as a row of opening cards (components/motion/ServiceRow.tsx) ──
+   Folded cards are tinted panels with the title and an arrow; the open one widens, turns to the
+   surface colour and shows its promise, price, the first deliverables and the cover. Tints
+   alternate the site's two reds, mixed into the page colour so they suit either theme. */
+.svr { display: flex; gap: clamp(10px, 1.2vw, 14px); height: clamp(400px, 34vw, 470px); margin: 0; padding: 0; list-style: none; }
+.svr-card {
+  --hue: var(--red); --tint: color-mix(in oklab, var(--hue) 13%, var(--bg));
+  position: relative; isolation: isolate; overflow: hidden; flex: 1 1 0; min-width: 0;
+  display: grid; grid-template-columns: minmax(0, 1fr) 0fr; gap: 0;
+  padding: clamp(20px, 2vw, 26px); border-radius: calc(28px * var(--radius-scale, 1));
+  background: var(--tint); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hue) 14%, transparent);
+  transition-property: flex-grow, grid-template-columns, gap, background-color, box-shadow; transition-duration: .7s; transition-timing-function: var(--ease);
+}
+.svr-card:nth-child(even) { --hue: var(--red-2); }
+/* soft bubbles in the corner of a folded card, as in the reference */
+.svr-card::before { content: ''; position: absolute; left: -14%; bottom: -18%; z-index: -1; width: 62%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 60% 40%, color-mix(in srgb, var(--hue) 22%, transparent), transparent 66%); transition: opacity .5s ease; }
+.svr-card.is-open { flex-grow: 2.8; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(16px, 2vw, 24px); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.svr-card.is-open::before { opacity: 0; }
+
+.svr-text { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; min-height: 0; }
+.svr-flag { margin: 0 0 10px; padding: 4px 10px; border-radius: 999px; background: var(--inverse); color: var(--inverse-ink); font-size: .72rem; font-weight: 600; }
+.svr-title { margin: 0; font-size: clamp(1.2rem, 1.7vw, 1.45rem); font-weight: 500; line-height: 1.2; letter-spacing: -.025em; text-wrap: balance; }
+.svr-title button { display: block; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; }
+.svr-title button:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 6px; }
+
+/* the open card's details unfold downwards (0fr → 1fr), so phones get the same motion */
+.svr-more { display: grid; grid-template-rows: 0fr; min-height: 0; opacity: 0; transition-property: grid-template-rows, opacity; transition-duration: .6s, .3s; transition-timing-function: var(--ease), ease; }
+.svr-card.is-open .svr-more { grid-template-rows: 1fr; opacity: 1; transition-delay: 0s, .15s; }
+.svr-more-in { min-height: 0; overflow: hidden; }
+.svr-desc { margin: 12px 0 0; max-width: 40ch; color: var(--ink-2); font-size: .94rem; line-height: 1.55; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+.svr-price { margin: 14px 0 0; font-size: 1.05rem; font-weight: 600; letter-spacing: -.01em; }
+.svr-price small { margin-inline: 2px 4px; font-size: .74rem; font-weight: 500; color: var(--ink-3); }
+.svr-get { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 0; padding: 0; list-style: none; }
+.svr-get li { position: relative; padding-left: 18px; font-size: .88rem; color: var(--ink-2); }
+.svr-get li::before { content: '+'; position: absolute; left: 0; top: -1px; color: var(--accent-ink); font-weight: 600; }
+
+/* "See the service" and the round arrow, pinned to the card's foot */
+.svr-go { display: inline-flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 16px; font-size: .86rem; font-weight: 600; color: var(--ink); white-space: nowrap; }
+.svr-arrow { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--bg); color: var(--ink); box-shadow: 0 6px 16px -10px color-mix(in srgb, var(--ink) 60%, transparent); transition-property: background-color, color, rotate, scale; transition-duration: .3s; transition-timing-function: var(--ease); }
+.svr-arrow svg { rotate: -45deg; transition: rotate .3s var(--ease); }
+.svr-card.is-open .svr-arrow { background: var(--accent-strong); color: #FFFFFF; }
+.svr-card.is-open .svr-arrow svg, .svr-go:hover .svr-arrow svg { rotate: 0deg; }
+.svr-go:active .svr-arrow { scale: .96; }
+.svr-go:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 999px; }
+/* a folded card only has room for the arrow */
+.svr-card:not(.is-open) .svr-go-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* the cover: only the open card shows it */
+.svr-media { position: relative; min-width: 0; margin: 0; overflow: hidden; border-radius: calc(20px * var(--radius-scale, 1)); opacity: 0; scale: .96; transition-property: opacity, scale; transition-duration: .4s, .7s; transition-timing-function: ease, var(--ease); }
+.svr-card.is-open .svr-media { opacity: 1; scale: 1; transition-delay: .12s, 0s; }
+.svr-img { position: absolute; inset: 0; display: block; background: var(--surface-2); }
+.svr-img img { outline: 1px solid oklch(0 0 0 / .1); outline-offset: -1px; }
+html[data-theme='dark'] .svr-img img { outline-color: oklch(1 0 0 / .1); }
+.svr-img.is-blank { display: grid; place-items: end start; padding: 18px 20px; background: linear-gradient(150deg, color-mix(in oklab, var(--hue) 18%, var(--surface-2)), var(--bg-2)); }
+.svr-img.is-blank b { font-family: var(--font-accent); font-style: italic; font-weight: 400; font-size: clamp(3.4rem, 6vw, 5rem); line-height: .8; letter-spacing: -.04em; color: var(--accent-ink); }
+
+/* phones and narrow tablets: a stack that opens downwards, the cover on top of the open card */
+@media (max-width: 860px) {
+  .svr { flex-direction: column; height: auto; }
+  .svr-card, .svr-card.is-open { flex: none; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; gap: 0; }
+  .svr-media { order: -1; height: 0; opacity: 0; transition-property: height, opacity, margin; transition-duration: .6s, .3s, .6s; }
+  .svr-card.is-open .svr-media { height: clamp(180px, 48vw, 280px); margin-bottom: 18px; }
+  .svr-text { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 16px; }
+  .svr-flag, .svr-title, .svr-more { grid-column: 1; }
+  .svr-flag { justify-self: start; }
+  .svr-go { grid-column: 2; grid-row: 1 / span 2; align-self: start; margin-top: 0; padding-top: 0; }
+  .svr-card.is-open .svr-go { grid-column: 1 / -1; grid-row: auto; margin-top: 4px; padding-top: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .svr-card, .svr-more, .svr-media, .svr-arrow, .svr-arrow svg { transition-duration: 0s !important; transition-delay: 0s !important; }
+}
+
+/* "A little extra": a loose stack of tilted, colour-filled pills (after the marketing pills) */
+.svc .svc-extras ul { gap: 0; padding: 4px 0 0 6px; }
+.svc .svc-extras li { margin: -4px 0 0 -6px; padding: 8px 16px; border-radius: 12px; background: var(--pill); color: #0A0A0A; font-weight: 600; rotate: var(--tilt); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .12), 0 8px 18px -8px var(--pill); transition: rotate .3s var(--ease); }
+.svc .svc-extras li:nth-child(4n + 1) { --pill: #FFB547; --tilt: -4deg; }
+.svc .svc-extras li:nth-child(4n + 2) { --pill: #FF6A2B; --tilt: 3deg; }
+.svc .svc-extras li:nth-child(4n + 3) { --pill: #FFA3A3; --tilt: -2deg; }
+.svc .svc-extras li:nth-child(4n + 4) { --pill: #4FB3FF; --tilt: 4deg; }
+.svc .svc-extras ul:hover li { rotate: 0deg; }
+@media (prefers-reduced-motion: reduce) { .svc .svc-extras li { transition: none; } }

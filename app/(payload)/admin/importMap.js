@@ -34,7 +34,9 @@ import { ModalCell as ModalCell_dd144b88905f1ed24c3200f8b1531436 } from '../../.
 import { LinkRowLabel as LinkRowLabel_5b7ce49defdf2cdbdd8c55dff55c7042 } from '../../../components/admin/LinkRowLabel'
 import { Icon as Icon_81fda60f3e3709e861f40982a767707d } from '../../../components/admin/Brand'
 import { Logo as Logo_81fda60f3e3709e861f40982a767707d } from '../../../components/admin/Brand'
+import { ThemeSwitch as ThemeSwitch_13aba7d6eb931840188ad57a8e3a0b09 } from '../../../components/admin/ThemeSwitch'
 import { NavMenu as NavMenu_d3cb4ecc10babb52c0e651d8039d193c } from '../../../components/admin/NavMenu'
+import { FontProvider as FontProvider_4a17db3a4c055754f5a5a50cd65693a6 } from '../../../components/admin/FontProvider'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { Dashboard as Dashboard_16b88e9b8c48e393fa86591406efd08f } from '../../../components/admin/Dashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
@@ -77,7 +79,9 @@ export const importMap = {
   "/components/admin/LinkRowLabel#LinkRowLabel": LinkRowLabel_5b7ce49defdf2cdbdd8c55dff55c7042,
   "/components/admin/Brand#Icon": Icon_81fda60f3e3709e861f40982a767707d,
   "/components/admin/Brand#Logo": Logo_81fda60f3e3709e861f40982a767707d,
+  "/components/admin/ThemeSwitch#ThemeSwitch": ThemeSwitch_13aba7d6eb931840188ad57a8e3a0b09,
   "/components/admin/NavMenu#NavMenu": NavMenu_d3cb4ecc10babb52c0e651d8039d193c,
+  "/components/admin/FontProvider#FontProvider": FontProvider_4a17db3a4c055754f5a5a50cd65693a6,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "/components/admin/Dashboard#Dashboard": Dashboard_16b88e9b8c48e393fa86591406efd08f,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1

@@ -76,6 +76,10 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
           </div>
         </div>
         {card?.heading && (
+          <div className="cv-card-wrap">
+          {/* floating stickers (decoration: the same facts are in the text) */}
+          {s.role && <span className="cv-sticker is-role" aria-hidden="true">{s.role}<CursorIcon /></span>}
+          {s.stats?.[0] && <span className="cv-sticker is-stat" aria-hidden="true"><b>{s.stats[0].value}</b><small>{s.stats[0].label}</small></span>}
           <aside className="cv-card band-dark" aria-label="Availability">
             {card.kicker && <p className="cv-card-kicker">{card.kicker}</p>}
             <p className="cv-card-heading"><Accent text={card.heading} /></p>
@@ -90,6 +94,7 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
             {card.place && <p className="cv-card-place"><PinIcon />{card.place}</p>}
             {cardLink && <a className="cv-card-link" href={cardLink.url!}>{cardLink.label}<Icon name="external" size={16} /></a>}
           </aside>
+          </div>
         )}
       </div>
 
@@ -194,9 +199,9 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
                 <p className="ed-kicker">Skills &amp; tools</p>
                 <Sub className="h-lg cv-h" id={`${skillsId}-h`}><Accent text={text(s.skillsHeading, 'Skills')} /></Sub>
                 <dl className="cv-skills">
-                  {s.skillGroups!.map((g) => (
+                  {s.skillGroups!.map((g, i) => (
                     <div key={g.id} className="cv-skill-row">
-                      <dt>{g.label}</dt>
+                      <dt><span className="cv-tag"><span className="cv-tag-no">{String(i + 1).padStart(2, '0')}</span><span className="cv-tag-label">{g.label}</span></span></dt>
                       <dd><ul className="cv-chips">{(g.items ?? []).map((t) => <li key={t}>{t}</li>)}</ul></dd>
                     </div>
                   ))}
@@ -264,6 +269,15 @@ export function ResumeSection({ s, site, featured, id, first }: { s: ResumeBlock
         </div>
       )}
     </section>
+  );
+}
+
+/** The pointer on the role sticker, as if someone just dropped it there. */
+function CursorIcon() {
+  return (
+    <svg className="cv-cursor" viewBox="0 0 24 24" width={22} height={22} aria-hidden="true">
+      <path d="M4.5 3.5 19 10.2l-6.3 1.9-2.6 6.4z" fill="currentColor" stroke="var(--bg)" strokeWidth={1.5} strokeLinejoin="round" />
+    </svg>
   );
 }
 

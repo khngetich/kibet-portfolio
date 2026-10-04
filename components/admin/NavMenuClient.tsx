@@ -143,8 +143,8 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
     const active = isActive(href);
     return (
       <li key={href}>
-        <Link href={href} className={`cms-nav-link${active ? ' is-active' : ''}`} aria-current={active ? 'page' : undefined} title={nav.collapsed ? label : undefined}>
-          <Icon name={sectionIcon(slug)} size={18} />
+        <Link href={href} className={`cms-nav-link${active ? ' is-active' : ''}`} aria-current={active ? 'page' : undefined} data-tip={badge ? `${label} · ${badge}` : label}>
+          <Icon name={sectionIcon(slug)} size={20} />
           <span className="cms-nav-label">{label}</span>
           {badge ? <em className="cms-nav-badge">{badge}</em> : count != null && <i className="cms-nav-count">{count}</i>}
         </Link>
@@ -155,19 +155,23 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
   return (
     <div className="cms-nav">
       {/* opens the ⌘K palette below; looks like a field so it reads as "search" */}
-      <button type="button" className="cms-nav-search" onClick={() => openPalette()} aria-keyshortcuts={mac ? 'Meta+K' : 'Control+K'} title={nav.collapsed ? 'Search' : undefined}>
-        <Icon name="search" size={16} />
+      <button type="button" className="cms-nav-search" onClick={() => openPalette()} aria-keyshortcuts={mac ? 'Meta+K' : 'Control+K'} data-tip={`Search · ${mac ? '⌘' : 'Ctrl'} K`}>
+        <Icon name="search" size={18} />
         <span className="cms-nav-label">Search</span>
         <kbd className="cms-nav-kbd">{mac ? '⌘' : 'Ctrl'} K</kbd>
       </button>
-      <ul>{item('dashboard', 'Dashboard', admin)}</ul>
-      {groups.map((g) => (
-        <div key={g.label} className="cms-nav-group">
-          <p>{g.label}</p>
-          <ul>{g.items.map((i) => item(i.slug, i.label, i.href, i.count, i.badge))}</ul>
-        </div>
-      ))}
-      <RecentlyOpened admin={admin} globals={globalLabels} />
+      {/* the links scroll on their own; search stays at the top and the controls below stay put */}
+      <div className="cms-nav-body">
+        <ul>{item('dashboard', 'Dashboard', admin)}</ul>
+        {groups.map((g) => (
+          <div key={g.label} className="cms-nav-group" role="group" aria-label={g.label}>
+            <p aria-hidden="true">{g.label}</p>
+            <ul>{g.items.map((i) => item(i.slug, i.label, i.href, i.count, i.badge))}</ul>
+          </div>
+        ))}
+        <RecentlyOpened admin={admin} globals={globalLabels} />
+      </div>
+      <div className="cms-nav-foot">
       {/* The Studio, as a card at the foot of the sidebar; the icon rail keeps just its mark.
           It has its own root layout: a full page load, not a <Link>. */}
       <div className="cms-nav-promo">
@@ -175,24 +179,26 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
         <b className="cms-nav-label">Studio</b>
         <p className="cms-nav-label">Edit pages on a live preview of the site.</p>
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/studio" className="cms-nav-promo-btn" aria-label="Open Studio" title={nav.collapsed ? 'Open Studio' : undefined}>
-          <Icon name="pen" size={16} className="cms-nav-promo-icon" /><span className="cms-nav-label">Open Studio</span>
+        <a href="/studio" className="cms-nav-promo-btn" aria-label="Open Studio" data-tip="Open Studio">
+          <Icon name="pen" size={18} className="cms-nav-promo-icon" /><span className="cms-nav-label">Open Studio</span>
         </a>
       </div>
       {nav.desktop && (
-        <button type="button" className="cms-nav-collapse" onClick={nav.toggle} aria-label={nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+        <button type="button" className="cms-nav-collapse" onClick={nav.toggle} aria-label={nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-expanded={!nav.collapsed} data-tip={nav.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
           <span className="ui-swap" aria-hidden="true">
             <AnimatePresence mode="popLayout" initial={false}>
-              <motion.svg key={nav.collapsed ? 'expand' : 'collapse'} viewBox="0 0 24 24" width="16" height="16" {...S}
+              <motion.svg key={nav.collapsed ? 'expand' : 'collapse'} viewBox="0 0 24 24" width="18" height="18" {...S}
                 initial={iconOut} animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }} exit={iconOut}
                 transition={{ type: 'spring', duration: 0.3, bounce: 0 }}>
-                <rect x="3" y="4" width="18" height="16" rx="2" /><path d={nav.collapsed ? 'M9 4v16M13 10l2 2-2 2' : 'M9 4v16M16 10l-2 2 2 2'} />
+                <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d={nav.collapsed ? 'M9.5 4.5v15M13.5 10l2 2-2 2' : 'M9.5 4.5v15M16 10l-2 2 2 2'} />
               </motion.svg>
             </AnimatePresence>
           </span>
           <span className="cms-nav-label">Collapse</span>
         </button>
       )}
+      </div>
+      {mounted && nav.collapsed && <RailTips />}
       <CommandPalette admin={admin} groups={groups} />
       <DocModalHost admin={admin} />
       {mounted && !nav.desktop && createPortal(
@@ -217,6 +223,46 @@ export function NavMenuClient({ admin, groups }: { admin: string; groups: NavGro
       )}
     </div>
   );
+}
+
+/**
+ * The icon rail's labels: a tooltip beside whichever item is hovered or focused (keyboard too),
+ * read from its data-tip. One element for the whole rail, positioned in the viewport so the
+ * sidebar's scrolling never clips it. The label itself stays in the link for screen readers.
+ */
+function RailTips() {
+  const [tip, setTip] = useState<{ text: string; x: number; y: number } | null>(null);
+  useEffect(() => {
+    const rail = document.querySelector('.nav');
+    if (!rail) return;
+    // Payload's own sign-out link has no label of its own in the rail
+    rail.querySelector('.nav__log-out')?.setAttribute('data-tip', 'Log out');
+    const show = (e: Event) => {
+      const el = (e.target as Element | null)?.closest?.('[data-tip]');
+      if (!el || !rail.contains(el)) return setTip(null);
+      const r = el.getBoundingClientRect();
+      // just outside the rail's edge, level with the item
+      setTip({ text: el.getAttribute('data-tip') ?? '', x: rail.getBoundingClientRect().right + 10, y: r.top + r.height / 2 });
+    };
+    const hide = () => setTip(null);
+    rail.addEventListener('pointerover', show);
+    rail.addEventListener('focusin', show);
+    rail.addEventListener('pointerleave', hide);
+    rail.addEventListener('focusout', hide);
+    rail.addEventListener('scroll', hide, true);
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') hide(); };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      rail.removeEventListener('pointerover', show);
+      rail.removeEventListener('focusin', show);
+      rail.removeEventListener('pointerleave', hide);
+      rail.removeEventListener('focusout', hide);
+      rail.removeEventListener('scroll', hide, true);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, []);
+  if (!tip) return null;
+  return createPortal(<div className="cms-rail-tip" role="tooltip" style={{ left: tip.x, top: tip.y }}>{tip.text}</div>, document.body);
 }
 
 /**

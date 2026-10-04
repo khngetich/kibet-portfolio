@@ -22,7 +22,7 @@ export function Greeting({ name, children }: { name?: string; children?: React.R
   const hello = hour == null ? 'Welcome back' : hour < 5 ? 'Working late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   return (
     <div className="cms-hero-hello">
-      <h1>{hello}{name ? `, ${name}` : ''}</h1>
+      <h1>{hello}{name && <>, <em className="cms-accent">{name}</em></>}</h1>
       <p className="cms-hero-sub"><span>{date ? `${date} · ` : ''}Here’s what needs your attention on the site.</span>{children}</p>
     </div>
   );

@@ -6,7 +6,7 @@ import { embedURL } from '@/lib/media';
 import { getPosts, getTools } from '@/lib/cms';
 import type { Header, Media, Page, Project, Site } from '@/payload-types';
 import { asMedia, getHeader, getProjects, getServices, getSite, type ProjectCard as Card, type ServiceCard } from '@/lib/cms';
-import { digits } from '@/lib/format';
+import { digits, price } from '@/lib/format';
 import { COPY, DEFAULT_PROCESS, DEFAULT_ROLES, copy, orDefault, text } from '@/lib/home-copy';
 import { Img } from '@/components/Img';
 import { Icon, type IconName } from '@/components/Icon';
@@ -30,7 +30,7 @@ import { AboutEditorial } from '@/components/motion/AboutEditorial';
 import { AboutPortrait } from '@/components/motion/AboutPortrait';
 import { GrowMedia } from '@/components/motion/GrowMedia';
 import { SmartLink } from '@/components/SmartLink';
-import { ServiceCardItem } from '@/components/ServiceCard';
+import { ServiceRow } from '@/components/motion/ServiceRow';
 import { ResumeSection } from '@/components/sections/Resume';
 
 /**
@@ -454,13 +454,13 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
             {s.intro && <p className="lede">{s.intro}</p>}
           </div>
         </Reveal>
-        <ul className="svc-grid">
-          {items.map((item, i) => (
-            <li key={item.id ?? i}>
-              <ServiceCardItem item={item} index={i} labels={{ featured: text(s.labels?.featured, ''), pageLink: text(s.pageLinkLabel, ''), inquire: text(s.ctaLabel, '') }} />
-            </li>
-          ))}
-        </ul>
+        <ServiceRow
+          items={items.map((item, i) => ({
+            key: String(item.id ?? i), title: item.title, description: item.description, deliverables: item.deliverables, slug: item.slug, featured: item.featured,
+            price: item.priceFrom != null ? price(item.priceFrom, item.currency) : null, unit: item.unit, image: asMedia(item.image) ?? null,
+          }))}
+          labels={{ featured: text(s.labels?.featured, 'Featured'), pageLink: text(s.pageLinkLabel, 'See the service'), inquire: text(s.ctaLabel, 'Inquire for this service') }}
+        />
         <div className="svc-foot">
           {!!extras.length && (
             <div className="svc-extras">

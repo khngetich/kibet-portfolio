@@ -26,7 +26,6 @@
 .cv-card-heading .accent-line { display: block; }
 .cv-card-text { color: var(--ink-2); font-size: .98rem; line-height: 1.6; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
 .cv-card-label { margin-bottom: 10px; font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
-.cv-card-topics { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .94rem; }
 .cv-card-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .cv-card-chips li { padding: 6px 14px; border-radius: 999px; font-size: .84rem; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent); }
 .cv-card-place { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--ink-2); }
@@ -110,7 +109,7 @@ html[data-theme='dark'] .cv-work-thumb img { outline-color: oklch(1 0 0 / .1); }
 
 /* skills */
 .cv-skills { margin-top: 36px; }
-.cv-skill-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px 32px; padding-block: 22px; border-top: 1px solid var(--line); }
+.cv-skill-row { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 12px 32px; padding-block: 22px; border-top: 1px solid var(--line); }
 .cv-skill-row dt { font-weight: 600; font-size: .95rem; line-height: 1.4; padding-top: 6px; }
 .cv-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .cv-chips li { padding: 7px 14px; border-radius: 999px; font-size: .86rem; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
@@ -145,6 +144,7 @@ html[data-theme='dark'] .cv-work-thumb img { outline-color: oklch(1 0 0 / .1); }
 
 @media (max-width: 1000px) {
   .cv-hero { grid-template-columns: 1fr; }
+  .cv-card-wrap { max-width: 520px; }
   .cv-card { max-width: 520px; rotate: 0deg; }
   .cv-card-kicker { text-align: center; text-wrap: balance; }
 }
@@ -167,6 +167,49 @@ html[data-theme='dark'] .cv-work-thumb img { outline-color: oklch(1 0 0 / .1); }
   .cv-stat + .cv-stat { box-shadow: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cv-card, .cv-work-thumb img { transition: none; }
+  .cv-card, .cv-work-thumb img, .cv-card-topics li { transition: none; }
+  .cv-sticker { animation: none; }
   .cv-card:hover { rotate: 2.5deg; }
 }
+
+/* ── borrowed touches: stickers, a pill stack, notched tags ── */
+
+/* stickers that float off the availability card: the role with a pointer, and the headline
+   figure as a glowing chip (after the "new team member" and pay-day references) */
+.cv-card-wrap { position: relative; margin-block: 24px; }
+.cv-sticker { position: absolute; z-index: 2; display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; white-space: nowrap; pointer-events: none; animation: cv-float 6s ease-in-out infinite; }
+.cv-sticker.is-role { left: -14%; bottom: -22px; padding: 10px 18px; rotate: -5deg; background: color-mix(in oklab, var(--red-2) 30%, var(--bg)); color: var(--ink); font-size: .9rem; font-weight: 600; box-shadow: 0 0 0 1px color-mix(in srgb, var(--red-2) 30%, transparent), 0 14px 34px -10px color-mix(in srgb, var(--red-2) 70%, transparent); }
+.cv-cursor { position: absolute; right: -14px; top: -16px; color: var(--accent-strong); rotate: 8deg; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .25)); }
+.cv-sticker.is-stat { top: -44px; right: -9%; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 16px 12px; border-radius: 18px; rotate: 6deg; background: var(--accent-strong); color: #FFFFFF; box-shadow: 0 16px 36px -12px color-mix(in srgb, var(--red) 80%, transparent); animation-delay: -3s; }
+.cv-sticker.is-stat b { font-family: var(--font-accent); font-style: italic; font-weight: 400; font-size: 1.9rem; line-height: 1; letter-spacing: -.03em; }
+.cv-sticker.is-stat small { max-width: 16ch; white-space: normal; font-size: .72rem; line-height: 1.25; opacity: .9; }
+@keyframes cv-float { 50% { translate: 0 -6px; } }
+
+/* "Let's talk about" as a loose stack of tilted, colour-filled pills (after the marketing pills) */
+.cv-card-topics { display: flex; flex-wrap: wrap; align-items: center; gap: 0; padding: 4px 0 2px 6px; }
+.cv-card-topics li { margin: -4px 0 0 -6px; padding: 7px 14px; border-radius: 12px; font-size: .9rem; font-weight: 600; color: #0A0A0A; background: var(--pill); rotate: var(--tilt); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .12), 0 8px 18px -8px var(--pill); transition: rotate .3s var(--ease), translate .3s var(--ease); }
+.cv-card-topics li:nth-child(4n + 1) { --pill: #FFB547; --tilt: -4deg; }
+.cv-card-topics li:nth-child(4n + 2) { --pill: #FF6A2B; --tilt: 3deg; }
+.cv-card-topics li:nth-child(4n + 3) { --pill: #FFA3A3; --tilt: -2deg; }
+.cv-card-topics li:nth-child(4n + 4) { --pill: #4FB3FF; --tilt: 4deg; }
+.cv-card:hover .cv-card-topics li { rotate: 0deg; translate: 0 -1px; }
+
+/* skill groups as notched two-part tags: a number block joined to the label (after the
+   Branding / Websites / Product chips) */
+.cv-tag { display: inline-flex; align-items: stretch; gap: 3px; white-space: nowrap; }
+.cv-tag > span { position: relative; display: inline-flex; align-items: center; padding: 7px 12px; border-radius: 10px; background: var(--tag); color: #0A0A0A; font-weight: 600; line-height: 1.25; }
+.cv-tag-no { font-variant-numeric: tabular-nums; font-size: .8rem; }
+/* the bridge between the two blocks, with a notch above and below */
+.cv-tag-no::after { content: ''; position: absolute; right: -5px; top: 50%; width: 7px; height: 10px; translate: 0 -50%; background: var(--tag); }
+.cv-skill-row:nth-child(4n + 1) { --tag: #D7F25C; }
+.cv-skill-row:nth-child(4n + 2) { --tag: #FF8A4C; }
+.cv-skill-row:nth-child(4n + 3) { --tag: #E58AF0; }
+.cv-skill-row:nth-child(4n + 4) { --tag: #7CC4FF; }
+.cv-skill-row dt { padding-top: 0; }
+
+@media (max-width: 1000px) {
+  .cv-sticker.is-role { left: 12px; bottom: -22px; }
+  .cv-sticker.is-stat { top: -30px; right: 12px; }
+}
+/* phones: the figure sticker would cover the card's first line (it's in the figures row anyway) */
+@media (max-width: 640px) { .cv-sticker.is-stat { display: none; } }
