@@ -32,6 +32,7 @@ import { GrowMedia } from '@/components/motion/GrowMedia';
 import { SmartLink } from '@/components/SmartLink';
 import { ServiceRow } from '@/components/motion/ServiceRow';
 import { ResumeSection } from '@/components/sections/Resume';
+import { ProfileSection } from '@/components/sections/Profile';
 
 /**
  * Renders a page's sections in order, skipping hidden ones. Each section type is defined
@@ -153,7 +154,7 @@ export async function RenderSections({ sections, studio = false, title }: { sect
             case 'testimonials': return <TestimonialsSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'contact': return <ContactSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'projectGrid': return <ProjectGridSection s={s} ctx={ctx} id={id} first={i === 0} />;
-            case 'profile': return <ProfileSection s={s} id={id} first={i === 0} />;
+            case 'profile': return <ProfileSection s={s} site={ctx.site} id={id} first={i === 0} />;
             case 'richText': return <RichTextSection s={s} id={id} hid={hid} />;
             case 'mediaSection': return <MediaSection s={s} id={id} />;
             case 'ctaBanner': return <CtaSection s={s} ctx={ctx} id={id} hid={hid} />;
@@ -596,38 +597,6 @@ function ProjectGridSection({ s, ctx, id, first }: { s: Of<'projectGrid'>; ctx: 
         ) : (
           <p className="muted">No projects published yet.</p>
         )}
-      </div>
-    </section>
-  );
-}
-
-function ProfileSection({ s, id, first }: { s: Of<'profile'>; id?: string; first: boolean }) {
-  const cv = asMedia(s.cv);
-  const Heading = first ? 'h1' : 'h2';
-  return (
-    <section className="page-head-section" id={id}>
-      <div className="wrap about">
-        <div className="about-main">
-          {s.eyebrow && <p className="kicker">{s.eyebrow}</p>}
-          <Heading className="h-xl"><Accent text={s.heading} /></Heading>
-          {s.body && <RichText data={s.body} className="prose about-body" />}
-          <div className="ctas">
-            {s.button?.label && s.button?.url && <Link className={btn(s.button.variant, 'btn-light')} href={s.button.url}>{s.button.label}</Link>}
-            {cv?.url && <a className="btn btn-soft" href={cv.url} download><Icon name="download" size={15} />Download CV</a>}
-          </div>
-        </div>
-        {/* a div, not an aside: a complementary landmark must not sit inside the section */}
-        <div className="about-side">
-          {asMedia(s.photo) && <div className="about-photo"><Img media={s.photo} sizes="(max-width: 800px) 90vw, 440px" preload={first} /></div>}
-          {!!s.experience?.length && (
-            <div>
-              <p className="kicker">Experience</p>
-              <ul className="xp">{s.experience.map((x) => <li key={x.id}><b>{x.role}</b><span>{x.company}</span><small>{x.years}</small></li>)}</ul>
-            </div>
-          )}
-          {!!s.skills?.length && <div><p className="kicker">Skills</p><ul className="tags">{s.skills.map((k) => <li key={k}>{k}</li>)}</ul></div>}
-          {!!s.tools?.length && <div><p className="kicker">Tools</p><ul className="tags">{s.tools.map((k) => <li key={k}>{k}</li>)}</ul></div>}
-        </div>
       </div>
     </section>
   );
