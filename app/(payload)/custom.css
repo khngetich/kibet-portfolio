@@ -78,7 +78,7 @@ a { transition: color .15s; text-decoration: none; }
 
 /* ── top bar ── */
 /* pinned on every screen, so search, breadcrumbs and the account menu stay in reach */
-.app-header { position: sticky; top: 0; background: rgba(255, 255, 255, .88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.app-header { position: sticky; top: 0; background: rgba(255, 255, 255, .88); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 
 /* ── list views: page title h3, small controls on radius-sm, the table as one card ── */
 .list-header__title, .doc-header__title { font-size: 24px; line-height: 32px; letter-spacing: -.015em; }
@@ -158,7 +158,7 @@ html:not(:has(.template-default--nav-open)) .cms-nav-resizer { display: none; }
 .cms-tabbar { display: none; }
 @media (max-width: 640px) {
   .template-default__nav-toggler-wrapper, .app-header__mobile-nav-toggler { display: none !important; }
-  .cms-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #FFFFFFF2; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 -1px 0 var(--line); }
+  .cms-tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: #FFFFFFF2; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 -1px 0 var(--line); }
   .cms-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; padding: 6px 4px 4px; border: 0; border-radius: 10px; background: none; color: var(--ink-2); font: inherit; font-size: 11px; line-height: 14px; font-weight: 500; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; transition-property: color, background-color, scale; transition-duration: .15s; transition-timing-function: ease-out; }
   .cms-tab:active { scale: .96; }
   .cms-tab.is-active { color: var(--ink); }
@@ -261,7 +261,7 @@ html.cms-nav-collapsed .nav__controls { align-self: stretch; }
     #000;
 }
 html:has(.template-minimal), html:has(.template-minimal) body { background: #000; }
-.template-minimal__wrap { padding: clamp(24px, 5vw, 40px); border-radius: 24px; background: rgba(16, 16, 16, .78); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), 0 40px 80px -30px rgba(0, 0, 0, .9); }
+.template-minimal__wrap { padding: clamp(24px, 5vw, 40px); border-radius: 24px; background: rgba(16, 16, 16, .78); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), 0 40px 80px -30px rgba(0, 0, 0, .9); }
 .template-minimal label, .template-minimal a { color: #D6D6D4; }
 .template-minimal .field-type input { background: #151515; color: #fff; border-color: rgba(255, 255, 255, .12); box-shadow: none; }
 .template-minimal .field-type input:focus { border-color: #FF6A2B; box-shadow: 0 0 0 3px rgba(232, 53, 43, .2); }
@@ -289,7 +289,7 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
    backdrop, so a click outside still closes. The page editor's section panel (.sf-drawer) stays
    a side panel beside the live preview. Phones get a full-screen sheet. ── */
 .drawer:not(.sf-drawer) { inset: 0; width: 100%; align-items: center; justify-content: center; padding: 32px; }
-.drawer:not(.sf-drawer) .drawer__blur-bg { background: var(--scrim, #0F0F0F66); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.drawer:not(.sf-drawer) .drawer__blur-bg { background: var(--scrim, #0F0F0F66); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 .drawer:not(.sf-drawer) .drawer__close { position: absolute; inset: 0; z-index: 1; flex: none; opacity: 0 !important; background: none; }
 .drawer:not(.sf-drawer) .drawer__content {
   width: min(1040px, 100%) !important; height: min(880px, 100%); flex: none;
@@ -310,7 +310,7 @@ html:has(.template-minimal), html:has(.template-minimal) body { background: #000
 
 /* site-wide settings (globals) in the same kind of window: their editor, embedded (DocModal → GlobalWindow) */
 .cms-window { width: min(1040px, calc(100vw - 64px)); height: min(880px, calc(100dvh - 64px)); max-width: none; max-height: none; margin: auto; padding: 0; border: 0; border-radius: 16px; background: var(--page); box-shadow: var(--shadow-lg), 0 0 0 1px var(--line); overflow: hidden; }
-.cms-window::backdrop { background: var(--scrim, #0F0F0F66); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.cms-window::backdrop { background: var(--scrim, #0F0F0F66); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 .cms-window[open] { animation: cms-window-in .18s ease-out; }
 @keyframes cms-window-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
 .cms-window-box { position: relative; display: flex; flex-direction: column; height: 100%; }
@@ -402,7 +402,7 @@ html.cms-embed body::after { display: none; }
 .sf-drawer.is-previewing .drawer__content { pointer-events: auto; }
 .sf-drawer.is-previewing .drawer__close { opacity: 0 !important; }
 .sf-drawer .drawer__content-children { display: flex; flex-direction: column; }
-.sf-panel-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px var(--gutter-h); background: rgba(255, 255, 255, .92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.sf-panel-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px var(--gutter-h); background: rgba(255, 255, 255, .92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
 .sf-panel-title { flex: 1; min-width: 180px; }
 .sf-panel-title small { font-size: .72rem; color: var(--ink-2); }
 .sf-panel-title h2 { margin: 0; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -642,7 +642,7 @@ html.cms-embed body::after { display: none; }
    (the sentinel above it, see Hero.tsx). Its height never changes while pinned. */
 .cms-hero-sentinel { display: block; height: 0; margin-bottom: calc(-1 * var(--d-gap)); }
 .cms-hero { position: sticky; top: var(--app-header-height); z-index: 20; margin: -12px calc(-1 * var(--gutter-h)) 0; padding: 12px var(--gutter-h); transition-property: background-color, box-shadow; transition-duration: .15s; transition-timing-function: ease-out; }
-.cms-hero.is-stuck { background: #F7F7F5F5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--line); }
+.cms-hero.is-stuck { background: #F7F7F5F5; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--line); }
 /* on short or narrow screens the header and its wrapped buttons would take too much room */
 @media (max-width: 640px), (max-height: 640px) { .cms-hero { position: static; } }
 
@@ -705,7 +705,7 @@ html.cms-embed body::after { display: none; }
 .cms-folder-back::before { content: ''; position: absolute; left: 0; bottom: 100%; width: 42%; height: 13%; border-radius: 8px 8px 0 0; background: #D6D6D2; }
 .cms-folder-sheet { position: absolute; left: 10%; right: 10%; top: 14%; height: 62%; display: grid; place-items: center; overflow: hidden; border-radius: 6px; background: var(--card); color: var(--d-ink-2); box-shadow: var(--shadow-md); rotate: -3deg; transition-property: translate, rotate; transition-duration: .3s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
 .cms-folder-sheet img { outline: 1px solid oklch(0 0 0 / .1); outline-offset: -1px; }
-.cms-folder-front { position: absolute; inset: 40% 0 0; border-radius: 12px; background: #ECECE8E6; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: inset 0 1px 0 #FFFFFFB3, inset 0 0 0 1px #0F0F0F0D, var(--shadow-sm); }
+.cms-folder-front { position: absolute; inset: 40% 0 0; border-radius: 12px; background: #ECECE8E6; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: inset 0 1px 0 #FFFFFFB3, inset 0 0 0 1px #0F0F0F0D, var(--shadow-sm); }
 .cms-folder:hover .cms-folder-sheet, .cms-folder:focus-visible .cms-folder-sheet { translate: 0 -10%; rotate: -1deg; }
 .cms-folder-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .cms-folder-text b { display: flex; align-items: center; gap: 8px; font-weight: 500; }
@@ -806,7 +806,7 @@ html.cms-embed body::after { display: none; }
 
 /* ── command palette (components/admin/CommandPalette.tsx) ── */
 .cms-palette { width: min(640px, calc(100vw - 32px)); max-height: min(560px, calc(100dvh - 96px)); margin: 12vh auto auto; padding: 0; border: 0; border-radius: 16px; background: var(--card); color: var(--ink); box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--line); overflow: hidden; }
-.cms-palette::backdrop { background: oklch(0.2 0 0 / .32); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.cms-palette::backdrop { background: oklch(0.2 0 0 / .32); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 .cms-palette[open] { animation: cms-pop .16s ease-out; }
 @keyframes cms-pop { from { opacity: 0; scale: .98; translate: 0 -4px; } }
 .cms-palette-box { display: flex; flex-direction: column; max-height: inherit; }
@@ -1005,7 +1005,7 @@ html[data-theme='dark'] :is(.cms-ph-cover, .cms-work-cover img, .cms-folder-shee
 .cms-folder-back, .cms-folder-back::before { background: color-mix(in oklab, var(--hue, var(--ink-2)) 62%, var(--card)); }
 .cms-folder-front {
   background: linear-gradient(170deg, color-mix(in srgb, var(--card) 62%, transparent), color-mix(in srgb, color-mix(in oklab, var(--hue, var(--ink-2)) 30%, var(--card)) 70%, transparent));
-  backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
   box-shadow: inset 0 1px 0 oklch(1 0 0 / .55), inset 0 0 0 1px color-mix(in srgb, var(--hue, var(--ink-2)) 30%, transparent), 0 14px 28px -16px color-mix(in srgb, var(--hue, var(--ink-2)) 70%, transparent);
 }
 html[data-theme='dark'] .cms-folder-front { box-shadow: inset 0 1px 0 oklch(1 0 0 / .14), inset 0 0 0 1px color-mix(in srgb, var(--hue, var(--ink-2)) 40%, transparent), 0 14px 28px -16px color-mix(in srgb, var(--hue, var(--ink-2)) 80%, transparent); }
