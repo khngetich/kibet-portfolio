@@ -964,8 +964,9 @@ html[data-theme='dark'] :is(.cms-ph-cover, .cms-work-cover img, .cms-folder-shee
 /* the brand at work: current page, new things, the wordmark */
 .cms-nav-link.is-active { background: var(--brand-soft); color: var(--brand-ink); box-shadow: none; }
 .cms-nav-link.is-active .cms-nav-count { background: var(--card); color: var(--brand-ink); }
-:is(.cms-nav-badge, .cms-count.is-new, .cms-tab-badge) { background: var(--brand); color: #FFFFFF; }
-.cms-nav-link.is-active .cms-nav-badge { background: var(--brand); color: #FFFFFF; }
+/* small white text on the brand: a deepened red keeps it at 4.5:1+ (the plain brand red is ~4.2:1) */
+:is(.cms-nav-badge, .cms-count.is-new, .cms-tab-badge) { background: color-mix(in srgb, var(--brand) 85%, #000); color: #FFFFFF; }
+.cms-nav-link.is-active .cms-nav-badge { background: color-mix(in srgb, var(--brand) 85%, #000); color: #FFFFFF; }
 .cms-new-dot { background: var(--brand); }
 .cms-inbox-row.is-new .cms-avatar { background: var(--brand-soft); color: var(--brand-ink); }
 .cms-wordmark i { color: var(--brand); }
