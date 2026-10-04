@@ -91,7 +91,7 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
-      // `next build` runs four workers (next.config.ts `cpus`), each with its own pool, and Supabase's
+      // `next build` runs two workers (next.config.ts `cpus`), each with its own pool, and Supabase's
       // session pooler allows 15 clients in all ("EMAXCONNSESSION"). While building, each worker
       // keeps up to three connections and lets them go when idle; the running site keeps pg's
       // default. Not one: a query that needs a second connection while holding the only one waits

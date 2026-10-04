@@ -56,9 +56,10 @@ const nextConfig: NextConfig = {
     ];
   },
   // The Studio uploads images and videos through server actions (default cap is 1MB).
-  // four build workers, each with a pool of three (payload.config.ts): 12 connections, inside the
-  // 15 that Supabase's session pooler allows
-  experimental: { serverActions: { bodySizeLimit: '50mb' }, cpus: 4 },
+  // two build workers, each with a pool of three (payload.config.ts): 6 connections. Supabase's
+  // session pooler allows 15 in all, shared with the live site, so four workers (12) left too
+  // little headroom and builds failed with EMAXCONNSESSION whenever the site was busy
+  experimental: { serverActions: { bodySizeLimit: '50mb' }, cpus: 2 },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
