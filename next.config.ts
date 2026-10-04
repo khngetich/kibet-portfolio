@@ -62,6 +62,10 @@ const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: '50mb' }, cpus: 2 },
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Next 16 only serves qualities listed here (default [75]). The editor thumbnails (lib/media.ts
+    // thumbURL, also the admin's media list) ask for 70, which was refused with a 400, so every
+    // thumbnail in the Studio and admin showed as a broken image.
+    qualities: [70, 75],
     remotePatterns: [
       { protocol: self.protocol.replace(':', '') as 'http' | 'https', hostname: self.hostname, port: self.port, pathname: '/api/media/file/**' },
       ...(storage ? [{ protocol: 'https' as const, hostname: storage.hostname, pathname: '/storage/v1/object/public/**' }] : []),
