@@ -90,18 +90,24 @@ export default buildConfig({
   graphQL: { disable: true },
   db: postgresAdapter({
     pool: {
-      // DB_POOLER=transaction moves a Supabase pooler address from session mode (port 5432, 15
-      // clients in all, shared with the live site) to transaction mode (6543, many more). For a
-      // local dev server or build when the session pooler is full; .env stays as it is.
-      connectionString: process.env.DB_POOLER === 'transaction'
+      // Supabase's pooler has two doors on one host: session mode (port 5432) allows 15 clients in
+      // all, and transaction mode (6543) many more. Every Vercel instance opens its own pool, so
+      // on Vercel (builds and the live site) the session door ran out ("EMAXCONNSESSION") and the
+      // admin failed with React error 441. So on Vercel the address moves to transaction mode,
+      // and anywhere else DB_POOLER=transaction does the same (a local dev server). DB_POOLER=session
+      // keeps 5432. `payload migrate` runs locally and keeps session mode. .env and Vercel's
+      // DATABASE_URL stay as they are.
+      connectionString: (process.env.DB_POOLER === 'transaction' || (process.env.VERCEL && process.env.DB_POOLER !== 'session'))
         ? (process.env.DATABASE_URL || '').replace(/(pooler\.supabase\.com):5432\b/, '$1:6543')
         : process.env.DATABASE_URL || '',
-      // `next build` runs two workers (next.config.ts `cpus`), each with its own pool, and Supabase's
-      // session pooler allows 15 clients in all ("EMAXCONNSESSION"). While building, each worker
-      // keeps up to three connections and lets them go when idle; the running site keeps pg's
-      // default. Not one: a query that needs a second connection while holding the only one waits
-      // forever, and the build hangs at "Collecting page data".
-      ...(process.env.NEXT_PHASE === 'phase-production-build' ? { max: 3, idleTimeoutMillis: 1000 } : {}),
+      // `next build` runs two workers (next.config.ts `cpus`), each with its own pool. While
+      // building, each worker keeps up to three connections and lets them go when idle. Not one: a
+      // query that needs a second connection while holding the only one waits forever, and the
+      // build hangs at "Collecting page data". A Vercel instance keeps up to five (pg's default is
+      // ten), so a few warm instances can't take every connection between them.
+      ...(process.env.NEXT_PHASE === 'phase-production-build'
+        ? { max: 3, idleTimeoutMillis: 1000 }
+        : process.env.VERCEL ? { max: 5, idleTimeoutMillis: 10000 } : {}),
     },
     migrationDir: path.resolve(dirname, 'migrations'),
     // Dev mode would otherwise push schema changes straight into whatever database it's pointed
