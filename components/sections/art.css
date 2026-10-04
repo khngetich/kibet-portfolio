@@ -1,0 +1,37 @@
+/* ── the small vector scenes on the process cards (ProcessArt.tsx) ──
+   Drawn in the card's hue: --h is the hue, --tint it mixed into the surface and --deep it
+   deepened towards ink (lightened in the dark theme), so both themes keep the contrast. The
+   card decides when .pa-float pieces lift (on hover). */
+.pa { display: block; height: 100%; width: auto; max-width: 100%; margin-inline: auto; overflow: visible; }
+.pa-shadow { fill: color-mix(in oklab, var(--ink) 9%, transparent); }
+.pa-sheet { fill: var(--bg); stroke: color-mix(in oklab, var(--deep) 20%, transparent); stroke-width: 1; }
+.pa-glass { fill: color-mix(in oklab, var(--bg) 62%, transparent); stroke: color-mix(in oklab, var(--deep) 30%, transparent); stroke-width: 1; }
+.pa-tint { fill: var(--tint); }
+.pa-edge { stroke: color-mix(in oklab, var(--deep) 16%, transparent); stroke-width: 1; }
+.pa-mid { fill: color-mix(in oklab, var(--h) 42%, var(--surface)); }
+.pa-hue { fill: var(--h); }
+.pa-deep { fill: var(--deep); }
+.pa-stroke { fill: none; stroke: var(--deep); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.pa-thick { stroke-width: 2.4; }
+.pa-hue-stroke { fill: none; stroke: var(--h); stroke-width: 1.6; stroke-linecap: round; }
+.pa-faint { fill: none; stroke: color-mix(in oklab, var(--deep) 16%, transparent); stroke-width: 1; }
+.pa-handle-line { stroke: color-mix(in oklab, var(--deep) 45%, transparent); }
+.pa-anchor { stroke: var(--h); stroke-width: 1.4; }
+.pa-dash { stroke-dasharray: 2 4; }
+.pa-rule { fill: none; stroke: color-mix(in oklab, var(--ink) 18%, transparent); stroke-width: 2.4; stroke-linecap: round; }
+.pa-ring { fill: none; stroke: var(--deep); stroke-width: 3; }
+.pa-handle { fill: none; stroke: var(--deep); stroke-width: 8; stroke-linecap: round; }
+.pa-guide { fill: none; stroke: var(--h); stroke-width: 1; stroke-dasharray: 4 3; opacity: .75; }
+.pa-zip { fill: none; stroke: color-mix(in oklab, var(--bg) 70%, transparent); stroke-width: 3; stroke-dasharray: 1.5 2.5; }
+.pa-shine { fill: #FFFFFF; opacity: .55; }
+.pa-soft { opacity: .3; }
+html[data-theme='dark'] .pa-shine { opacity: .22; }
+/* in the dark the paper is a lifted grey, not the black page */
+html[data-theme='dark'] .pa-sheet { fill: color-mix(in oklab, var(--ink) 14%, var(--surface)); }
+html[data-theme='dark'] .pa-glass { fill: color-mix(in oklab, var(--ink) 10%, transparent); }
+.pa-label { font: 700 7.5px/1 var(--font, system-ui), sans-serif; letter-spacing: .04em; fill: #FFFFFF; }
+.pa-type { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.04em; fill: var(--deep); }
+/* on hover, the loose pieces lift: the near ones first */
+.pa-float { transition: translate .5s cubic-bezier(0.2, 0, 0, 1); }
+.pa-late { transition-delay: .06s; }
+@media (prefers-reduced-motion: reduce) { .pa-float { transition: none; } }

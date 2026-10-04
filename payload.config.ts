@@ -48,6 +48,8 @@ export default buildConfig({
         Logo: '/components/admin/Brand#Logo',
         Icon: '/components/admin/Brand#Icon',
       },
+      // the login screen's showcase panel and theme switch
+      beforeLogin: ['/components/admin/LoginAside#LoginAside'],
       beforeNavLinks: ['/components/admin/NavMenu#NavMenu'],
       actions: ['/components/admin/ThemeSwitch#ThemeSwitch'],
       providers: ['/components/admin/FontProvider#FontProvider'],

@@ -554,65 +554,7 @@ html[data-theme='dark'] .about-folder-tabs button.is-on { background: linear-gra
   .about-stats { grid-template-columns: 1fr; margin-top: 200px; }
 }
 
-/* ── services: an isometric deck of glass cards (components/motion/ServiceDeck.tsx) ── */
-.services-deck { position: relative; padding-block: var(--section-y); overflow: clip; }
-.services-deck-inner { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
-.services-deck-intro { text-align: left; }
-.services-deck-intro .chapter::before { left: 0; }
-.services-deck-intro .lede { margin-top: 16px; }
-.deck-hint { margin: 22px 0 18px; font-size: .86rem; color: var(--ink-3); }
-.deck { position: relative; height: 580px; perspective: 1500px; perspective-origin: 50% 40%; }
-/* colour behind the glass, so the blur has something to show */
-.deck::before { content: ''; position: absolute; inset: 10% 5%; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 34%, transparent), transparent); filter: blur(10px); pointer-events: none; }
-.deck-stage { position: absolute; inset: 0; transform-style: preserve-3d; }
-.deck-slot { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
-.deck-card { --glass: rgba(18, 18, 18, .7);
-  position: absolute; left: 0; top: 0; width: 288px; height: 304px; transform: translate(-50%, -50%);
-  display: flex; flex-direction: column; padding: 26px 24px 22px; border: 1px solid transparent; border-radius: calc(26px * var(--radius-scale, 1));
-  background: linear-gradient(var(--glass), var(--glass)) padding-box,
-    linear-gradient(145deg, rgba(255, 255, 255, .26), color-mix(in srgb, var(--accent) 40%, transparent) 55%, rgba(255, 255, 255, .05)) border-box;
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-  box-shadow: 0 0 28px -10px color-mix(in srgb, var(--accent) 45%, transparent), 0 30px 60px -30px rgba(0, 0, 0, .9);
-  color: #fff; text-align: left; overflow: hidden; transition: box-shadow .25s ease-out; }
-.deck-card.is-hover, .deck-card.is-active { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 44px -6px color-mix(in srgb, var(--accent) 65%, transparent), 0 40px 80px -30px rgba(0, 0, 0, .95); }
-.deck-hit { position: absolute; inset: 0; z-index: 2; border-radius: inherit; cursor: pointer; }
-.deck-hit:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
-.deck-title { position: relative; z-index: 1; font-family: var(--font-heading); font-size: 1.55rem; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; max-width: 13ch; }
-.deck-sub { position: relative; z-index: 1; margin-top: 10px; max-width: 26ch; font-size: .92rem; line-height: 1.45; color: rgba(255, 255, 255, .7); }
-.deck-more { position: relative; z-index: 3; overflow: hidden; }
-.deck-list { display: flex; flex-direction: column; gap: 9px; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .12); }
-.deck-list li { display: flex; align-items: flex-start; gap: 9px; font-size: .9rem; color: rgba(255, 255, 255, .86); }
-.deck-list svg { flex: none; margin-top: 3px; color: var(--accent); }
-.deck-cta { margin-top: 22px; }
-.deck-close { position: absolute; top: 14px; right: 14px; z-index: 4; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: #fff; background: rgba(255, 255, 255, .08); transition: background-color .15s; }
-.deck-close:hover { background: rgba(255, 255, 255, .16); }
-.deck-num { position: absolute; z-index: 1; right: 22px; bottom: 14px; font-size: 4rem; font-weight: 300; letter-spacing: -.06em; line-height: 1; color: rgba(255, 255, 255, .92); pointer-events: none; }
-.deck-card.is-active .deck-num { font-size: 3rem; color: rgba(255, 255, 255, .35); }
-/* the service's cover behind the glass: clear at the foot, under a scrim where the text sits; faded once open */
-.deck-cover { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; pointer-events: none; transition: opacity .35s var(--ease); }
-.deck-cover img { width: 100%; height: 100%; object-fit: cover; scale: 1.04; transition: scale .6s var(--ease); }
-.deck-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 10, 10, .95) 0%, rgba(10, 10, 10, .9) 52%, rgba(10, 10, 10, .4) 82%, rgba(10, 10, 10, .6) 100%); }
-.deck-card.is-hover .deck-cover img { scale: 1.08; }
-.deck-card.is-active .deck-cover { opacity: .18; }
-.deck-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-top: 22px; }
-.deck-actions .deck-cta { margin-top: 0; }
-.deck-page { font-size: .88rem; color: rgba(255, 255, 255, .86); }
-/* below 900px: the same cards as a list, each opening in place. Laid out by the media query, not
-   by the component's JS class, so a phone gets the list from the first paint (the server renders
-   the 3D deck, and its inline transforms and sizes are overridden here until hydration). */
-@media (max-width: 899.98px) {
-  .deck { height: auto; perspective: none; }
-  .deck::before { inset: 0; }
-  .deck-stage { position: relative; display: flex; flex-direction: column; gap: 12px; }
-  .deck-slot { position: relative; left: auto; top: auto; width: auto; height: auto; transform: none !important; opacity: 1 !important; }
-  .deck-card { position: relative; width: 100% !important; height: auto !important; min-height: 168px; transform: none; padding-right: 96px; }
-  .deck-num { font-size: 2.6rem; }
-  /* list cards are wide and short: the scrim runs left to right, so the text side stays dark */
-  .deck-cover::after { background: linear-gradient(90deg, rgba(10, 10, 10, .96) 0%, rgba(10, 10, 10, .9) 58%, rgba(10, 10, 10, .5) 100%); }
-}
-@media (max-width: 900px) {
-  .services-deck-inner { grid-template-columns: 1fr; }
-}
+/* ── services: the bento of cards is in components/sections/services.css ── */
 
 /* ── testimonials: light horizontal scroll of quote cards ── */
 .reviews { padding-block: var(--section-y); }
@@ -1046,7 +988,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 /* ── Services as products: real work on top, "What you get", extras (services → "cards") ── */
 .svc { padding-block: var(--section-y) calc(var(--section-y) * .45); }
 /* the 3D deck and the contact section that follows share a background: one gap, not two stacked */
-.sec:has(> .services-deck) + .sec > .contact-section, .sec:has(> .svc) + .sec > .contact-section, .sec:has(> .roles) + .sec > .contact-section { padding-top: calc(var(--section-y) * .6); }
+.sec:has(> .svb) + .sec > .contact-section, .sec:has(> .svc) + .sec > .contact-section, .sec:has(> .roles) + .sec > .contact-section { padding-top: calc(var(--section-y) * .6); }
 .svc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2vw, 24px); }
 .svc-grid > li, .svc-grid > li > div { display: flex; height: 100%; }
 .svc-card { display: flex; flex-direction: column; width: 100%; padding: 10px; border-radius: var(--r-lg); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow .3s var(--ease), transform .3s var(--ease); }
@@ -1195,9 +1137,10 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 /* ── selected projects: glass folders with the work peeking out (components/GlassFolder.tsx) ──
    A solid back panel in the project's colour with a tab on the right, three sheets (cover in the
    middle, samples either side) fanned out of the top, and a frosted front with a tab on the left
-   that holds the label, the name and an arrow. The front's outline is a clip-path (a mask would
-   leave the backdrop blur unclipped in Chrome); with shape() the step from tab to panel is one
-   smooth curve, elsewhere a straight slope. */
+   that holds the label, the name and an arrow. The front's glass is two rounded pieces (tab and
+   panel, ::before and ::after), each blurring what's behind it: Chrome clips a backdrop blur to
+   rounded corners but not to a clip-path or mask, which let it spill out past the tab. The tab is
+   the panel's top shade, so the two read as one sheet. */
 .gf-shelf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(28px, 4vw, 56px) clamp(20px, 3vw, 40px); margin: 0; padding: 0; list-style: none; }
 .gf-shelf[data-count='1'] { grid-template-columns: minmax(0, 560px); justify-content: center; }
 /* an odd one out sits centred under the pair; three fit on one row on wide screens */
@@ -1209,7 +1152,7 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .gf { --c: var(--pc-accent, var(--accent)); position: relative; display: block; aspect-ratio: 6 / 5; isolation: isolate; color: var(--ink); border-radius: 30px; }
 /* the soft shadow the folder casts on the page */
 .gf::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: -7%; height: 9%; z-index: -3; border-radius: 50%; background: color-mix(in srgb, var(--c) 30%, rgba(0, 0, 0, .28)); filter: blur(18px); opacity: .45; transition-property: opacity, scale; transition-duration: .5s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
-.gf-back { position: absolute; inset: 14% 0 0; z-index: -2; border-radius: 28px; background: var(--c); }
+.gf-back { position: absolute; inset: 14% 0 0; z-index: -2; border-radius: 28px 0 28px 28px; background: var(--c); }
 .gf-back::before { content: ''; position: absolute; right: 0; bottom: 100%; width: 42%; height: 13%; border-radius: 20px 20px 0 0; background: inherit; translate: 0 2px; }
 .gf-sheets { position: absolute; inset: 2% 10% 30%; z-index: -1; }
 .gf-sheet { position: absolute; top: 6%; left: 50%; width: 46%; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 10px; background: var(--surface-2); box-shadow: 0 0 0 4px #FFFFFF, 0 14px 28px -12px rgba(0, 0, 0, .45); translate: -50% 0; transition-property: translate, rotate; transition-duration: .55s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
@@ -1217,16 +1160,14 @@ body::after { content: ''; position: fixed; inset: 0; z-index: 85; pointer-event
 .gf-sheet.is-l { rotate: -9deg; translate: -118% 10%; }
 .gf-sheet.is-r { rotate: 8deg; translate: 16% 8%; }
 .gf-sheet img { outline: 1px solid oklch(0 0 0 / .1); outline-offset: -1px; }
-/* the glass front */
-.gf-front { position: absolute; inset: 40% 0 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: clamp(18px, 2.4vw, 30px); padding-top: 0;
-  background: linear-gradient(170deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .18) 55%), color-mix(in oklab, var(--c) 34%, rgba(255, 255, 255, .5));
-  -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
-  clip-path: polygon(0 0, 36% 0, 53% 14%, 100% 14%, 100% 100%, 0 100%); border-radius: 28px;
+/* the glass front: the text sits on top; the glass is drawn by ::before (tab) and ::after (panel) */
+.gf-front { --tab: 14%; --sheen: rgba(255, 255, 255, .5); --sheen-2: rgba(255, 255, 255, .18); --glass: color-mix(in oklab, var(--c) 34%, rgba(255, 255, 255, .5));
+  position: absolute; inset: 40% 0 0; isolation: isolate; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: clamp(18px, 2.4vw, 30px); padding-top: 0;
   transition: translate .55s cubic-bezier(0.2, 0, 0, 1); }
-@supports (clip-path: shape(from 0 0, line to 1px 1px)) {
-  .gf-front { border-radius: 0; clip-path: shape(from 28px 0, hline to 35.6%, curve to 44.6% 7.7% with 40.8% 0 / 42.4% 3.3%, curve to 52.8% 14% with 46.6% 11.7% / 48.2% 14%, hline to calc(100% - 28px), curve to 100% calc(14% + 28px) with 100% 14%, vline to calc(100% - 28px), curve to calc(100% - 28px) 100% with 100% 100%, hline to 28px, curve to 0 calc(100% - 28px) with 0 100%, vline to 28px, curve to 28px 0 with 0 0, close); }
-}
-html[data-theme='dark'] .gf-front { color: #FFFFFF; background: linear-gradient(170deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .02) 55%), color-mix(in oklab, var(--c) 36%, rgba(14, 14, 14, .62)); }
+html[data-theme='dark'] .gf-front { --sheen: rgba(255, 255, 255, .14); --sheen-2: rgba(255, 255, 255, .02); --glass: color-mix(in oklab, var(--c) 36%, rgba(14, 14, 14, .62)); color: #FFFFFF; }
+.gf-front::before, .gf-front::after { content: ''; position: absolute; z-index: -1; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+.gf-front::before { left: 0; top: 0; width: 46%; height: var(--tab); border-radius: 28px 18px 0 0; background: linear-gradient(var(--sheen), var(--sheen)), var(--glass); }
+.gf-front::after { inset: var(--tab) 0 0; border-radius: 0 28px 28px 28px; background: linear-gradient(var(--sheen) 0 var(--tab), var(--sheen-2) 70%), var(--glass); }
 .gf-label { font-size: .74rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
 .gf-name { margin: 0; font-size: clamp(1.6rem, 3.2vw, 2.6rem); font-weight: 700; line-height: 1; letter-spacing: -.04em; text-wrap: balance; }
 .gf-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }

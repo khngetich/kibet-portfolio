@@ -1,3 +1,5 @@
+import './art.css';
+
 /**
  * The artwork above each process folder: a small vector scene per step, drawn as isometric slabs
  * and frosted glass panels in the step's hue (--h, --deep and --tint come from .pfx-step, so both

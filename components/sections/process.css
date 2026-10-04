@@ -11,56 +11,24 @@ html[data-theme='dark'] .pfx-step { --tint: color-mix(in oklab, var(--h) 20%, va
 
 /* the art: a vector scene per step (components/sections/ProcessArt.tsx) whose foot tucks in behind the folder's tab */
 .pfx-art { position: relative; height: clamp(160px, 16vw, 200px); margin: 22px 0 -28px; }
-.pa { display: block; height: 100%; width: auto; max-width: 100%; margin-inline: auto; overflow: visible; }
-.pa-shadow { fill: color-mix(in oklab, var(--ink) 9%, transparent); }
-.pa-sheet { fill: var(--bg); stroke: color-mix(in oklab, var(--deep) 20%, transparent); stroke-width: 1; }
-.pa-glass { fill: color-mix(in oklab, var(--bg) 62%, transparent); stroke: color-mix(in oklab, var(--deep) 30%, transparent); stroke-width: 1; }
-.pa-tint { fill: var(--tint); }
-.pa-edge { stroke: color-mix(in oklab, var(--deep) 16%, transparent); stroke-width: 1; }
-.pa-mid { fill: color-mix(in oklab, var(--h) 42%, var(--surface)); }
-.pa-hue { fill: var(--h); }
-.pa-deep { fill: var(--deep); }
-.pa-stroke { fill: none; stroke: var(--deep); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.pa-thick { stroke-width: 2.4; }
-.pa-hue-stroke { fill: none; stroke: var(--h); stroke-width: 1.6; stroke-linecap: round; }
-.pa-faint { fill: none; stroke: color-mix(in oklab, var(--deep) 16%, transparent); stroke-width: 1; }
-.pa-handle-line { stroke: color-mix(in oklab, var(--deep) 45%, transparent); }
-.pa-anchor { stroke: var(--h); stroke-width: 1.4; }
-.pa-dash { stroke-dasharray: 2 4; }
-.pa-rule { fill: none; stroke: color-mix(in oklab, var(--ink) 18%, transparent); stroke-width: 2.4; stroke-linecap: round; }
-.pa-ring { fill: none; stroke: var(--deep); stroke-width: 3; }
-.pa-handle { fill: none; stroke: var(--deep); stroke-width: 8; stroke-linecap: round; }
-.pa-guide { fill: none; stroke: var(--h); stroke-width: 1; stroke-dasharray: 4 3; opacity: .75; }
-.pa-zip { fill: none; stroke: color-mix(in oklab, var(--bg) 70%, transparent); stroke-width: 3; stroke-dasharray: 1.5 2.5; }
-.pa-shine { fill: #FFFFFF; opacity: .55; }
-.pa-soft { opacity: .3; }
-html[data-theme='dark'] .pa-shine { opacity: .22; }
-/* in the dark the paper is a lifted grey, not the black page */
-html[data-theme='dark'] .pa-sheet { fill: color-mix(in oklab, var(--ink) 14%, var(--surface)); }
-html[data-theme='dark'] .pa-glass { fill: color-mix(in oklab, var(--ink) 10%, transparent); }
-.pa-label { font: 700 7.5px/1 var(--font, system-ui), sans-serif; letter-spacing: .04em; fill: #FFFFFF; }
-.pa-type { font-family: var(--font-heading); font-weight: 600; letter-spacing: -.04em; fill: var(--deep); }
-/* on hover, the loose pieces lift: the near ones first */
-.pa-float { transition: translate .5s cubic-bezier(0.2, 0, 0, 1); }
-.pa-late { transition-delay: .06s; }
+/* the scene's shapes are styled in art.css (shared with the services' cards) */
 .pfx-step:hover .pa-float { translate: 0 -5px; }
 
 /* the folder, as the homepage's glass folders (.gf in sections.css): a solid back in the step's
-   hue with a tab on the right, the scene rising out of it, and a frosted front whose tab on the
-   left is part of its clip-path (a separate tab would leave a seam in the glass) */
+   hue with a tab on the right, the scene rising out of it, and a frosted front with a tab on the
+   left. As on .gf, the glass is two rounded pieces (::before tab, ::after panel): Chrome clips a
+   backdrop blur to rounded corners but not to a clip-path, which let it spill past the tab. */
 .pfx-step { isolation: isolate; }
 .pfx-step::after { content: ''; position: absolute; left: 14%; right: 14%; bottom: -4%; height: 8%; z-index: -1; border-radius: 50%; background: color-mix(in srgb, var(--h) 34%, rgba(0, 0, 0, .25)); filter: blur(18px); opacity: .4; transition-property: opacity, scale; transition-duration: .5s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
 .pfx-back { position: absolute; left: 14px; right: 14px; bottom: 14px; top: calc(36px + clamp(160px, 16vw, 200px) * .52); border-radius: 16px 0 16px 16px; background: color-mix(in oklab, var(--h) 62%, var(--surface)); transition: translate .55s cubic-bezier(0.2, 0, 0, 1); }
-.pfx-back::before { content: ''; position: absolute; right: 0; bottom: 100%; width: 40%; height: 18px; border-radius: 14px 14px 0 0; background: inherit; translate: 0 1px; }
+.pfx-back::before { content: ''; position: absolute; right: 0; bottom: 100%; width: 38%; height: 24px; border-radius: 14px 14px 0 0; background: inherit; translate: 0 1px; }
 .pfx-art { z-index: 1; }
-.pfx-folder { position: relative; z-index: 2; flex: 1; padding: 46px 20px 20px; border-radius: 16px; color: var(--ink);
-  background: linear-gradient(170deg, rgba(255, 255, 255, .58), rgba(255, 255, 255, .22) 55%), color-mix(in oklab, var(--h) 22%, rgba(255, 255, 255, .5));
-  -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
-  clip-path: polygon(0 0, 45% 0, 63% 28px, 100% 28px, 100% 100%, 0 100%); }
-@supports (clip-path: shape(from 0 0, line to 1px 1px)) {
-  .pfx-folder { border-radius: 0; clip-path: shape(from 0 16px, curve to 16px 0 with 0 0, hline to 43%, curve to 53% 14px with 49% 0 / 50.5% 6px, curve to 63% 28px with 55.5% 22px / 57.5% 28px, hline to calc(100% - 16px), curve to 100% 44px with 100% 28px, vline to calc(100% - 16px), curve to calc(100% - 16px) 100% with 100% 100%, hline to 16px, curve to 0 calc(100% - 16px) with 0 100%, close); }
-}
-html[data-theme='dark'] .pfx-folder { background: linear-gradient(170deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .03) 55%), color-mix(in oklab, var(--h) 30%, rgba(14, 14, 14, .62)); }
+.pfx-folder { --tab: 28px; --sheen: rgba(255, 255, 255, .58); --sheen-2: rgba(255, 255, 255, .22); --glass: color-mix(in oklab, var(--h) 22%, rgba(255, 255, 255, .5));
+  position: relative; z-index: 2; isolation: isolate; flex: 1; padding: 46px 20px 20px; color: var(--ink); }
+html[data-theme='dark'] .pfx-folder { --sheen: rgba(255, 255, 255, .14); --sheen-2: rgba(255, 255, 255, .03); --glass: color-mix(in oklab, var(--h) 30%, rgba(14, 14, 14, .62)); }
+.pfx-folder::before, .pfx-folder::after { content: ''; position: absolute; z-index: -1; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+.pfx-folder::before { left: 0; top: 0; width: 52%; height: var(--tab); border-radius: 16px 14px 0 0; background: linear-gradient(var(--sheen), var(--sheen)), var(--glass); }
+.pfx-folder::after { inset: var(--tab) 0 0; border-radius: 0 16px 16px 16px; background: linear-gradient(var(--sheen) 0 var(--tab), var(--sheen-2) 70%), var(--glass); }
 @media (hover: hover) {
   .pfx-step:hover .pfx-back { translate: 0 -4px; }
   .pfx-step:hover .pa { translate: 0 -6px; }

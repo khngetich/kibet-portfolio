@@ -1,0 +1,73 @@
+/* ── services as typographic cards (components/sections/ServiceCards.tsx) ──
+   No pictures: the type carries it. A neutral card per service with a glow in its hue (--h) in
+   the top corner, a large serif-italic number, the title, a ruled list of what you get and the
+   price set large. Under the pointer a soft spotlight follows (--mx / --my, Spotlight.tsx). */
+.svb { padding-block: var(--section-y); }
+.svb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(14px, 1.6vw, 20px); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 1100px) { .svb-grid[data-count='3'] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* an odd one out takes the whole row */
+.svb-grid:not([data-count='3']) > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+@media (max-width: 760px) { .svb-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.svb-card {
+  --deep: color-mix(in oklab, var(--h) 78%, #000); --mx: 70%; --my: 0%;
+  position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start;
+  min-height: clamp(420px, 36vw, 480px); padding: clamp(24px, 2.6vw, 34px); border-radius: calc(30px * var(--radius-scale, 1));
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--line), 0 1px 2px rgba(0, 0, 0, .04), 0 24px 48px -36px rgba(0, 0, 0, .4);
+  transition-property: translate, box-shadow; transition-duration: .5s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+html[data-theme='dark'] .svb-card { --deep: color-mix(in oklab, var(--h) 62%, #FFFFFF); }
+/* the glow in the corner: two blurred blobs of the hue, which spread when the card is hovered */
+.svb-card::before { content: ''; position: absolute; top: -30%; right: -20%; z-index: -1; width: 80%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 40% 60%, color-mix(in srgb, var(--h) 34%, transparent), transparent 62%), radial-gradient(circle at 70% 30%, color-mix(in srgb, var(--h) 22%, transparent), transparent 58%);
+  filter: blur(24px); opacity: .75; transition-property: opacity, scale; transition-duration: .7s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+/* the spotlight under the pointer */
+.svb-card::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: radial-gradient(360px circle at var(--mx) var(--my), color-mix(in srgb, var(--h) 14%, transparent), transparent 70%); opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+
+.svb-top { display: flex; align-items: flex-start; gap: 10px; align-self: stretch; }
+.svb-num { font-family: var(--font-accent); font-style: italic; font-size: clamp(3.2rem, 5vw, 4.4rem); font-weight: 400; line-height: .8; letter-spacing: -.05em; color: var(--deep); font-variant-numeric: lining-nums; }
+.svb-flag { align-self: center; padding: 5px 11px; border-radius: 999px; background: var(--deep); color: var(--surface); font-size: .74rem; font-weight: 600; }
+.svb-arrow { display: grid; place-items: center; flex: none; width: 46px; height: 46px; margin-left: auto; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); transition-property: background-color, color, box-shadow; transition-duration: .3s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.svb-arrow svg { rotate: -45deg; transition: rotate .3s cubic-bezier(0.2, 0, 0, 1); }
+
+.svb-title { margin: clamp(36px, 5vw, 64px) 0 0; max-width: 16ch; font-family: var(--font-heading); font-size: clamp(1.6rem, 2.6vw, 2.25rem); font-weight: 600; line-height: 1.05; letter-spacing: -.035em; text-wrap: balance; }
+/* the title's link covers the whole card */
+.svb-link { color: inherit; }
+.svb-link::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; }
+.svb-link:focus-visible { outline: none; }
+.svb-card:has(.svb-link:focus-visible) { outline: 2px solid var(--focus); outline-offset: 4px; }
+.svb-desc { margin: 12px 0 0; max-width: 42ch; color: var(--ink-2); font-size: 1rem; line-height: 1.55; text-wrap: pretty; }
+
+/* what you get: a ruled list, like the spec on a quote */
+.svb-get { align-self: stretch; margin: 26px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.svb-get li { display: flex; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: .92rem; color: var(--ink-2); transition: color .3s ease, padding-left .4s cubic-bezier(0.2, 0, 0, 1); }
+.svb-get li::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--h); translate: 0 -1px; }
+
+.svb-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px 20px; flex-wrap: wrap; align-self: stretch; margin-top: auto; padding-top: 26px; }
+.svb-price { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+.svb-price b { font-family: var(--font-heading); font-size: clamp(1.6rem, 2.4vw, 2rem); font-weight: 600; letter-spacing: -.035em; line-height: 1; }
+.svb-price small { font-size: .8rem; color: var(--ink-3); }
+/* above the card's link, so it stays its own target */
+.svb-inquire { position: relative; z-index: 3; display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: .88rem; font-weight: 600; transition-property: background-color, scale; transition-duration: .2s; }
+.svb-inquire:hover { background: var(--deep); }
+html[data-theme='dark'] .svb-inquire:hover { color: #0A0A0A; }
+.svb-inquire:active { scale: .97; }
+.svb-inquire:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+@media (hover: hover) {
+  .svb-card:hover { translate: 0 -4px; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--h) 40%, var(--line)), 0 1px 2px rgba(0, 0, 0, .04), 0 34px 64px -38px color-mix(in srgb, var(--h) 70%, rgba(0, 0, 0, .5)); }
+  .svb-card:hover::before { opacity: 1; scale: 1.25; }
+  .svb-card:hover::after { opacity: 1; }
+  .svb-card:hover .svb-arrow { background: var(--h); color: #FFFFFF; box-shadow: none; }
+  .svb-card:hover .svb-arrow svg { rotate: 0deg; }
+  .svb-card:hover .svb-get li { color: var(--ink); padding-left: 4px; }
+  .svb-card:hover .svb-get li:nth-child(2) { transition-delay: .03s; }
+  .svb-card:hover .svb-get li:nth-child(3) { transition-delay: .06s; }
+  .svb-card:hover .svb-get li:nth-child(4) { transition-delay: .09s; }
+}
+@media (max-width: 760px) { .svb-card { min-height: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .svb-card, .svb-card::before, .svb-arrow svg, .svb-get li { transition: none; }
+  .svb-card:hover { translate: none; }
+  .svb-card:hover::before { scale: none; }
+  .svb-card:hover .svb-get li { padding-left: 0; }
+}

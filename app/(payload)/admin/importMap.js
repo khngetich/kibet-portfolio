@@ -35,6 +35,7 @@ import { LinkRowLabel as LinkRowLabel_5b7ce49defdf2cdbdd8c55dff55c7042 } from '.
 import { Icon as Icon_81fda60f3e3709e861f40982a767707d } from '../../../components/admin/Brand'
 import { Logo as Logo_81fda60f3e3709e861f40982a767707d } from '../../../components/admin/Brand'
 import { ThemeSwitch as ThemeSwitch_13aba7d6eb931840188ad57a8e3a0b09 } from '../../../components/admin/ThemeSwitch'
+import { LoginAside as LoginAside_e84d66e7291b534a34ae52b16c5cfc3b } from '../../../components/admin/LoginAside'
 import { NavMenu as NavMenu_d3cb4ecc10babb52c0e651d8039d193c } from '../../../components/admin/NavMenu'
 import { FontProvider as FontProvider_4a17db3a4c055754f5a5a50cd65693a6 } from '../../../components/admin/FontProvider'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
@@ -80,6 +81,7 @@ export const importMap = {
   "/components/admin/Brand#Icon": Icon_81fda60f3e3709e861f40982a767707d,
   "/components/admin/Brand#Logo": Logo_81fda60f3e3709e861f40982a767707d,
   "/components/admin/ThemeSwitch#ThemeSwitch": ThemeSwitch_13aba7d6eb931840188ad57a8e3a0b09,
+  "/components/admin/LoginAside#LoginAside": LoginAside_e84d66e7291b534a34ae52b16c5cfc3b,
   "/components/admin/NavMenu#NavMenu": NavMenu_d3cb4ecc10babb52c0e651d8039d193c,
   "/components/admin/FontProvider#FontProvider": FontProvider_4a17db3a4c055754f5a5a50cd65693a6,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,

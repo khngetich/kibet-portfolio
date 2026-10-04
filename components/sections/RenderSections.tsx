@@ -12,7 +12,7 @@ import { Img } from '@/components/Img';
 import { Icon, type IconName } from '@/components/Icon';
 import { CaseStudies } from '@/components/sections/CaseStudies';
 import { ScrollRow } from '@/components/motion/ScrollRow';
-import { ServiceDeck } from '@/components/motion/ServiceDeck';
+import { ServiceCards } from '@/components/sections/ServiceCards';
 import { ContactForm } from '@/components/ContactForm';
 import { ProjectCard } from '@/components/ProjectCard';
 import { WorkGrid } from '@/components/WorkGrid';
@@ -426,16 +426,22 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
   const heading = copy(s.heading, COPY.servicesHeading);
   if (s.layout !== 'cards') {
     return (
-      <section className="services-deck dark" id={id} {...labelled(heading, hid, 'Services')}>
-        <div className="wrap services-deck-inner">
-          <Reveal className="services-deck-intro">
-            <Chapter n={chapter} label={s.eyebrow} />
-            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
-            {s.intro && <p className="lede">{s.intro}</p>}
-            <p className="deck-hint">{text(s.labels?.deckHint, 'Pick a card to see what’s included.')}</p>
+      <section className="svb" id={id} {...labelled(heading, hid, 'Services')}>
+        <div className="wrap">
+          <Reveal className="ed-intro">
+            <div>
+              <Chapter n={chapter} label={s.eyebrow} />
+              {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
+              {s.intro && <p className="lede">{s.intro}</p>}
+            </div>
             {!ctx.contact && <Link className="btn btn-outline" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>}
           </Reveal>
-          <ServiceDeck services={items.map((x) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, image: asMedia(x.image) ?? null }))} ctaLabel={text(s.ctaLabel, 'Inquire for this service')} pageLabel={text(s.pageLinkLabel, 'See the service')} />
+          <ServiceCards
+            services={items.map((x) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, featured: x.featured, price: x.priceFrom != null ? price(x.priceFrom, x.currency) : null, unit: x.unit }))}
+            ctaLabel={text(s.ctaLabel, 'Inquire')}
+            pageLabel={text(s.pageLinkLabel, 'See the service')}
+            featuredLabel={text(s.labels?.featured, 'Featured')}
+          />
         </div>
       </section>
     );
