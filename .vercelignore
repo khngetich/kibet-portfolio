@@ -2,7 +2,7 @@
 # project's Environment Variables, not from local .env files.
 .env
 .env.*
-!.env.example
+# the template too: the app never reads it, and a key pasted into it by mistake must not ship
 # local uploads: production media lives in Supabase Storage
 /media
 node_modules
