@@ -111,7 +111,8 @@ export const HeroSection = section({
         { name: 'url', type: 'text', admin: { width: '50%' } },
       ] }],
     },
-    { name: 'projects', label: 'Project cards', type: 'relationship', relationTo: 'projects', hasMany: true, maxRows: 3, admin: { description: 'Up to three. Leave empty to use the first three featured projects.' } },
+    // the project cards under the hero were removed (October 2026: the Selected projects section shows the work); kept hidden so stored choices survive
+    { name: 'projects', label: 'Project cards', type: 'relationship', relationTo: 'projects', hasMany: true, maxRows: 3, admin: { hidden: true } },
   ],
 });
 

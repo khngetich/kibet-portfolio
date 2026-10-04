@@ -20,7 +20,6 @@ import { Reveal, ScrollWords } from '@/components/motion/Reveal';
 import { LivingTitle } from '@/components/motion/LivingTitle';
 import { Accent, plain } from '@/components/Accent';
 import { MarqueeToggle } from '@/components/motion/PauseButton';
-import { HeroCards } from '@/components/motion/HeroCards';
 import { RoleWheel } from '@/components/motion/RoleWheel';
 import { TiltGallery } from '@/components/motion/TiltGallery';
 import { CoverFlow } from '@/components/motion/CoverFlow';
@@ -197,7 +196,6 @@ function HeroSection({ s, ctx, id, hid, first = true }: P<'hero'> & { first?: bo
   // the page's h1 only when the hero opens the page; otherwise the page already has one
   const Title = first ? 'h1' : 'h2';
   const clients = s.clients ?? [];
-  const cards = projectsOf(s.projects);
   const trusted = s.trustedText == null ? COPY.trustedText : s.trustedText.trim();
   const button = linkOf(s.button, ctx.cta);
   return (
@@ -220,10 +218,6 @@ function HeroSection({ s, ctx, id, hid, first = true }: P<'hero'> & { first?: bo
             {s.ctaText && <span>{s.ctaText}</span>}
             <SmartLink className={`${btn(button.variant, 'btn-light')} btn-sm`} href={button.url}>{button.label}</SmartLink>
           </div>
-        </div>
-        {/* the work comes straight after the pitch, so it's on the first screen */}
-        <div className="hero-work">
-          <HeroCards projects={(cards.length ? cards : ctx.featured).slice(0, 3)} />
         </div>
         {!!clients.length && (
           <div className="partners intro" style={{ '--d': '.5s', '--intro-y': '0px' } as React.CSSProperties}>
