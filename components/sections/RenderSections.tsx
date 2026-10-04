@@ -12,7 +12,7 @@ import { Img } from '@/components/Img';
 import { Icon, type IconName } from '@/components/Icon';
 import { CaseStudies } from '@/components/sections/CaseStudies';
 import { ScrollRow } from '@/components/motion/ScrollRow';
-import { ServiceDeck } from '@/components/motion/ServiceDeck';
+import { ServiceCards } from '@/components/sections/ServiceCards';
 import { ContactForm } from '@/components/ContactForm';
 import { ProjectCard } from '@/components/ProjectCard';
 import { WorkGrid } from '@/components/WorkGrid';
@@ -20,7 +20,6 @@ import { Reveal, ScrollWords } from '@/components/motion/Reveal';
 import { LivingTitle } from '@/components/motion/LivingTitle';
 import { Accent, plain } from '@/components/Accent';
 import { MarqueeToggle } from '@/components/motion/PauseButton';
-import { HeroCards } from '@/components/motion/HeroCards';
 import { RoleWheel } from '@/components/motion/RoleWheel';
 import { TiltGallery } from '@/components/motion/TiltGallery';
 import { CoverFlow } from '@/components/motion/CoverFlow';
@@ -33,6 +32,8 @@ import { SmartLink } from '@/components/SmartLink';
 import { ServiceRow } from '@/components/motion/ServiceRow';
 import { ResumeSection } from '@/components/sections/Resume';
 import { ProfileSection } from '@/components/sections/Profile';
+import { ProcessFolders } from '@/components/sections/ProcessFolders';
+import { ContactPage } from '@/components/sections/ContactPage';
 
 /**
  * Renders a page's sections in order, skipping hidden ones. Each section type is defined
@@ -77,12 +78,16 @@ type Ctx = {
   whatsapp: string | null;
   cta: { label: string; url: string };
   studio: boolean;
+  /** a "Who it's for" section is on the page, so the contact section doesn't list the roles again */
+  audience: boolean;
+  /** the contact form is on the page, so sections don't add their own "Start a project" button */
+  contact: boolean;
 };
 
 const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 /** Picked projects arrive fully populated; pass only the card fields on to client components. */
 const projectsOf = (rel: (number | Project)[] | null | undefined): Card[] =>
-  (rel ?? []).filter((p): p is Project => typeof p === 'object' && !!p).map(({ id, title, slug, client, year, disciplines, summary, cover, featured, accent, role, outcome, stats }) => ({ id, title, slug, client, year, disciplines, summary, cover, featured, accent, role, outcome, stats }));
+  (rel ?? []).filter((p): p is Project => typeof p === 'object' && !!p).map(({ id, title, slug, client, year, disciplines, summary, cover, featured, accent, role, outcome, stats, samples }) => ({ id, title, slug, client, year, disciplines, summary, cover, featured, accent, role, outcome, stats, samples: samples?.slice(0, 2) }));
 /** A section is named by its visible heading, or by a hidden label when the heading was emptied. */
 const labelled = (heading: string, hid: string, fallback: string) => (heading ? { 'aria-labelledby': hid } : { 'aria-label': fallback });
 
@@ -100,9 +105,9 @@ const linkOf = (l: Link, fallback: { label: string; url: string }) => ({ label: 
  * tags every section with its index for click-to-select.
  */
 /** Section types that render the page's h1 when they come first. */
-const H1_SECTIONS = ['hero', 'projectGrid', 'profile', 'resume'];
+const H1_SECTIONS = ['hero', 'projectGrid', 'profile', 'resume', 'contact'];
 /** Section types numbered as chapters of the page's story. */
-const CHAPTERS: string[] = ['workShowcase', 'process', 'aboutBanner', 'services', 'testimonials', 'contact', 'audience', 'faq', 'tools', 'showreel', 'insights'];
+const CHAPTERS: string[] = ['workShowcase', 'process', 'aboutBanner', 'services', 'testimonials', 'contact', 'tools', 'showreel', 'insights'];
 
 export async function RenderSections({ sections, studio = false, title }: { sections: Page['sections']; studio?: boolean; title?: string }) {
   const visible = (sections ?? []).map((s, index) => ({ s, index })).filter(({ s }) => studio || !s.hidden);
@@ -126,6 +131,8 @@ export async function RenderSections({ sections, studio = false, title }: { sect
     whatsapp: site.phone && site.whatsapp ? `https://wa.me/${digits(site.phone)}` : null,
     cta: { label: text(header.quoteButton?.label, 'Start a project'), url: text(header.quoteButton?.url, '/#contact') },
     studio,
+    audience: visible.some(({ s }) => s.blockType === 'audience'),
+    contact: visible.some(({ s }) => s.blockType === 'contact'),
   };
 
   // Chapters: the story sections after the hero are numbered 01, 02, … (on pages with three or more).
@@ -152,7 +159,7 @@ export async function RenderSections({ sections, studio = false, title }: { sect
             case 'process': return <ProcessSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'services': return <ServicesSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
             case 'testimonials': return <TestimonialsSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
-            case 'contact': return <ContactSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} />;
+            case 'contact': return <ContactSection s={s} ctx={ctx} id={id} hid={hid} chapter={chapterOf(index)} first={i === 0} />;
             case 'projectGrid': return <ProjectGridSection s={s} ctx={ctx} id={id} first={i === 0} />;
             case 'profile': return <ProfileSection s={s} site={ctx.site} id={id} first={i === 0} />;
             case 'richText': return <RichTextSection s={s} id={id} hid={hid} />;
@@ -189,7 +196,6 @@ function HeroSection({ s, ctx, id, hid, first = true }: P<'hero'> & { first?: bo
   // the page's h1 only when the hero opens the page; otherwise the page already has one
   const Title = first ? 'h1' : 'h2';
   const clients = s.clients ?? [];
-  const cards = projectsOf(s.projects);
   const trusted = s.trustedText == null ? COPY.trustedText : s.trustedText.trim();
   const button = linkOf(s.button, ctx.cta);
   return (
@@ -212,10 +218,6 @@ function HeroSection({ s, ctx, id, hid, first = true }: P<'hero'> & { first?: bo
             {s.ctaText && <span>{s.ctaText}</span>}
             <SmartLink className={`${btn(button.variant, 'btn-light')} btn-sm`} href={button.url}>{button.label}</SmartLink>
           </div>
-        </div>
-        {/* the work comes straight after the pitch, so it's on the first screen */}
-        <div className="hero-work">
-          <HeroCards projects={(cards.length ? cards : ctx.featured).slice(0, 3)} />
         </div>
         {!!clients.length && (
           <div className="partners intro" style={{ '--d': '.5s', '--intro-y': '0px' } as React.CSSProperties}>
@@ -276,7 +278,8 @@ function WorkShowcaseSection({ s, ctx, id, hid, chapter }: P<'workShowcase'>) {
           </div>
           {link && <Link className="link-under" href={link.url}>{link.label} <Icon name="arrow" size={14} /></Link>}
         </Reveal>
-        <CaseStudies projects={work} />
+        {/* the closing "All work" link only when the intro doesn't already link there */}
+        <CaseStudies projects={work} allHref={link?.url === '/work' ? null : '/work'} />
       </div>
     </section>
   );
@@ -359,35 +362,20 @@ function ProcessSection({ s, ctx, id, hid, chapter }: P<'process'>) {
     image: asMedia((step as { image?: unknown }).image) ?? ctx.covers[(i + 1) % Math.max(ctx.covers.length, 1)] ?? null,
   }));
   const heading = copy(s.heading, COPY.processHeading);
-  // the numbered timeline ('circuit' is the stored value: it predates the redesign)
+  // folder cards with margin notes ('circuit' is the stored value: it predates the redesign)
   if (s.layout !== 'steps' && s.layout !== 'stack') {
     return (
-      <section className="process process-tl" id={id} {...labelled(heading, hid, 'How it works')}>
-        <div className="wrap tl-grid">
-          <Reveal className="tl-intro">
-            <Chapter n={chapter} label={s.eyebrow} />
-            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
-            {s.lead && <p className="lede">{s.lead}</p>}
-            <Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
+      <section className="process process-folders" id={id} {...labelled(heading, hid, 'How it works')}>
+        <div className="wrap">
+          <Reveal className="ed-intro">
+            <div>
+              <Chapter n={chapter} label={s.eyebrow} />
+              {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
+              {s.lead && <p className="lede">{s.lead}</p>}
+            </div>
+            {!ctx.contact && <Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>}
           </Reveal>
-          <ol className="tl-steps">
-            {steps.map((step, i) => {
-              const duration = (step as { duration?: string | null }).duration;
-              return (
-                <li key={(step as { id?: string }).id ?? i} className="tl-step">
-                  <span className="tl-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                  <div>
-                    <div className="tl-head">
-                      <h3 className="tl-title"><span className="sr-only">Step {i + 1}: </span>{step.title}</h3>
-                      {duration && <span className="tl-time"><span className="sr-only">Takes </span>{duration}</span>}
-                    </div>
-                    {step.description && <p className="tl-desc">{step.description}</p>}
-                    {!!step.points?.length && <ul className="tl-points">{step.points.map((pt) => <li key={pt}>{pt}</li>)}</ul>}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+          <ProcessFolders steps={steps.map((step) => ({ id: (step as { id?: string }).id, title: step.title, description: step.description, points: step.points, duration: (step as { duration?: string | null }).duration }))} />
         </div>
       </section>
     );
@@ -417,7 +405,7 @@ function ProcessSection({ s, ctx, id, hid, chapter }: P<'process'>) {
                 </li>
               ))}
             </ol>
-            <div className="center steps-cta"><Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link></div>
+            {!ctx.contact && <div className="center steps-cta"><Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link></div>}
           </>
         )}
       </div>
@@ -432,16 +420,22 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
   const heading = copy(s.heading, COPY.servicesHeading);
   if (s.layout !== 'cards') {
     return (
-      <section className="services-deck dark" id={id} {...labelled(heading, hid, 'Services')}>
-        <div className="wrap services-deck-inner">
-          <Reveal className="services-deck-intro">
-            <Chapter n={chapter} label={s.eyebrow} />
-            {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
-            {s.intro && <p className="lede">{s.intro}</p>}
-            <p className="deck-hint">{text(s.labels?.deckHint, 'Pick a card to see what’s included.')}</p>
-            <Link className="btn btn-outline" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
+      <section className="svb" id={id} {...labelled(heading, hid, 'Services')}>
+        <div className="wrap">
+          <Reveal className="ed-intro">
+            <div>
+              <Chapter n={chapter} label={s.eyebrow} />
+              {heading && <h2 className="h-lg" id={hid}><Accent text={heading} /></h2>}
+              {s.intro && <p className="lede">{s.intro}</p>}
+            </div>
+            {!ctx.contact && <Link className="btn btn-outline" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>}
           </Reveal>
-          <ServiceDeck services={items.map((x) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, image: asMedia(x.image) ?? null }))} ctaLabel={text(s.ctaLabel, 'Inquire for this service')} pageLabel={text(s.pageLinkLabel, 'See the service')} />
+          <ServiceCards
+            services={items.map((x) => ({ title: x.title, description: x.description ?? null, deliverables: x.deliverables ?? null, slug: x.slug ?? null, featured: x.featured, price: x.priceFrom != null ? price(x.priceFrom, x.currency) : null, unit: x.unit }))}
+            ctaLabel={text(s.ctaLabel, 'Inquire')}
+            pageLabel={text(s.pageLinkLabel, 'See the service')}
+            featuredLabel={text(s.labels?.featured, 'Featured')}
+          />
         </div>
       </section>
     );
@@ -465,18 +459,20 @@ function ServicesSection({ s, ctx, id, hid, chapter }: P<'services'>) {
           }))}
           labels={{ featured: text(s.labels?.featured, 'Featured'), pageLink: text(s.pageLinkLabel, 'See the service'), inquire: text(s.ctaLabel, 'Inquire for this service') }}
         />
-        <div className="svc-foot">
+        {(!!extras.length || !ctx.contact) && <div className="svc-foot">
           {!!extras.length && (
             <div className="svc-extras">
               <p className="ed-kicker">{text(s.labels?.extras, 'A little extra')}</p>
               <ul>{extras.map((x) => <li key={x}>{x}</li>)}</ul>
             </div>
           )}
-          <div className="svc-actions">
-            <Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
-            {s.showWhatsApp !== false && ctx.whatsapp && <a className="link-under" href={ctx.whatsapp} target="_blank" rel="noopener noreferrer">Or chat on WhatsApp</a>}
-          </div>
-        </div>
+          {!ctx.contact && (
+            <div className="svc-actions">
+              <Link className="btn btn-light" href={ctx.cta.url}>{ctx.cta.label} <Icon name="arrow" size={15} /></Link>
+              {s.showWhatsApp !== false && ctx.whatsapp && <a className="link-under" href={ctx.whatsapp} target="_blank" rel="noopener noreferrer">Or chat on WhatsApp</a>}
+            </div>
+          )}
+        </div>}
       </div>
     </section>
   );
@@ -523,10 +519,19 @@ function TestimonialsSection({ s, ctx, id, hid, chapter }: P<'testimonials'>) {
   );
 }
 
-function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
+function ContactSection({ s, ctx, id, hid, chapter, first = false }: P<'contact'> & { first?: boolean }) {
   const { site } = ctx;
   const heading = copy(s.heading, COPY.contactHeading);
-  const roles = s.roles ?? [];
+  const form = <ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} chatUrl={ctx.whatsapp} copy={s.form ?? {}} />;
+  // opening a page (/contact), it becomes the full contact page
+  if (first) {
+    return (
+      <div id={id}>
+        <ContactPage heading={heading} hid={hid} eyebrow={s.eyebrow} intro={s.intro} site={site} form={form} whatsapp={ctx.whatsapp} bookingUrl={site.bookingUrl} bookLabel={text(s.bookLabel, 'Book a 15-minute call')} />
+      </div>
+    );
+  }
+  const roles = ctx.audience ? [] : s.roles ?? [];
   return (
     <section className="contact-section contact-split" id={id} {...labelled(heading, hid, 'Contact')}>
       <div className="contact-glow" aria-hidden="true" />
@@ -550,7 +555,7 @@ function ContactSection({ s, ctx, id, hid, chapter }: P<'contact'>) {
           )}
         </Reveal>
         <Reveal className="contact-card" delay={0.1}>
-          <ContactForm services={ctx.serviceTitles} bookingUrl={site.bookingUrl} chatUrl={ctx.whatsapp} copy={s.form ?? {}} />
+          {form}
         </Reveal>
       </div>
     </section>
@@ -585,12 +590,12 @@ function ProjectGridSection({ s, ctx, id, first }: { s: Of<'projectGrid'>; ctx: 
               studio={ctx.site.name}
               items={projects.map((p, i) => ({
                 disciplines: p.disciplines ?? [],
-                node: <ProjectCard project={p} level={level} sizes="(max-width: 800px) 100vw, 600px" preload={i < 2} />,
+                node: <ProjectCard project={p} n={i + 1} level={level} sizes="(max-width: 760px) 60vw, 340px" preload={i < 2} />,
                 proof: { title: p.title, slug: p.slug, client: p.client, year: p.year, cover: p.cover, featured: p.featured },
               }))}
             />
           ) : (
-            <div className="grid-work">{projects.map((p, i) => <div key={p.id} className="grid-cell"><ProjectCard project={p} level={level} sizes="(max-width: 800px) 100vw, 600px" preload={i < 2} /></div>)}</div>
+            <div className="grid-work">{projects.map((p, i) => <div key={p.id} className="grid-cell"><ProjectCard project={p} n={i + 1} level={level} sizes="(max-width: 760px) 60vw, 340px" preload={i < 2} /></div>)}</div>
           )
         ) : (
           <p className="muted">No projects published yet.</p>

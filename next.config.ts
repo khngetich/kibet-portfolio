@@ -40,6 +40,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // a separate output folder for a local preview build (NEXT_DIST_DIR=.next-preview), so it
+  // doesn't collide with `next dev` or another build writing to .next at the same time
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   reactStrictMode: true,
   poweredByHeader: false,
   async headers() {
@@ -53,9 +56,16 @@ const nextConfig: NextConfig = {
     ];
   },
   // The Studio uploads images and videos through server actions (default cap is 1MB).
-  experimental: { serverActions: { bodySizeLimit: '50mb' } },
+  // two build workers, each with a pool of three (payload.config.ts): 6 connections. Supabase's
+  // session pooler allows 15 in all, shared with the live site, so four workers (12) left too
+  // little headroom and builds failed with EMAXCONNSESSION whenever the site was busy
+  experimental: { serverActions: { bodySizeLimit: '50mb' }, cpus: 2 },
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Next 16 only serves qualities listed here (default [75]). The editor thumbnails (lib/media.ts
+    // thumbURL, also the admin's media list) ask for 70, which was refused with a 400, so every
+    // thumbnail in the Studio and admin showed as a broken image.
+    qualities: [70, 75],
     remotePatterns: [
       { protocol: self.protocol.replace(':', '') as 'http' | 'https', hostname: self.hostname, port: self.port, pathname: '/api/media/file/**' },
       ...(storage ? [{ protocol: 'https' as const, hostname: storage.hostname, pathname: '/storage/v1/object/public/**' }] : []),

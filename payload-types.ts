@@ -223,7 +223,7 @@ export interface Page {
             intro?: string | null;
             layout?: ('feature' | 'carousel') | null;
             /**
-             * In order: the first is the large case study. Leave empty to use every featured project.
+             * In order, up to four folders (the rest follow as links). Leave empty to use every featured project.
              */
             projects?: (number | Project)[] | null;
             /**
@@ -436,13 +436,13 @@ export interface Page {
                       )
                     | null;
                   /**
-                   * How long this phase usually takes, e.g. “2–3 days”. Shown beside the step’s title (timeline layout).
+                   * How long this phase usually takes, e.g. “2–3 days”. Handwritten beside the card (folder layout).
                    */
                   duration?: string | null;
                   description?: string | null;
                   points?: string[] | null;
                   /**
-                   * Leave empty to use a project cover.
+                   * The print on the card. Leave empty to use a project cover.
                    */
                   image?: (number | null) | Media;
                   id?: string | null;
@@ -687,6 +687,20 @@ export interface Page {
               | null;
             skills?: string[] | null;
             tools?: string[] | null;
+            /**
+             * Shown above the principles. Wrap a word in *asterisks* for the accent.
+             */
+            principlesHeading?: string | null;
+            /**
+             * Three or four short promises about working with you, shown as cards after the story. Leave empty to hide the section.
+             */
+            principles?:
+              | {
+                  title: string;
+                  text?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
             cv?: (number | null) | Media;
             button?: {
               label?: string | null;
@@ -2099,6 +2113,14 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               skills?: T;
               tools?: T;
+              principlesHeading?: T;
+              principles?:
+                | T
+                | {
+                    title?: T;
+                    text?: T;
+                    id?: T;
+                  };
               cv?: T;
               button?:
                 | T
@@ -2856,6 +2878,16 @@ export interface Footer {
    */
   copyright?: string | null;
   /**
+   * Who made the site, shown as a link on the last line. When the name already appears in the copyright text, that part becomes the link; otherwise "Site by …" is added.
+   */
+  credit?: {
+    label?: string | null;
+    /**
+     * Their website or profile (https://…). Opens in a new tab.
+     */
+    url?: string | null;
+  };
+  /**
    * Shown beside the copyright, e.g. Terms → /terms. The pages themselves are in Pages; link only to ones that exist.
    */
   legal?:
@@ -3056,6 +3088,12 @@ export interface FooterSelect<T extends boolean = true> {
         buttonUrl?: T;
       };
   copyright?: T;
+  credit?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
   legal?:
     | T
     | {

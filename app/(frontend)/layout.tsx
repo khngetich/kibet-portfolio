@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
 import { Manrope } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import './sections.css';
 import { Header } from '@/components/Header';
@@ -17,6 +16,10 @@ const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
 // The site's sans (self-hosted at build); the accent serif is Georgia, already on every device.
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' });
+// Geist stays available (the theme can switch to it, and the work-view switch uses the mono), but
+// isn't preloaded: Manrope is the theme's font, and preloading both Geists cost ~140 KB per visit
+const geistSans = localFont({ src: '../../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2', variable: '--font-geist-sans', weight: '100 900', display: 'swap', preload: false });
+const geistMono = localFont({ src: '../../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2', variable: '--font-geist-mono', weight: '100 900', display: 'swap', preload: false });
 
 /**
  * Runs before first paint: applies the visitor's saved theme (ThemeToggle), else light, so the
@@ -51,7 +54,7 @@ export const viewport: Viewport = {
 export default async function FrontendLayout({ children }: { children: React.ReactNode }) {
   const [site, header, footer, theme, preview, studio] = await Promise.all([getSite(), getHeader(), getFooter(), getTheme(), isPreview(), isStudioCanvas()]);
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${manrope.variable}`} data-theme="light" suppressHydrationWarning data-motion={theme.motion ?? 'full'} data-scroll-behavior="smooth" data-wa={!studio && site.phone && site.whatsapp ? '' : undefined}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable}`} data-theme="light" suppressHydrationWarning data-motion={theme.motion ?? 'full'} data-scroll-behavior="smooth" data-wa={!studio && site.phone && site.whatsapp ? '' : undefined}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
       </head>

@@ -54,7 +54,8 @@ export default async function CaseStudy({ params }: Props) {
   const details = [['Deliverables', project.deliverables], ['Tools', project.tools]].filter(([, v]) => v?.length) as [string, string[]][];
   // the story panel: brief, approach and outcome, with the details as the fourth quarter
   const story = [['The brief', project.brief], ['The approach', project.approach], ['The outcome', project.outcome]].filter(([, v]) => v) as [string, string][];
-  const hasDetails = details.length > 0 || !!project.timeline;
+  // (the timeline is already in the header facts, so the details panel doesn't repeat it)
+  const hasDetails = details.length > 0;
   // the live link: videos play in the viewer when they're YouTube/Vimeo, everything else opens in a new tab
   // links saved before the field added https:// would otherwise resolve as a path on this site
   const live = project.liveUrl ? { url: withProtocol(project.liveUrl), type: project.liveType ?? 'website', embed: project.liveType === 'video' ? embedURL(project.liveUrl) : null } : null;
@@ -125,7 +126,6 @@ export default async function CaseStudy({ params }: Props) {
               {details.map(([k, v]) => (
                 <div key={k}><h3>{k}</h3><ul className="case-chips">{v.map((x) => <li key={x}>{x}</li>)}</ul></div>
               ))}
-              {project.timeline && <div><h3>Timeline</h3><p>{project.timeline}</p></div>}
             </div>
           )}
         </section>

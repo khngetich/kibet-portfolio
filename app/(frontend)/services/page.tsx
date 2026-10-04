@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { getPage, getServices, getSite } from '@/lib/cms';
 import { breadcrumbLd, canonical, ogCard, SITE_URL } from '@/lib/seo';
 import { Accent, plain } from '@/components/Accent';
-import { Icon } from '@/components/Icon';
 import { JsonLd } from '@/components/JsonLd';
 import { ServiceCardItem } from '@/components/ServiceCard';
 
@@ -31,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ServicesIndex() {
-  const [services, s, site] = await Promise.all([getServices(), copy(), getSite()]);
+  const [services, s] = await Promise.all([getServices(), copy()]);
   const heading = s?.heading || 'What I can do *for you*';
   return (
     <section className="svx" aria-labelledby="svx-title">
@@ -42,11 +41,13 @@ export default async function ServicesIndex() {
       <div className="wrap">
         <header className="svx-head">
           <p className="eyebrow">{s?.eyebrow || 'Services'}</p>
-          <h1 className="h-xl" id="svx-title"><Accent text={heading} /></h1>
+          <h1 className="h-xl" id="svx-title"><Accent text={heading} highlight /></h1>
           {s?.intro && <p className="lede">{s.intro}</p>}
+          {/* the page ends on the site-wide call to action (components/Footer.tsx), so the nudge lives up here */}
+          <p className="svx-note">Not sure which fits? <Link className="link-under" href="/contact">Tell me what you’re working on</Link> and I’ll suggest one.</p>
         </header>
         {services.length ? (
-          <ul className="svc-grid">
+          <ul className="svc-grid" data-count={services.length}>
             {services.map((item, i) => (
               <li key={item.id}>
                 <ServiceCardItem item={item} index={i} labels={{ featured: s?.labels?.featured || '', pageLink: s?.pageLinkLabel || '' }} />
@@ -54,15 +55,8 @@ export default async function ServicesIndex() {
             ))}
           </ul>
         ) : (
-          <p className="insights-empty">Services are on their way. In the meantime, <Link className="link-under" href="/#contact">tell me what you need</Link>.</p>
+          <p className="insights-empty">Services are on their way. In the meantime, <Link className="link-under" href="/contact">tell me what you need</Link>.</p>
         )}
-        <div className="svc-foot svx-foot">
-          <p className="lede">Not sure which fits? Tell me what you’re working on and I’ll suggest one.</p>
-          <div className="svc-actions">
-            <Link className="btn btn-light" href="/#contact">Start a project <Icon name="arrow" size={15} /></Link>
-            {site.phone && site.whatsapp && <a className="link-under" href={`https://wa.me/${site.phone.replace(/[^\d]/g, '')}`} target="_blank" rel="noopener noreferrer">Or chat on WhatsApp</a>}
-          </div>
-        </div>
       </div>
     </section>
   );

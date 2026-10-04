@@ -1,0 +1,58 @@
+/* ── the process as folder cards with margin notes (components/sections/ProcessFolders.tsx) ──
+   A white card per step, a vector scene of the step, and a pastel folder in
+   front whose tab is one SVG curve. --h is the step's hue; the folder is that hue mixed into the
+   page colour and the title the hue deepened towards ink, so both themes keep the contrast. */
+.pfx { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(20px, 2.6vw, 32px); margin: clamp(32px, 4vw, 56px) 0 0; padding: 0 clamp(0px, 9vw, 150px); list-style: none; }
+.pfx-step { position: relative; --tint: color-mix(in oklab, var(--h) 13%, var(--surface)); --deep: color-mix(in oklab, var(--h) 78%, #000); }
+html[data-theme='dark'] .pfx-step { --tint: color-mix(in oklab, var(--h) 20%, var(--surface)); --deep: color-mix(in oklab, var(--h) 70%, #FFFFFF); }
+
+.pfx-card { position: relative; display: flex; flex-direction: column; height: 100%; padding: 14px; border-radius: 26px; background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 12px 32px -18px rgba(0, 0, 0, .25), inset 0 0 0 1px var(--line); }
+.pfx-num { position: absolute; top: 18px; left: 22px; margin: 0; font-size: .82rem; color: var(--ink-3); }
+
+/* the art: a vector scene per step (components/sections/ProcessArt.tsx) whose foot tucks in behind the folder's tab */
+.pfx-art { position: relative; height: clamp(160px, 16vw, 200px); margin: 22px 0 -28px; }
+/* the scene's shapes are styled in art.css (shared with the services' cards) */
+.pfx-step:hover .pa-float { translate: 0 -5px; }
+
+/* the folder, as the homepage's glass folders (.gf in sections.css): a solid back in the step's
+   hue with a tab on the right, the scene rising out of it, and a frosted front with a tab on the
+   left. As on .gf, the glass is two rounded pieces (::before tab, ::after panel): Chrome clips a
+   backdrop blur to rounded corners but not to a clip-path, which let it spill past the tab. */
+.pfx-step { isolation: isolate; }
+.pfx-step::after { content: ''; position: absolute; left: 14%; right: 14%; bottom: -4%; height: 8%; z-index: -1; border-radius: 50%; background: color-mix(in srgb, var(--h) 34%, rgba(0, 0, 0, .25)); filter: blur(18px); opacity: .4; transition-property: opacity, scale; transition-duration: .5s; transition-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+.pfx-back { position: absolute; left: 14px; right: 14px; bottom: 14px; top: calc(36px + clamp(160px, 16vw, 200px) * .52); border-radius: 16px 0 16px 16px; background: color-mix(in oklab, var(--h) 62%, var(--surface)); transition: translate .55s cubic-bezier(0.2, 0, 0, 1); }
+.pfx-back::before { content: ''; position: absolute; right: 0; bottom: 100%; width: 38%; height: 24px; border-radius: 14px 14px 0 0; background: inherit; translate: 0 1px; }
+.pfx-art { z-index: 1; }
+.pfx-folder { --tab: 28px; --sheen: rgba(255, 255, 255, .58); --sheen-2: rgba(255, 255, 255, .22); --glass: color-mix(in oklab, var(--h) 22%, rgba(255, 255, 255, .5));
+  position: relative; z-index: 2; isolation: isolate; flex: 1; padding: 46px 20px 20px; color: var(--ink); }
+html[data-theme='dark'] .pfx-folder { --sheen: rgba(255, 255, 255, .14); --sheen-2: rgba(255, 255, 255, .03); --glass: color-mix(in oklab, var(--h) 30%, rgba(14, 14, 14, .62)); }
+.pfx-folder::before, .pfx-folder::after { content: ''; position: absolute; z-index: -1; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+.pfx-folder::before { left: 0; top: 0; width: 52%; height: var(--tab); border-radius: 16px 14px 0 0; background: linear-gradient(var(--sheen), var(--sheen)), var(--glass); }
+.pfx-folder::after { inset: var(--tab) 0 0; border-radius: 0 16px 16px 16px; background: linear-gradient(var(--sheen) 0 var(--tab), var(--sheen-2) 70%), var(--glass); }
+@media (hover: hover) {
+  .pfx-step:hover .pfx-back { translate: 0 -4px; }
+  .pfx-step:hover .pa { translate: 0 -6px; }
+  .pfx-step:hover::after { opacity: .7; scale: 1.04 1; }
+}
+.pa { transition: translate .55s cubic-bezier(0.2, 0, 0, 1); }
+.pfx-title { margin: 0; padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--deep) 18%, transparent); font-size: clamp(1.3rem, 2vw, 1.6rem); font-weight: 600; letter-spacing: -.025em; color: var(--deep); }
+.pfx-desc { margin: 14px 0 0; max-width: 46ch; color: var(--ink-2); font-size: .95rem; line-height: 1.55; text-wrap: pretty; }
+.pfx-points { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; padding: 0; list-style: none; }
+.pfx-points li { padding: 5px 10px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 70%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--deep) 14%, transparent); font-size: .8rem; color: var(--ink-2); }
+
+/* the note in the margin: handwriting and a scribbled arrow, outside the card on wide screens */
+.pfx-note { position: absolute; top: 34%; right: calc(100% + 18px); width: clamp(90px, 10vw, 140px); margin: 0; font-family: var(--font-hand), 'Bradley Hand', 'Segoe Print', cursive; font-size: clamp(1.15rem, 1.6vw, 1.4rem); line-height: 1.05; text-align: center; color: var(--ink-2); rotate: -8deg; }
+.pfx-step.is-right .pfx-note { right: auto; left: calc(100% + 18px); rotate: 7deg; }
+.pfx-squiggle { display: block; width: 38px; height: 19px; margin: 4px auto 0; fill: none; stroke: var(--h); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pfx-step.is-right .pfx-squiggle { scale: -1 1; }
+
+@media (prefers-reduced-motion: reduce) { .pa, .pa-float, .pfx-back, .pfx-step::after { transition: none; } .pfx-step:hover :is(.pa, .pa-float, .pfx-back) { translate: none; } }
+/* the margin narrows: the notes move above their cards */
+@media (max-width: 1100px) {
+  .pfx { padding: 0; }
+  .pfx-note, .pfx-step.is-right .pfx-note { position: static; width: auto; margin: 0 0 8px 12px; text-align: left; rotate: -3deg; display: flex; align-items: center; gap: 8px; }
+  .pfx-squiggle, .pfx-step.is-right .pfx-squiggle { margin: 0; rotate: 40deg; scale: 1; }
+}
+@media (max-width: 720px) {
+  .pfx { grid-template-columns: minmax(0, 1fr); }
+}

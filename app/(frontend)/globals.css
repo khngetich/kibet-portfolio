@@ -123,7 +123,7 @@ a { color: inherit; text-decoration: none; }
    A capsule held off the screen edges: name · menu · quote button. */
 .site-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; height: var(--header-h); padding-top: env(safe-area-inset-top, 0px); padding-inline: max(clamp(16px, 4vw, 48px), calc((100% - var(--container)) / 2 + clamp(16px, 4vw, 48px))); background: color-mix(in srgb, var(--bg) 86%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); box-shadow: inset 0 -1px 0 var(--line); color: var(--ink); }
 main { padding-top: var(--header-h); }
-.brand { justify-self: start; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-weight: 700; font-size: 1.08rem; letter-spacing: -.045em; white-space: nowrap; }
+.brand { justify-self: start; min-width: 0; max-width: 100%; padding-block: 11px; margin-block: -11px; overflow: hidden; text-overflow: ellipsis; font-weight: 700; font-size: 1.08rem; letter-spacing: -.045em; white-space: nowrap; }
 .brand-dot { color: var(--accent-ink); }
 .header-nav ul { display: flex; gap: 2px; }
 .header-nav a { position: relative; display: block; padding: 8px 14px; border-radius: calc(999px * var(--radius-scale, 1)); font-size: .86rem; color: var(--ink-2); transition: color .15s; }
@@ -276,10 +276,20 @@ main { padding-top: var(--header-h); }
 .fx { position: relative; margin-top: clamp(32px, 4vw, 56px); }
 .fx-cta { position: relative; overflow: hidden; margin-inline: clamp(0px, 1.4vw, 20px); border-radius: calc(32px * var(--radius-scale, 1)); color: var(--ink); }
 .fx-cta-glow { position: absolute; inset: 0; background: radial-gradient(40% 42% at 50% 46%, color-mix(in srgb, var(--accent) 24%, transparent), transparent); opacity: var(--glow); pointer-events: none; }
-.fx-cta-inner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; padding-block: clamp(56px, 7vw, 96px); text-align: center; }
-.fx-cta-title { max-width: 20ch; font-family: var(--font-heading); font-size: clamp(2rem, 4.6vw, 3.6rem); font-weight: var(--heading-weight, 500); letter-spacing: var(--heading-tracking, -.04em); line-height: 1.04; text-wrap: balance; }
-.fx-cta-text { max-width: 52ch; font-size: 1.05rem; color: var(--ink-2); text-wrap: pretty; }
-.fx-cta-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; margin-top: 8px; padding: 0 28px; border-radius: var(--btn-radius); background: var(--btn-bg); color: var(--btn-ink); font-weight: 600; transition: transform .2s ease-out, scale .2s ease-out; }
+/* the card: the heading on the left, the line and the two ways in on the right (stacked on phones) */
+.fx-cta-inner { position: relative; display: grid; gap: 22px clamp(32px, 6vw, 96px); align-items: end; max-width: calc(var(--wrap, 1200px) + 2 * clamp(20px, 5vw, 64px)); margin-inline: auto; padding: clamp(44px, 6vw, 88px) clamp(22px, 5vw, 64px); }
+@media (min-width: 820px) { .fx-cta-inner { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+.fx-cta-title { max-width: 16ch; font-family: var(--font-heading); font-size: clamp(2.1rem, 4.8vw, 3.9rem); font-weight: var(--heading-weight, 500); letter-spacing: var(--heading-tracking, -.04em); line-height: 1.02; text-wrap: balance; }
+.fx-cta-side { display: grid; gap: 22px; justify-items: start; }
+.fx-cta-text { max-width: 44ch; font-size: 1.05rem; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.fx-cta-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; }
+.fx-cta-alt { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 5px; transition: text-decoration-color .2s ease-out; }
+.fx-cta-alt:hover { text-decoration-color: var(--accent); }
+/* where the page already ends on the contact form, the card's button would point back up at it,
+   so the second way in (WhatsApp or email) takes its place */
+body:has(main #contact) .fx-cta-actions:has(.fx-cta-alt) .fx-cta-btn { display: none; }
+body:has(main #contact) .fx-cta-alt { height: 52px; padding: 0 28px; border-radius: var(--btn-radius); background: var(--btn-bg); color: var(--btn-ink); font-weight: 600; text-decoration: none; }
+.fx-cta-btn { display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 28px; border-radius: var(--btn-radius); background: var(--btn-bg); color: var(--btn-ink); font-weight: 600; transition: transform .2s ease-out, scale .2s ease-out; }
 .fx-cta-btn:hover { transform: translateY(-2px); }
 .fx-cta-btn:active { scale: .96; }
 .fx-cta-btn svg { transition: transform .2s ease; }
@@ -303,7 +313,24 @@ main { padding-top: var(--header-h); }
 .fx-legal { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 .fx-link { display: inline-flex; align-items: center; min-height: 32px; color: var(--ink-2); transition: color .2s ease-out; }
 .fx-link:hover { color: var(--ink); }
-@media (prefers-reduced-motion: reduce) { .fx-socials a:hover, .fx-cta-btn:hover { transform: none; } }
+/* the site credit: the name rolls up to its accent copy, the underline draws in and an arrow slides out */
+.fx-credit { display: inline-flex; align-items: baseline; gap: 3px; color: var(--ink); font-weight: 600; background: linear-gradient(var(--accent), var(--accent)) left bottom / 0 1.5px no-repeat; transition: background-size .35s var(--ease, ease); }
+.fx-credit.is-plain { background: none; }
+.fx-credit-roll { display: inline-block; height: 1.3em; overflow: hidden; vertical-align: bottom; line-height: 1.3; }
+.fx-credit-roll > span { display: block; transition: transform .4s cubic-bezier(.2, .8, .2, 1); }
+.fx-credit-roll > span::after { content: attr(data-text); display: block; color: var(--accent-text); }
+.fx-credit:hover .fx-credit-roll > span, .fx-credit:focus-visible .fx-credit-roll > span { transform: translateY(-50%); }
+.fx-credit svg { align-self: center; margin-left: -15px; opacity: 0; translate: -4px 2px; transition: opacity .25s ease-out, translate .3s ease-out, margin-left .3s ease-out; }
+.fx-credit:hover, .fx-credit:focus-visible { background-size: 100% 1.5px; }
+.fx-credit:hover svg, .fx-credit:focus-visible svg { margin-left: 0; opacity: 1; translate: 0 0; color: var(--accent-text); }
+/* the arrow takes no room until it shows, so the name sits flush against the full stop (phones never hover) */
+/* the sign-off: the name across the full width, its lower half tucked under the page edge */
+.fx { overflow: clip; }
+.fx-word { container-type: inline-size; display: flex; justify-content: center; margin: 0; padding-inline: clamp(8px, 1.4vw, 20px); font-family: var(--font-heading); font-weight: var(--heading-weight, 600); font-size: min(calc(100vw / (var(--chars) * .56)), 15rem); letter-spacing: -.06em; line-height: .78; color: var(--ink); white-space: nowrap; user-select: none; height: .52lh; overflow: hidden; }
+.fx-word span { display: inline-block; transition: translate .5s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(var(--i) * 18ms); }
+.fx-word .brand-dot { color: var(--accent-ink); }
+@media (hover: hover) { .fx-word:hover span { translate: 0 -.12em; } }
+@media (prefers-reduced-motion: reduce) { .fx-socials a:hover, .fx-cta-btn:hover { transform: none; } .fx-word span, .fx-credit-roll > span { transition: none; } .fx-word:hover span { translate: none; } }
 
 /* ───────────────────────── scroll reveal (CSS only) ─────────────────────────
    components/motion/Reveal.tsx: content is visible in the first paint; where scroll-driven
@@ -337,12 +364,6 @@ main { padding-top: var(--header-h); }
 /* near the footer (components/FooterWatch.tsx) the floating buttons step aside so the policy links stay tappable */
 .wa-float, .avail-badge { transition: opacity .25s ease, translate .25s ease, visibility .25s; }
 html.near-footer :is(.wa-float, .avail-badge) { opacity: 0; translate: 0 12px; visibility: hidden; pointer-events: none; }
-/* on a page with the contact section, the footer's call-to-action band would only repeat it */
-body:has(main #contact) .fx-cta { display: none; }
-/* …and without the band, the footer starts right after the contact section, marked by a hairline */
-body:has(main #contact) .fx { margin-top: 0; }
-body:has(main #contact) .fx-main { border-top: 1px solid var(--line); }
-body:has(main #contact) main .contact-section { padding-bottom: calc(var(--section-y) * .6); }
 .wa-float:focus-visible .wa-float-icon { outline: 2px solid #fff; outline-offset: 3px; }
 @keyframes wa-in { from { opacity: 0; transform: translateY(16px) scale(.9); } }
 /* the availability badge moves left to make room */
@@ -357,3 +378,33 @@ html[data-wa] .avail-badge { right: 90px; bottom: calc(34px + env(safe-area-inse
   .menu-sheet { right: clamp(16px, 4vw, 48px); }
 }
 .accent-line { display: block; }
+
+/* ── "selected text" (components/Highlight.tsx): a tinted box dragged across the words, a caret
+   with a round handle at each end, and sparkles where the selection stops. Runs once. ── */
+.hl { position: relative; display: inline-block; isolation: isolate; padding-inline: .1em; margin-inline: -.02em; --hl: var(--accent); --hl-delay: .5s; }
+.hl::before { content: ''; position: absolute; inset: .12em 0 .02em; z-index: -1; border-radius: .06em; background: color-mix(in oklab, var(--hl) 15%, transparent); transform-origin: left center; animation: hl-drag .7s cubic-bezier(0.2, 0, 0, 1) var(--hl-delay) both; }
+.hl-caret { position: absolute; top: .1em; bottom: 0; width: max(2px, .035em); background: var(--hl); border-radius: 2px; animation: hl-fade .3s ease-out var(--hl-delay) both; }
+.hl-caret::after { content: ''; position: absolute; left: 50%; width: max(9px, .15em); aspect-ratio: 1; border-radius: 50%; background: var(--hl); translate: -50% 0; box-shadow: 0 0 0 max(2px, .03em) var(--bg); }
+.hl-caret.is-start { left: 0; }
+.hl-caret.is-start::after { top: 0; translate: -50% -60%; }
+.hl-caret.is-end { right: 0; animation-delay: calc(var(--hl-delay) + .6s); }
+.hl-caret.is-end::after { bottom: 0; translate: -50% 60%; }
+.hl-spark { position: absolute; right: -.62em; top: -.28em; width: .6em; height: .6em; fill: #F5B83D; filter: drop-shadow(0 2px 4px color-mix(in srgb, #F5B83D 45%, transparent)); transform-origin: 30% 70%; animation: hl-pop .5s cubic-bezier(0.2, 0, 0, 1) calc(var(--hl-delay) + .75s) both; }
+@keyframes hl-drag { from { scale: 0 1; } }
+@keyframes hl-fade { from { opacity: 0; } }
+@keyframes hl-pop { from { opacity: 0; scale: .25; filter: blur(4px); } }
+[data-motion='off'] .hl::before, [data-motion='off'] .hl-caret, [data-motion='off'] .hl-spark { animation: none; }
+@media (prefers-reduced-motion: reduce) { .hl::before, .hl-caret, .hl-spark { animation: none; } }
+
+/* ── a collaborator's cursor with a name tag (NameCursor in components/Highlight.tsx) ── */
+.ncur { position: absolute; z-index: 2; display: inline-flex; align-items: flex-start; pointer-events: none; --c: #5BC86A; --c-ink: #14501E; }
+.ncur.is-violet { --c: #A78BFA; --c-ink: #3B1F86; }
+.ncur.is-amber { --c: #F5B83D; --c-ink: #5A3A00; }
+.ncur.is-red { --c: var(--accent); --c-ink: #FFFFFF; }
+.ncur-arrow { width: 18px; height: 18px; flex: none; fill: var(--c); stroke: var(--bg); stroke-width: 1.2; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .18)); }
+.ncur-tag { margin: 14px 0 0 -2px; padding: 5px 11px; border-radius: 999px 999px 999px 4px; background: color-mix(in oklab, var(--c) 32%, var(--bg)); color: var(--c-ink); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 70%, transparent), 0 8px 20px -10px color-mix(in srgb, var(--c) 80%, transparent); font-size: .84rem; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+html[data-theme='dark'] .ncur-tag { color: color-mix(in oklab, var(--c) 30%, #FFFFFF); background: color-mix(in oklab, var(--c) 28%, var(--bg)); }
+.ncur.is-red .ncur-tag { background: var(--accent-strong); color: #FFFFFF; }
+.ncur.is-left { flex-direction: row-reverse; }
+.ncur.is-left .ncur-arrow { scale: -1 1; }
+.ncur.is-left .ncur-tag { margin: 14px -2px 0 0; border-radius: 999px 999px 4px 999px; }

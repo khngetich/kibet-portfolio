@@ -54,7 +54,7 @@ export const getPageSlugs = async () => {
   return docs.map((d) => d.slug).filter(Boolean) as string[];
 };
 
-const cardSelect = { title: true, slug: true, client: true, year: true, disciplines: true, summary: true, cover: true, featured: true, accent: true, role: true, outcome: true, stats: true } as const;
+const cardSelect = { title: true, slug: true, client: true, year: true, disciplines: true, summary: true, cover: true, featured: true, accent: true, role: true, outcome: true, stats: true, samples: true } as const;
 export type ProjectCard = Pick<Project, keyof typeof cardSelect | 'id'> & { palette?: Palette | null };
 
 export const getProjects = cache(async (opts: { featured?: boolean } = {}) => {
@@ -62,7 +62,8 @@ export const getProjects = cache(async (opts: { featured?: boolean } = {}) => {
   const where: Where = { and: [published(draft), ...(opts.featured ? [{ featured: { equals: true } }] : [])] };
   const { docs } = await (await cms()).find({ collection: 'projects', where, sort: '_order', depth: 1, limit: 100, draft, select: cardSelect });
   // each card's colours come from its cover (lib/palette.ts)
-  return Promise.all(docs.map(async (d) => ({ ...d, palette: await paletteOf(d.cover, d.accent) }))) as Promise<ProjectCard[]>;
+  // only the first two samples travel with a card (the sheets peeking out of a project folder)
+  return Promise.all(docs.map(async (d) => ({ ...d, samples: d.samples?.slice(0, 2), palette: await paletteOf(d.cover, d.accent) }))) as Promise<ProjectCard[]>;
 });
 
 export const getProject = cache(async (slug: string) => {

@@ -19,6 +19,9 @@ import * as migration_20261003_152920_service_flag_defaults from './20261003_152
 import * as migration_20261003_153100_resume_section from './20261003_153100_resume_section';
 import * as migration_20261003_153200_seed_resume_page from './20261003_153200_seed_resume_page';
 import * as migration_20261003_200937_review_fixes from './20261003_200937_review_fixes';
+import * as migration_20261004_113105_footer_credit from './20261004_113105_footer_credit';
+import * as migration_20261004_134452_profile_principles from './20261004_134452_profile_principles';
+import * as migration_20261004_163000_enable_rls from './20261004_163000_enable_rls';
 
 export const migrations = [
   {
@@ -124,6 +127,21 @@ export const migrations = [
   {
     up: migration_20261003_200937_review_fixes.up,
     down: migration_20261003_200937_review_fixes.down,
-    name: '20261003_200937_review_fixes'
+    name: '20261003_200937_review_fixes',
+  },
+  {
+    up: migration_20261004_113105_footer_credit.up,
+    down: migration_20261004_113105_footer_credit.down,
+    name: '20261004_113105_footer_credit',
+  },
+  {
+    up: migration_20261004_134452_profile_principles.up,
+    down: migration_20261004_134452_profile_principles.down,
+    name: '20261004_134452_profile_principles',
+  },
+  {
+    up: migration_20261004_163000_enable_rls.up,
+    down: migration_20261004_163000_enable_rls.down,
+    name: '20261004_163000_enable_rls',
   },
 ];

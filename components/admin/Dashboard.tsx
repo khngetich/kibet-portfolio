@@ -73,16 +73,16 @@ async function Insights({ payload, admin }: { payload: Payload; admin: string })
       key: 'inbox', icon: 'inbox', value: String(inbox.unread), label: 'Unread enquiries',
       note: `${plural(last30, 'enquiry', 'enquiries')} in the last 30 days`, warn: inbox.unread > 0,
       delta: prev30 ? { pct: Math.round(((last30 - prev30) / prev30) * 100), period: 'vs previous 30 days' } : null,
-      action: inbox.unread ? { label: 'Triage now', href: '#dash-inbox' } : { label: 'Open inbox', href: `${admin}/collections/inquiries` },
+      action: inbox.unread ? { label: 'Reply now', href: '#dash-inbox' } : { label: 'Open inbox', href: `${admin}/collections/inquiries` },
     },
     {
       key: 'publish', icon: 'file', value: String(waiting.length), label: 'Waiting to publish',
-      note: waiting.length ? `${edits} with unpublished changes · ${waiting.length - edits} not live` : 'Every page and project is live', warn: waiting.length > 0,
+      note: waiting.length ? `${edits} with unpublished changes · ${waiting.length - edits} not live` : 'Everything’s live. Nice work.', warn: waiting.length > 0,
       action: waiting.length ? { label: 'Review', href: '#dash-workflow' } : { label: 'All pages', href: `${admin}/collections/pages` },
     },
     {
       key: 'media', icon: 'image', value: media.total.toLocaleString('en-GB'), label: 'Media files',
-      note: media.large ? `${plural(media.large, 'image')} over 1 MB` : 'Every image is under 1 MB', warn: media.large > 0,
+      note: media.large ? `${plural(media.large, 'image')} over 1 MB` : 'Every image is nice and light', warn: media.large > 0,
       action: media.large ? { label: 'Review large files', href: largeHref } : { label: 'Open library', href: `${admin}/collections/media` },
     },
     {
@@ -202,7 +202,7 @@ async function TasksCard({ payload, admin }: { payload: Payload; admin: string }
     {
       key: 'inbox', priority: 'high', done: inbox.unread === 0, href: inbox.unread ? '#dash-inbox' : `${admin}/collections/inquiries`,
       label: inbox.unread ? `Reply to ${plural(inbox.unread, 'new enquiry', 'new enquiries')}` : 'Reply to new enquiries',
-      detail: inbox.unread ? 'Waiting in the inbox below' : 'Inbox is clear',
+      detail: inbox.unread ? 'Waiting in the inbox below' : 'Inbox zero. Enjoy it.',
     },
     ...[...pages.map((p) => ({ ...p, kind: 'page' as const })), ...projects.map((p) => ({ ...p, kind: 'project' as const })), ...posts.map((p) => ({ ...p, kind: 'post' as const }))]
       .filter((d) => d.status === 'edits')
@@ -215,7 +215,7 @@ async function TasksCard({ payload, admin }: { payload: Payload; admin: string }
       key: 'insight', priority: 'normal', done: livePosts > 0,
       ...(draftPost ? postDoc(draftPost.id) : { href: `${admin}/collections/posts/create`, doc: { collection: 'posts' } }),
       label: livePosts ? 'Publish an insight' : draftPost ? `Finish and publish ${draftPost.title}` : 'Write your first insight',
-      detail: livePosts ? `${plural(livePosts, 'insight')} live at /insights` : draftPost ? 'A draft is waiting; /insights stays empty until one is live' : 'A short design note shows how you think. It appears at /insights.',
+      detail: livePosts ? `${plural(livePosts, 'insight')} live at /insights` : draftPost ? 'A draft is waiting in the wings; /insights stays empty until one is live' : 'A short design note shows how you think. It appears at /insights.',
     },
     // a service without a cover shows only a number on its card and has no picture on its page
     ...(services.length ? [{
@@ -242,12 +242,12 @@ async function TasksCard({ payload, admin }: { payload: Payload; admin: string }
     {
       key: 'media', priority: 'normal', done: media.large === 0, href: largeHref,
       label: media.large ? `Shrink ${plural(media.large, 'image')} over 1 MB` : 'Image sizes',
-      detail: media.large ? 'Large files slow the site down on phones' : 'Every image is under 1 MB',
+      detail: media.large ? 'Large files slow the site down on phones' : 'Every image is nice and light',
     },
     // live case studies first; past the first three, one task covers the rest
     ...noSamples.slice(0, 3).map((p): Task => ({
       key: `samples-${p.id}`, priority: p.status === 'live' ? 'medium' : 'normal', done: false, ...projectDoc(p.id),
-      label: `Add samples to ${p.title}`, detail: p.status === 'live' ? 'Live case study with no work to show' : 'Draft case study',
+      label: `Add samples to ${p.title}`, detail: p.status === 'live' ? 'Live, but the folder’s empty: add some work' : 'Draft case study',
     })),
     ...(noSamples.length > 3 ? [{
       key: 'samples-more', priority: 'normal' as const, done: false, href: `${admin}/collections/projects`,
@@ -269,7 +269,7 @@ async function RecentWorkCard({ payload, admin }: { payload: Payload; admin: str
       <div className="cms-section-head">
         <div>
           <h2 id="dash-recent">Recent work <span className="cms-count is-strong">{work.length}</span></h2>
-          <p className="cms-muted">The latest projects you’ve edited</p>
+          <p className="cms-muted">What you’ve been tinkering with lately</p>
         </div>
         <Link className="cms-link" href={`${admin}/collections/projects`}>All projects →</Link>
       </div>
@@ -314,6 +314,12 @@ async function InboxCard({ payload, admin }: { payload: Payload; admin: string }
   return <section className="cms-card cms-anim" aria-labelledby="dash-inbox"><Inbox items={inbox.items} unread={inbox.unread} admin={admin} /></section>;
 }
 
+/** "Site settings" → "Site" in ink, "settings" muted; one-word labels stay whole. */
+function twoTone(label: string) {
+  const [first, ...rest] = label.split(' ');
+  return rest.length ? <>{first} <span>{rest.join(' ')}</span></> : label;
+}
+
 function SettingsCard({ admin }: { admin: string }) {
   const links: { href: string; icon: IconName; label: string; sub: string }[] = [
     { href: `${admin}/globals/header`, icon: 'layoutTop', label: 'Header', sub: 'Menu links and the quote button' },
@@ -326,7 +332,7 @@ function SettingsCard({ admin }: { admin: string }) {
       <div className="cms-card-head">
         <div>
           <h2 id="dash-site">Site-wide</h2>
-          <p className="cms-muted">Shown on every page</p>
+          <p className="cms-muted">The bits that show up on every page</p>
         </div>
       </div>
       <ul className="cms-shortcuts">
@@ -334,8 +340,8 @@ function SettingsCard({ admin }: { admin: string }) {
           <li key={l.href}>
             <Link href={l.href}>
               <span className="cms-shortcut-icon" aria-hidden="true"><Icon name={l.icon} size={16} /></span>
-              <span><b>{l.label}</b><small>{l.sub}</small></span>
-              <Icon name="right" size={15} className="cms-shortcut-go" />
+              <span><b className="cms-two-tone">{twoTone(l.label)}</b><small>{l.sub}</small></span>
+              <span className="cms-shortcut-go" aria-hidden="true"><Icon name="right" size={14} /></span>
             </Link>
           </li>
         ))}

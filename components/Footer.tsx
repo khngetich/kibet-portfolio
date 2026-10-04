@@ -11,9 +11,10 @@ import { FooterWatch } from './FooterWatch';
 
 
 /**
- * The footer on every page, kept short: a dark call-to-action band, then one row with the name and
- * tagline on one side and the ways to reach you (email, WhatsApp, social icons) on the other, and a
- * last line with the copyright and the policy links.
+ * The footer on every page: the call-to-action card (the one closing call to action on every
+ * page), then one row with the name and tagline on one side and the ways to reach you (email,
+ * WhatsApp, social icons) on the other, a last line with the copyright, the site credit and the
+ * policy links, and the name set large as a sign-off.
  * Everything comes from Website → Footer and Site settings (Socials).
  */
 export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
@@ -25,16 +26,25 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
   const socials = footer.showSocials !== false ? (site.socials ?? []).filter((s) => s.url) : [];
   const wa = site.phone && site.whatsapp ? `https://wa.me/${digits(site.phone)}` : null;
   const statement = footer.tagline || site.tagline || `${site.role}${site.location ? ` · ${site.location}` : ''}`;
+  const credit = footer.credit?.label?.trim() ? { label: footer.credit.label.trim(), url: footer.credit.url || null } : null;
+  // the second way in: on a page that already has the contact form, it takes the button's place
+  const alt = wa ? { label: 'Or chat on WhatsApp', url: wa } : site.email ? { label: 'Or email me', url: `mailto:${site.email}` } : null;
+  const creditInText = !!credit && copyright.some((part) => part.includes(credit.label));
 
   return (
     <footer className="fx">
       {cta.show !== false && cta.heading && (
         <div className="fx-cta band-dark">
           <div className="fx-cta-glow" aria-hidden="true" />
-          <div className="wrap fx-cta-inner">
+          <div className="fx-cta-inner">
             <p className="fx-cta-title"><Accent text={cta.heading} /></p>
-            {cta.text && <p className="fx-cta-text">{cta.text}</p>}
-            {cta.buttonLabel && cta.buttonUrl && <SmartLink className="fx-cta-btn" href={cta.buttonUrl}>{cta.buttonLabel} <Icon name="arrow" size={16} /></SmartLink>}
+            <div className="fx-cta-side">
+              {cta.text && <p className="fx-cta-text">{cta.text}</p>}
+              <div className="fx-cta-actions">
+                {cta.buttonLabel && cta.buttonUrl && <SmartLink className="fx-cta-btn" href={cta.buttonUrl}>{cta.buttonLabel} <Icon name="arrow" size={16} /></SmartLink>}
+                {alt && <a className="fx-cta-alt" href={alt.url} {...(alt.url.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{alt.label}</a>}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -63,12 +73,40 @@ export function Footer({ site, footer }: { site: Site; footer: FooterData }) {
         </div>
         <div className="fx-bottom">
           <FooterWatch />
-          <p>{copyright.map((part, i) => <Fragment key={i}>{i > 0 && <Year />}{part}</Fragment>)}{footer.note ? <span className="fx-note"> {footer.note}</span> : null}</p>
+          <p>
+            {copyright.map((part, i) => <Fragment key={i}>{i > 0 && <Year />}{credit && creditInText ? withCredit(part, credit) : part}</Fragment>)}
+            {credit && !creditInText && <> Site by <Credit {...credit} />.</>}
+            {footer.note ? <span className="fx-note"> {footer.note}</span> : null}
+          </p>
           {!!footer.legal?.length && (
             <nav aria-label="Policies"><ul className="fx-legal">{footer.legal.map((l) => <li key={l.id ?? l.url}><SmartLink className="fx-link" href={l.url}>{l.label}</SmartLink></li>)}</ul></nav>
           )}
         </div>
       </div>
+
+      {/* the sign-off: the name set across the full width; the letters lift in a wave on hover */}
+      <p className="fx-word" aria-hidden="true" style={{ '--chars': brand.length + 1 } as React.CSSProperties}>
+        {[...brand].map((ch, i) => <span key={i} style={{ '--i': i } as React.CSSProperties}>{ch === ' ' ? '\u00a0' : ch}</span>)}
+        <span className="brand-dot" style={{ '--i': brand.length } as React.CSSProperties}>.</span>
+      </p>
     </footer>
+  );
+}
+
+/** The credit's name inside the copyright text becomes the link. */
+function withCredit(text: string, credit: { label: string; url: string | null }) {
+  const at = text.indexOf(credit.label);
+  if (at < 0) return text;
+  return <>{text.slice(0, at)}<Credit {...credit} />{text.slice(at + credit.label.length)}</>;
+}
+
+/** Who made the site: the name rolls up to its accent copy on hover and an arrow slides in. */
+function Credit({ label, url }: { label: string; url: string | null }) {
+  if (!url) return <b className="fx-credit is-plain">{label}</b>;
+  return (
+    <a className="fx-credit" href={url} target="_blank" rel="noopener noreferrer" aria-label={`${label} (opens in a new tab)`}>
+      <span className="fx-credit-roll"><span data-text={label}>{label}</span></span>
+      <Icon name="external" size={12} />
+    </a>
   );
 }

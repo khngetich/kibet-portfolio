@@ -2,7 +2,7 @@ import type { GlobalConfig } from 'payload';
 import { anyone, authenticated } from '../access';
 import { revalidateGlobal } from '../hooks/revalidate';
 import { linkFields } from './Header';
-import { linkTarget } from '../lib/validate';
+import { linkTarget, webURL } from '../lib/validate';
 
 /** The footer on every page: a call-to-action band, the name and socials, the copyright and policy links. Saving publishes immediately; earlier versions stay in History. */
 export const Footer: GlobalConfig = {
@@ -40,6 +40,18 @@ export const Footer: GlobalConfig = {
       ],
     },
     { name: 'copyright', type: 'text', defaultValue: '© {year} {name}. All rights reserved.', admin: { description: '{year} and {name} are filled in automatically.' } },
+    {
+      name: 'credit',
+      label: 'Site credit',
+      type: 'group',
+      admin: { description: 'Who made the site, shown as a link on the last line. When the name already appears in the copyright text, that part becomes the link; otherwise "Site by …" is added.' },
+      fields: [
+        { type: 'row', fields: [
+          { name: 'label', label: 'Name', type: 'text', admin: { width: '40%', placeholder: 'Kaptured Creatives' } },
+          { name: 'url', label: 'Link', type: 'text', validate: webURL, admin: { width: '60%', description: 'Their website or profile (https://…). Opens in a new tab.' } },
+        ] },
+      ],
+    },
     { name: 'legal', label: 'Policy links', type: 'array', admin: { initCollapsed: true, description: 'Shown beside the copyright, e.g. Terms → /terms. The pages themselves are in Pages; link only to ones that exist.' }, fields: linkFields },
     { name: 'note', type: 'text', defaultValue: 'Some client work is shown under NDA or with permission.', admin: { description: 'Small print after the copyright line.' } },
   ],

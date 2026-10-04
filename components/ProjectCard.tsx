@@ -1,7 +1,7 @@
 import type { ProjectCard as Card } from '@/lib/cms';
-import { ProjectFolder } from './ProjectFolder';
+import { GlassFolder } from './GlassFolder';
 
-/** A project in the Work grid: the same project "file" card as the homepage, full size when `large`. */
-export function ProjectCard({ project, sizes, large, preload, level }: { project: Card; sizes: string; large?: boolean; preload?: boolean; level?: 2 | 3 }) {
-  return <ProjectFolder project={project} size={large ? 'lg' : 'md'} sizes={sizes} preload={preload} level={level} />;
+/** A project in the Work grid: the same glass folder as the homepage's selected projects, numbered in grid order. */
+export function ProjectCard({ project, n, sizes, preload, level }: { project: Card; n: number; sizes: string; preload?: boolean; level?: 2 | 3 }) {
+  return <GlassFolder project={project} n={n} sizes={sizes} preload={preload} level={level} />;
 }

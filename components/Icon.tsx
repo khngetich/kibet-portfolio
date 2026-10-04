@@ -26,6 +26,7 @@ const paths = {
   layers: <g {...S}><path d="M12 4l8.5 4.5L12 13 3.5 8.5z" /><path d="M3.5 12.5L12 17l8.5-4.5M3.5 16.5L12 21l8.5-4.5" /></g>,
   calendar: <g {...S}><rect x="3.5" y="5" width="17" height="15" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M14 14h2M8 17h2" /></g>,
   phone: <path {...S} d="M6.5 3.5h3l1.5 4-2 1.2a11 11 0 0 0 6.3 6.3l1.2-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z" />,
+  lock: <g {...S}><rect x="5" y="10.5" width="14" height="10" rx="2.5" /><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" /></g>,
   mail: <g {...S}><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="M3.5 6.5l8.5 6.5 8.5-6.5" /></g>,
   download: <path {...S} d="M12 4v11M7 10.5l5 5 5-5M5 20h14" />,
   whatsapp: <g {...S}><path d="M4 20l1.3-4A8 8 0 1 1 8 18.8z" /><path d="M9 9.2c0 3 2.8 5.8 5.8 5.8l1-1.5-2-1-.9.9a4 4 0 0 1-2.3-2.3l.9-.9-1-2L9 9.2z" /></g>,

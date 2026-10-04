@@ -5,7 +5,7 @@ import { asMedia, getProjects, getService, getServices, getServiceSlugs, getSite
 import { digits, price } from '@/lib/format';
 import { Img } from '@/components/Img';
 import { Icon } from '@/components/Icon';
-import { ProjectFolder } from '@/components/ProjectFolder';
+import { GlassFolder } from '@/components/GlassFolder';
 import { JsonLd } from '@/components/JsonLd';
 import { breadcrumbLd, canonical, ogCard, pageTitle, serviceLd } from '@/lib/seo';
 
@@ -121,9 +121,9 @@ export default async function ServicePage({ params }: Props) {
         <section className="svp-work" aria-labelledby="svp-work-title">
           <div className="wrap">
             <h2 id="svp-work-title" className="h-md">Selected work</h2>
-            <ul className="ed-grid">
-              {work.map((p) => <li key={p.id}><ProjectFolder project={p} sizes="(max-width: 760px) 100vw, 50vw" /></li>)}
-            </ul>
+            <ol className="gf-shelf" data-count={work.length}>
+              {work.map((p, i) => <li key={p.id}><GlassFolder project={p} n={i + 1} sizes="(max-width: 760px) 60vw, 340px" /></li>)}
+            </ol>
           </div>
         </section>
       )}
