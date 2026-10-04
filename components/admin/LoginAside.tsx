@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { getPayload } from 'payload';
 import config from '@payload-config';
 import type { Media } from '@/payload-types';
@@ -19,7 +20,7 @@ export async function LoginAside() {
       <aside className="cms-login-aside">
         <div className="cms-login-top">
           <span className="cms-wordmark">{first}<i>.</i></span>
-          <a className="cms-login-back" href="/">Back to the site <span aria-hidden="true">↗</span></a>
+          <Link className="cms-login-back" href="/">Back to the site <span aria-hidden="true">↗</span></Link>
         </div>
         <div className="cms-login-folder" aria-hidden="true">
           <span className="cms-login-folder-back" />
